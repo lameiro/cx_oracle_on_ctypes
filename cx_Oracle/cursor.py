@@ -6,7 +6,7 @@ from buffer import cxBuffer
 import oci
 from variable import Variable
 from objectvar import OBJECTVAR
-from utils import is_sequence
+from utils import is_sequence, cxString_from_encoded_string
 
 class Cursor(object):
     def __init__(self, connection):
@@ -227,7 +227,7 @@ class Cursor(object):
             else:
                 try:
                     orig_var.set_value(array_pos, value)
-                except:
+                except Exception, e:
                     # executemany() should simply fail after the first element
                     if array_pos > 0:
                         raise
@@ -258,19 +258,19 @@ class Cursor(object):
 
     def execute(self, statement, *args, **kwargs):
         """Execute the statement."""
-        execute_args = None
+        execute_args = undefined = object() # avoid mixing up user-provided None with our None.
 
         if args:
             execute_args = args[0]
 
-        if execute_args and kwargs:
+        if execute_args is not undefined and kwargs:
             raise InterfaceError("expecting argument or keyword arguments, not both")
         
         if kwargs:
             execute_args = kwargs
 
-        if execute_args:
-            if not (isinstance(execute_args, dict) or execute_args.__getitem__):
+        if execute_args is not undefined:
+            if not isinstance(execute_args, dict) and not is_sequence(execute_args):
                 raise TypeError("expecting a dictionary, sequence or keyword args")
 
         # make sure the cursor is open
@@ -280,7 +280,7 @@ class Cursor(object):
         self.internal_prepare(statement, None)
         
         # perform binds
-        if execute_args:
+        if execute_args is not undefined:
             self.set_bind_variables(execute_args, 1, 0, 0)
 
         self.perform_bind()
@@ -321,11 +321,6 @@ class Cursor(object):
     def executemany(self, statement, list_of_arguments):
         """Execute the statement many times. The number of times is equivalent to the number of elements in the array 
 of dictionaries."""
-        # expect statement text (optional) plus list of mappings
-        #if (!PyArg_ParseTuple(args, "OO!", &statement, &PyList_Type,
-        #        &listOfArguments))
-        #    return NULL
-
         # make sure the cursor is open - ctypes: prepare already checks that
         # self.raise_if_not_open()
 
@@ -435,14 +430,12 @@ of dictionaries."""
            returned."""
 
         # create a new tuple
-        num_items = len(self.fetch_variables)
-        tuple = [None] * num_items
+        result_as_list = [None] * len(self.fetch_variables)
 
         # acquire the value for each item
-        for pos in xrange(num_items):
-            var = self.fetch_variables[pos]
+        for pos, var in enumerate(self.fetch_variables):
             item = var.getvalue(self.row_num)
-            tuple[pos] = item
+            result_as_list[pos] = item
 
         # increment row counters
         self.row_num += 1
@@ -452,7 +445,7 @@ of dictionaries."""
         if self.rowfactory is not None:
             return self.rowfactory(tuple)
 
-        return tuple
+        return tuple(result_as_list)
 
     def more_rows(self):
         """Returns a boolean indicating if more rows can be retrieved from the cursor."""
@@ -573,7 +566,7 @@ of dictionaries."""
 
         # verify that the arguments are passed correctly
         if list_of_arguments:
-            if not hasattr(list_of_arguments, '__getitem__'):
+            if not is_sequence(list_of_arguments):
                 raise TypeError("arguments must be a sequence")
 
         # make sure the cursor is open
@@ -616,90 +609,52 @@ of dictionaries."""
 
         self.is_open = False
         
-    #def get_bind_names(self, num_elements):
-        #"""Return a list of bind variable names. At this point the cursor must have already been prepared."""
-        ##udt_Cursor *self,                   // cursor to get information from
-        ##int numElements,                    // number of elements (IN/OUT)
-        ##PyObject **names)                   // list of names (OUT)
-        ##ub1 *bindNameLengths, *indicatorNameLengths, *duplicate;
-        ##char *buffer, **bindNames, **indicatorNames;
-        ##OCIBind **bindHandles;
-        ##int elementSize, i;
-        ##sb4 foundElements;
-        ##PyObject *temp;
-        ##sword status;
-    
-        ## ensure that a statement has already been prepared
-        #if not self.statement:
-            #raise ProgrammingError("statement must be prepared first")
+    def get_bind_names(self, num_elements):
+        """Return a list of bind variable names. At this point the cursor must have already been prepared."""
+
+        # ensure that a statement has already been prepared
+        if not self.statement:
+            raise ProgrammingError("statement must be prepared first")
         
-        ## avoid bus errors on 64-bit platforms
-        #num_elements = num_elements + (ctypes.sizeof(ctypes.c_void_p) - num_elements % ctypes.sizeof(ctypes.c_void_p))
+        # avoid bus errors on 64-bit platforms
+        num_elements = num_elements + (ctypes.sizeof(ctypes.c_void_p) - num_elements % ctypes.sizeof(ctypes.c_void_p))
     
-        ## initialize the buffers
-        #element_size = ctypes.sizeof(ctypes.c_char_p) + ctypes.sizeof(oci.ub1) + ctypes.sizeof(ctypes.c_char_p) + ctypes.sizeof(oci.ub1) + \
-                #ctypes.sizeof(oci.ub1) + ctypes.sizeof(oci.POINTER(oci.OCIBind))
-        #buffer = ctypes.create_string_buffer(num_elements * element_size)
-        #bindNames = (char**) buffer;
-        #bindNameLengths = (ub1*) (((char*) bindNames) +
-                #sizeof(char*) * numElements);
-        #indicatorNames = (char**) (((char*) bindNameLengths) +
-                #sizeof(ub1) * numElements);
-        #indicatorNameLengths = (ub1*) (((char*) indicatorNames) +
-                #sizeof(char*) * numElements);
-        #duplicate = (ub1*) (((char*) indicatorNameLengths) +
-                #sizeof(ub1) * numElements);
-        #bindHandles = (OCIBind**) (((char*) duplicate) +
-                #sizeof(ub1) * numElements);
+        # initialize the buffers
+        # code simplified, but now uses multiple mallocs
+        bind_names = (ctypes.c_char_p * num_elements)() # one pointer per string. who allocates the str?
+        bind_name_lengths = (oci.ub1 * num_elements)() # one ub1 per str
+        indicator_names = (ctypes.c_char_p * num_elements)() # same of bind names
+        indicator_name_lengths = (oci.ub1 * num_elements)()
+        duplicate = (oci.ub1 * num_elements)()
+        bind_handles = (oci.POINTER(oci.OCIBind) * num_elements)()
     
-        ## get the bind information
-        #status = OCIStmtGetBindInfo(self->handle,
-                #self->environment->errorHandle, numElements, 1, &foundElements,
-                #(text**) bindNames, bindNameLengths, (text**) indicatorNames,
-                #indicatorNameLengths, duplicate, bindHandles);
-        #if (status != OCI_NO_DATA &&
-                #Environment_CheckForError(self->environment, status,
-                #"Cursor_GetBindNames()") < 0) {
-            #PyMem_Free(buffer);
-            #return -1;
-        #}
-        #if (foundElements < 0) {
-            #*names = NULL;
-            #PyMem_Free(buffer);
-            #return abs(foundElements);
-        #}
-    
-        ## create the list which is to be returned
-        #*names = PyList_New(0);
-        #if (!*names) {
-            #PyMem_Free(buffer);
-            #return -1;
-        #}
-    
-        ## process the bind information returned
-        #for (i = 0; i < foundElements; i++) {
-            #if (!duplicate[i]) {
-                #temp = cxString_FromEncodedString(bindNames[i],
-                        #bindNameLengths[i],
-                        #self->connection->environment->encoding);
-                #if (!temp) {
-                    #Py_DECREF(*names);
-                    #PyMem_Free(buffer);
-                    #return -1;
-                #}
-                #if (PyList_Append(*names, temp) < 0) {
-                    #Py_DECREF(*names);
-                    #Py_DECREF(temp);
-                    #PyMem_Free(buffer);
-                    #return -1;
-                #}
-                #Py_DECREF(temp);
-            #}
-        #}
-        #PyMem_Free(buffer);
-    
-        #return 0;
-    #}
+        c_found_elements = oci.sb4()
+        # get the bind information
+        status = oci.OCIStmtGetBindInfo(self.handle, self.environment.error_handle, num_elements, 
+                                    1, byref(c_found_elements), bind_names, bind_name_lengths, indicator_names,
+                                    indicator_name_lengths, duplicate, bind_handles)
+        found_elements = c_found_elements.value
+        
+        try:
+            self.environment.check_for_error(status, "Cursor_GetBindNames()")
+        except:
+            if status != oci.OCI_NO_DATA:
+                raise
+        
+        if found_elements < 0:
+            names = None
+            return abs(found_elements), names
+        
+        names = []
+        
+        # process the bind information returned
+        for i in xrange(found_elements):
+            if not duplicate[i]:
+                temp = cxString_from_encoded_string(bind_names[i],
+                        self.connection.environment.encoding) # removed num bytes arg
+                names.append(temp)
+                
+        return num_elements, names
 
     def bindnames(self):
         """Return a list of bind variable names."""
@@ -707,12 +662,12 @@ of dictionaries."""
         # make sure the cursor is open
         self.raise_if_not_open()
 
-        # return result
-        result, names = self.get_bind_names(8)
-        if result < 0:
+        # results renamed to found_elements
+        found_elements, names = self.get_bind_names(8)
+        if found_elements < 0:
             return None
-        result, names = self.get_bind_names(result)
-        if not names and result < 0:
+        found_elements, names = self.get_bind_names(found_elements)
+        if not names and found_elements < 0:
             return None
         return names
 

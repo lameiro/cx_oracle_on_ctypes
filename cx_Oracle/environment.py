@@ -21,6 +21,8 @@ class Environment(object):
         self.nlsNumericCharactersBuffer = cxBuffer()
 
         # create the error handle
+        null_ptr_type = oci.OCIHandleAlloc.argtypes[-1]
+        null_ptr = null_ptr_type()
         status = oci.OCIHandleAlloc(handle, byref(self.error_handle), oci.OCI_HTYPE_ERROR, 0, 0)
         self.check_for_error(status, "Environment_New(): create error handle")
 

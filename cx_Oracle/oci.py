@@ -8,3 +8,7 @@ try:
     OCI_ATTR_ENV_NCHARSET_ID = OCI_ATTR_NCHARSET_ID
 except:
     pass
+
+# ctypesgen wrongly generated sb1 as char
+
+sb1 = ctypes.c_byte

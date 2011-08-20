@@ -150,7 +150,7 @@ class Variable(object):
         # determine data type
         var_type = Variable.type_by_oracle_descriptor(param, cursor.environment)
         if not var_type:
-            return 
+            return
 
         if cursor.numbersAsStrings and var_type is vt_Float:
             var_type = vt_NumberAsString
@@ -590,7 +590,7 @@ variable type."""
             return vt_Cursor, None, None
 
         if isinstance(value, Decimal):
-            return vt_NumberAsString
+            return vt_NumberAsString, None, None
 
         # handle arrays
         if isinstance(value, list):
