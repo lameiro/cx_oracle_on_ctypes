@@ -114,7 +114,7 @@ class Connection(object):
         # if a new password has been specified, change it which will also
         # establish the session
         if newpassword:
-           return self.change_password(self.password) # TODO: removed one arg, what about the new password?!?!
+            return self.change_password(self.password) # TODO: removed one arg, what about the new password?!?!
 
         # begin the session
         status = oci.OCISessionBegin(self.handle, self.environment.error_handle, self.session_handle, credential_type, mode)

@@ -70,8 +70,10 @@ class Variable(object):
             self.numElements = self.allocelems = 1
         else:
             self.numElements = self.allocelems = num_elements
-
-        self.actual_elements = 0
+        
+        # the OCI will keep a ref to this across multiple calls, so we have to keep one too.
+        # to avoid duplication of python-level vs c-level fields, self.actual_elements is a property
+        self.c_actual_elements = oci.ub4(0)
         self.internal_fetch_num = 0
         self.is_array = False
         self.is_allocated_internally = True
@@ -106,6 +108,14 @@ class Variable(object):
         # perform extended initialization
         if self.type.initialize_proc:
             self.type.initialize_proc(self, cursor)
+            
+    def get_actual_elements(self):
+        return self.c_actual_elements.value
+    
+    def set_actual_elements(self, value):
+        self.c_actual_elements.value = value
+        
+    actual_elements = property(get_actual_elements, set_actual_elements)
 
     def allocate_data(self):
         """Allocate the data for the variable."""
@@ -334,7 +344,7 @@ class Variable(object):
         self.bound_name = name
 
         # perform the bind
-        return self.internal_bind()
+        self.internal_bind()
 
 
     def internal_bind(self):
@@ -342,11 +352,11 @@ class Variable(object):
 
         if self.is_array:
             alloc_elems = self.allocelems
-            actual_elements_ref = byref(self.actual_elements)
+            actual_elements_ref = byref(self.c_actual_elements)
         else:
             alloc_elems = 0
             actual_elements_ref = 0
-
+        
         # perform the bind
         if self.bound_name:
             buffer = cxBuffer.new_from_object(self.bound_name, self.environment.encoding)
@@ -362,7 +372,7 @@ class Variable(object):
                         self.bufferSize, self.type.oracle_type, self.indicator,
                         self.actual_length, self.return_code, alloc_elems,
                         actual_elements_ref, oci.OCI_DEFAULT)
-
+        
         self.environment.check_for_error(status, "Variable_InternalBind()")
 
         if not python3_or_better():
@@ -406,7 +416,7 @@ class Variable(object):
 
         # passing an array of two elements to define an array
         if isinstance(value, list):
-            return Variable.new_array_by_type(cursor, value) # TODO: Implement
+            return Variable.new_array_by_type(cursor, value)
 
         # handle directly bound variables
         if isinstance(value, Variable):
@@ -415,6 +425,24 @@ class Variable(object):
         # everything else ought to be a Python type
         var_type = Variable.type_by_python_type(cursor, value)
         return Variable(cursor, num_elements, var_type, var_type.size)
+    
+    @staticmethod
+    def new_array_by_type(cursor, value):
+        """Allocate a new PL/SQL array by looking at the Python data type."""
+        if len(value) != 2:
+            raise ProgrammingError("expecting an array of two elements [type, numelems]")
+        
+        var_type, num_elements = value
+        
+        if not isinstance(num_elements, int):
+            raise ProgrammingErrorException("number of elements must be an integer")
+        
+        var_type = Variable.type_by_python_type(cursor, var_type)
+    
+        var = Variable(cursor, num_elements, var_type, var_type.size);
+        var.make_array()
+        
+        return var
 
     @staticmethod
     def type_by_python_type(cursor, type):
@@ -642,7 +670,7 @@ variable type."""
         """Set all of the array values for the variable."""
 
         # ensure we have an array to set
-        if isinstance(value, list):
+        if not isinstance(value, list):
             raise TypeError("expecting array data")
 
         # ensure we haven't exceeded the number of allocated elements
@@ -654,7 +682,7 @@ variable type."""
         self.actual_elements = num_elements
 
         for i, element_value in enumerate(value):
-            var.set_single_value(i, element_value)
+            self.set_single_value(i, element_value)
             
     #def __repr__(self):
         #if self.is_array:

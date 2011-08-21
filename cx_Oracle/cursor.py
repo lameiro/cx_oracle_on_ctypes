@@ -1,12 +1,17 @@
 from ctypes import byref
 import ctypes
 
+import oci
 from custom_exceptions import InterfaceError, ProgrammingError, DatabaseError
 from buffer import cxBuffer
-import oci
+from utils import is_sequence, cxString_from_encoded_string, python3_or_better
 from variable import Variable
 from objectvar import OBJECTVAR
-from utils import is_sequence, cxString_from_encoded_string
+from numbervar import NUMBER
+from stringvar import STRING, BINARY, FIXED_CHAR
+if not python3_or_better():
+    from stringvar import UNICODE, FIXED_UNICODE
+#from something import DATETIME
 
 class Cursor(object):
     def __init__(self, connection):
@@ -83,7 +88,7 @@ class Cursor(object):
 
         tag_buffer = cxBuffer.new_from_object(statement_tag, self.environment.encoding)
 
-        status = oci.OCIStmtPrepare2(self.connection.handle, byref(self.handle), self.environment.error_handle, statement_buffer.c_struct.ptr, statement_buffer.c_struct.size, tag_buffer.c_struct.ptr, tag_buffer.c_struct.size, oci.OCI_NTV_SYNTAX, oci.OCI_DEFAULT);
+        status = oci.OCIStmtPrepare2(self.connection.handle, byref(self.handle), self.environment.error_handle, statement_buffer.c_struct.ptr, statement_buffer.c_struct.size, tag_buffer.c_struct.ptr, tag_buffer.c_struct.size, oci.OCI_NTV_SYNTAX, oci.OCI_DEFAULT)
 
         try:
             self.environment.check_for_error(status, "Cursor_InternalPrepare(): prepare")
@@ -102,7 +107,7 @@ class Cursor(object):
         self.row_factory = None
 
         # determine if statement is a query
-        self.get_statement_type() # cx oracle is not checking anything here, or is it?
+        self.get_statement_type()
 
     def get_statement_type(self):
         c_statement_type = oci.ub2()
@@ -140,7 +145,8 @@ class Cursor(object):
             mode = oci.OCI_DEFAULT
 
         status = oci.OCIStmtExecute(self.connection.handle, self.handle, self.environment.error_handle, num_iters, 0, 0, 0, mode)
-
+        # here the OCI will change variable.c_actual_elements, given at bind time
+        
         try:
             self.environment.check_for_error(status, "Cursor_InternalExecute()")
         except Exception, e:
@@ -233,7 +239,7 @@ class Cursor(object):
                         raise
                     
                     # anything other than index error or type error should fail
-                    if isinstance(e, (IndexError, TypeError)):
+                    if not isinstance(e, (IndexError, TypeError)):
                         raise
 
                     orig_var = None
@@ -295,7 +301,7 @@ class Cursor(object):
         self.internal_execute(num_iters)
         
         # perform defines, if necessary
-        if is_query and not self.fetch_variables:
+        if is_query and self.fetch_variables is None:
             self.perform_define()
 
         # reset the values of setoutputsize()
@@ -458,6 +464,15 @@ of dictionaries."""
 
         return True
     
+    def fetchmany(self, rowLimit=None):
+        if rowLimit is None:
+            rowLimit = self.arraysize
+        
+        # verify fetch can be performed
+        self.verify_fetch()
+        
+        return self.multi_fetch(rowLimit)
+        
     def fetchone(self): # public
         """Fetch a single row from the cursor."""
 
@@ -747,3 +762,159 @@ of dictionaries."""
                 self.bindvars[i] = var
         
         return self.bindvars
+    
+    def arrayvar(self, type, value, size=0):
+        """Create an array bind variable and return it."""
+        
+        # determine the type of variable
+        var_type = Variable.type_by_python_type(self, type)
+        if var_type.is_variable_length and size == 0:
+            size = var_type.size
+    
+        # determine the number of elements to create
+        if isinstance(value, list):
+            num_elements = len(value)
+        elif isinstance(value, int):
+            num_elements = value
+        else:
+            raise TypeError("expecting integer or list of values")
+        
+        # create the variable
+        var = Variable(self, num_elements, var_type, size)
+        var.make_array()
+    
+        # set the value, if applicable
+        if isinstance(value, list):
+            var.set_array_value(value)
+        
+        return var
+    
+    def get_item_description_helper(self, pos, param):
+        """Helper for Cursor_ItemDescription() used so that it is not necessary to
+constantly free the descriptor when an error takes place."""
+        # acquire usable type of item
+        var_type = Variable.type_by_oracle_descriptor(param, self.environment)
+        
+        c_internal_size = oci.ub2()
+        # acquire internal size of item
+        status = oci.OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, byref(c_internal_size), 0,
+                oci.OCI_ATTR_DATA_SIZE, self.environment.error_handle)
+        self.environment.check_for_error(status, "Cursor_ItemDescription(): internal size")
+        internal_size = c_internal_size.value
+        
+        # null OK must be converted to bool!
+    
+        # acquire character size of item
+        c_char_size = oci.ub2()
+        status = oci.OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, byref(c_char_size), 0,
+                oci.OCI_ATTR_CHAR_SIZE, self.environment.error_handle)
+        self.environment.check_for_error(status, "Cursor_ItemDescription(): character size")
+        char_size = c_char_size.value
+        
+        # aquire name of item
+        c_name = ctypes.c_char_p()
+        c_name_length = oci.ub4()
+        
+        status = oci.OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, byref(c_name),
+                byref(c_name_length), oci.OCI_ATTR_NAME, self.environment.error_handle)
+        self.environment.check_for_error(status, "Cursor_ItemDescription(): name")
+        name = c_name.value[:c_name_length.value] # doesn't it give back a NULL terminated string?!
+        
+        python_type = var_type.python_type
+        
+        if python_type == NUMBER:
+            # lookup precision and scale
+            c_scale = oci.sb1()
+            c_precision = oci.sb2()
+            status = oci.OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, byref(c_scale), 0,
+                    oci.OCI_ATTR_SCALE, self.environment.error_handle)
+            self.environment.check_for_error(status, "Cursor_ItemDescription(): scale")
+            scale = c_scale.value
+            
+            status = oci.OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, byref(c_precision), 0,
+                    oci.OCI_ATTR_PRECISION, self.environment.error_handle)
+            self.environment.check_for_error(status, "Cursor_ItemDescription(): precision")
+            precision = c_precision.value
+        
+        # lookup whether null is permitted for the attribute
+        c_null_ok = oci.ub1()
+        status = oci.OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, byref(c_null_ok), 0,
+                oci.OCI_ATTR_IS_NULL, self.environment.error_handle)
+        self.environment.check_for_error(status, "Cursor_ItemDescription(): nullable")
+        null_ok = c_null_ok.value # should make null_ok a bool
+        
+        # set display size based on data type
+        
+        if python_type == NUMBER:
+            if precision:
+                display_size = precision + 1
+                if scale > 0:
+                    display_size += scale + 1
+            else:
+                display_size = 127
+        else:
+            mapping = {
+                STRING: char_size,
+                BINARY: internal_size,
+                FIXED_CHAR: char_size,
+                DATETIME: 23,
+            }
+            
+            if not python3_or_better():
+                mapping.update({
+                    UNICODE: char_size,
+                    FIXED_UNICODE: char_size,
+                })
+            
+            display_size = mapping.get(python_type, -1)
+        
+        result = cxString_from_encoded_string(name, self.connection.environment.encoding), python_type, display_size, internal_size, precision, scale, null_ok
+    
+        return result
+    
+    def get_item_description(self, pos):
+        """Return a tuple describing the item at the given position."""
+        param = oci.POINTER(oci.OCIParam)()
+        
+        # acquire parameter descriptor
+        status = oci.OCIParamGet(self.handle, oci.OCI_HTYPE_STMT, self.environment.error_handle,
+                                 byref(param), pos)
+        self.environment.check_for_error(status, "Cursor_ItemDescription(): parameter")
+        
+        # use helper routine to get tuple
+        description_element = self.get_item_description_helper(pos, param)
+        oci.OCIDescriptorFree(param, oci.OCI_DTYPE_PARAM)
+        
+        return description_element
+    
+    @property
+    def description(self):
+        """Return a list of 7-tuples consisting of the description of the define variables."""
+        
+        # make sure the cursor is open
+        self.raise_if_not_open()
+        
+        # fixup bound cursor, if necessary
+        self.fixup_bound_cursor()
+    
+        # if not a query, return None
+        if self.statement_type != oci.OCI_STMT_SELECT:
+            return None
+    
+        # determine number of items in select-list
+        c_num_items = ctypes.c_int()
+        status = oci.OCIAttrGet(self.handle, oci.OCI_HTYPE_STMT, byref(c_num_items), 0,
+                                oci.OCI_ATTR_PARAM_COUNT, self.environment.error_handle)
+        self.environment.check_for_error(status, "Cursor_GetDescription()")
+        
+        num_items = c_num_items.value
+        
+        # create a list of the required length
+        results = [None] * num_items
+    
+        # create tuples corresponding to the select-items
+        for index in xrange(num_items):
+            description_element = self.get_item_description(index + 1)
+            results[index] = description_element
+    
+        return results

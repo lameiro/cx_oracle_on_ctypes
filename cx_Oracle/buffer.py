@@ -50,7 +50,7 @@ class cxBuffer(object):
         elif isinstance(obj, str):
             as_bytes = obj
         else:
-            raise TypeError(CXORA_TYPE_ERROR) # missing import
+            raise TypeError(CXORA_TYPE_ERROR)
         
         buf = result.c_struct
         buf.ptr = ctypes.cast(ctypes.create_string_buffer(as_bytes), ctypes.c_void_p)

@@ -128,13 +128,28 @@ class BaseNumberVarType(VariableType):
         raise TypeError("expecting numeric data")
     
     def set_value_from_long(self, var, pos, value):
-        raise NotImplementedError()
+        text_value = str(value)
+        text_buffer = cxBuffer.new_from_object(text_value, var.environment.encoding)
+        
+        typed_data = self.get_typed_data(var)
+        
+        status = oci.OCINumberFromText(var.environment.error_handle, text_buffer.c_struct.ptr, 
+                    text_buffer.c_struct.size, var.environment.numberFromStringFormatBuffer.c_struct.ptr,
+                    var.environment.numberFromStringFormatBuffer.c_struct.size, None, 0, 
+                    byref(typed_data[pos]))
+        
+        return var.environment.check_for_error(status, "NumberVar_SetValueFromLong()")
     
     def set_value_from_boolean(self, var, pos, value):
         raise NotImplementedError()
     
     def set_value_from_float(self, var, pos, value):
-        raise NotImplementedError()
+        double_value = ctypes.c_double(value)
+        typed_data = self.get_typed_data(var)
+        
+        status = oci.OCINumberFromReal(var.environment.error_handle, byref(double_value),
+                ctypes.sizeof(double_value), byref(typed_data[pos]))
+        return var.environment.check_for_error(status, "NumberVar_SetValueFromFloat()")
     
     def get_typed_data(self, var):
         return ctypes.cast(var.data, oci.POINTER(self.oci_type))
