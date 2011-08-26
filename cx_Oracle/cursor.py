@@ -5,14 +5,16 @@ import oci
 from custom_exceptions import InterfaceError, ProgrammingError, DatabaseError
 from buffer import cxBuffer
 from utils import is_sequence, cxString_from_encoded_string, python3_or_better
-from variable import Variable
+from variable_factory import VariableFactory
 from objectvar import OBJECTVAR
 from numbervar import NUMBER
 from stringvar import STRING, BINARY, FIXED_CHAR
+from datetimevar import DATETIME
 if not python3_or_better():
     from stringvar import UNICODE, FIXED_UNICODE
-#from something import DATETIME
 
+variable_factory = VariableFactory()
+    
 class Cursor(object):
     def __init__(self, connection):
         """Create a new cursor object."""
@@ -54,7 +56,7 @@ class Cursor(object):
                     if raise_exception:
                         raise
 
-                status = oci.OCIStmtRelease(self.handle, self.environment.error_handle, buffer.c_struct.ptr, buffer.c_struct.size, oci.OCI_DEFAULT)
+                status = oci.OCIStmtRelease(self.handle, self.environment.error_handle, buffer.ptr, buffer.size, oci.OCI_DEFAULT)
 
                 if raise_exception:
                     self.environment.check_for_error(status, "Cursor_FreeHandle()")
@@ -88,7 +90,7 @@ class Cursor(object):
 
         tag_buffer = cxBuffer.new_from_object(statement_tag, self.environment.encoding)
 
-        status = oci.OCIStmtPrepare2(self.connection.handle, byref(self.handle), self.environment.error_handle, statement_buffer.c_struct.ptr, statement_buffer.c_struct.size, tag_buffer.c_struct.ptr, tag_buffer.c_struct.size, oci.OCI_NTV_SYNTAX, oci.OCI_DEFAULT)
+        status = oci.OCIStmtPrepare2(self.connection.handle, byref(self.handle), self.environment.error_handle, statement_buffer.ptr, statement_buffer.size, tag_buffer.ptr, tag_buffer.size, oci.OCI_NTV_SYNTAX, oci.OCI_DEFAULT)
 
         try:
             self.environment.check_for_error(status, "Cursor_InternalPrepare(): prepare")
@@ -132,7 +134,7 @@ class Cursor(object):
         # define a variable for each select-item
         self.fetch_array_size = self.arraysize
         for pos in xrange(1, num_params+1):
-            var = Variable.define(self, self.fetch_array_size, pos)
+            var = variable_factory.define(self, self.fetch_array_size, pos)
             self.fetch_variables[pos - 1] = var
 
     def internal_execute(self, num_iters):
@@ -210,10 +212,12 @@ class Cursor(object):
 
     def set_bind_variable_helper(self, num_elements, array_pos, value, orig_var, defer_type_assignment):
         """Helper for setting a bind variable."""
-
+        from variable import Variable 
         # initialization
         new_var = None 
-        is_value_var = isinstance(value, Variable)
+        is_value_var = isinstance(value, Variable) # here it is fine 
+        
+        del Variable
 
         # handle case where variable is already bound
         if orig_var:
@@ -226,7 +230,7 @@ class Cursor(object):
             # this is only necessary for executemany() since execute() always
             # passes a value of 1 for the number of elements
             elif num_elements > orig_var.numElements:
-                new_var = Variable(self, num_elements, orig_var.type, orig_var.size)
+                new_var = variable_factory.new(self, num_elements, orig_var.type, orig_var.size)
                 new_var.set_value(array_pos, value)
 
             # otherwise, attempt to set the value
@@ -256,7 +260,7 @@ class Cursor(object):
             # otherwise, create a new variable, unless the value is None and
             # we wish to defer type assignment
             elif value is not None or not defer_type_assignment:
-                new_var = Variable.new_by_value(self, value, num_elements)
+                new_var = variable_factory.new_by_value(self, value, num_elements)
                 new_var.set_value(array_pos, value)
 
         return new_var
@@ -606,7 +610,7 @@ of dictionaries."""
         """Call a stored function and return the return value of the function."""
 
         # create the return variable
-        var = Variable.new_by_type(self, return_type, 1)
+        var = variable_factory.new_by_type(self, return_type, 1)
 
         # call the function
         self.call(var, name, parameters, keywordParameters)
@@ -713,7 +717,8 @@ of dictionaries."""
         array_size = arraysize # ctypes: normalize name
         
         # determine the type of variable
-        var_type = Variable.type_by_python_type(self, type)
+        # TODO: Move all this logic to the factory!
+        var_type = variable_factory.type_by_python_type(self, type)
         if var_type.is_variable_length and size == 0:
             size = var_type.size
         
@@ -721,7 +726,7 @@ of dictionaries."""
             raise TypeError("expecting type name for object variables")
     
         # create the variable
-        var = Variable(self, array_size, var_type, size)
+        var = variable_factory.new(self, array_size, var_type, size)
         var.inconverter = inconverter
         var.outconverter = outconverter
     
@@ -750,14 +755,14 @@ of dictionaries."""
         # process each input
         if kwargs:
             for key, value in kwargs.iteritems():
-                var = Variable.new_by_type(self, value, self.bindarraysize)
+                var = variable_factory.new_by_type(self, value, self.bindarraysize)
                 self.bindvars[key] = var
         else:
             for i, value in enumerate(args):
                 if value is None:
                     var = None
                 else:
-                    var = Variable.new_by_type(self, value, self.bindarraysize)
+                    var = variable_factory.new_by_type(self, value, self.bindarraysize)
                 
                 self.bindvars[i] = var
         
@@ -766,8 +771,9 @@ of dictionaries."""
     def arrayvar(self, type, value, size=0):
         """Create an array bind variable and return it."""
         
+        # TODO: Shouldn't we move this logic to the factory?
         # determine the type of variable
-        var_type = Variable.type_by_python_type(self, type)
+        var_type = variable_factory.type_by_python_type(self, type)
         if var_type.is_variable_length and size == 0:
             size = var_type.size
     
@@ -780,7 +786,7 @@ of dictionaries."""
             raise TypeError("expecting integer or list of values")
         
         # create the variable
-        var = Variable(self, num_elements, var_type, size)
+        var = variable_factory.new(self, num_elements, var_type, size)
         var.make_array()
     
         # set the value, if applicable
@@ -793,7 +799,7 @@ of dictionaries."""
         """Helper for Cursor_ItemDescription() used so that it is not necessary to
 constantly free the descriptor when an error takes place."""
         # acquire usable type of item
-        var_type = Variable.type_by_oracle_descriptor(param, self.environment)
+        var_type = variable_factory.type_by_oracle_descriptor(param, self.environment)
         
         c_internal_size = oci.ub2()
         # acquire internal size of item
@@ -801,8 +807,6 @@ constantly free the descriptor when an error takes place."""
                 oci.OCI_ATTR_DATA_SIZE, self.environment.error_handle)
         self.environment.check_for_error(status, "Cursor_ItemDescription(): internal size")
         internal_size = c_internal_size.value
-        
-        # null OK must be converted to bool!
     
         # acquire character size of item
         c_char_size = oci.ub2()
@@ -822,19 +826,7 @@ constantly free the descriptor when an error takes place."""
         
         python_type = var_type.python_type
         
-        if python_type == NUMBER:
-            # lookup precision and scale
-            c_scale = oci.sb1()
-            c_precision = oci.sb2()
-            status = oci.OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, byref(c_scale), 0,
-                    oci.OCI_ATTR_SCALE, self.environment.error_handle)
-            self.environment.check_for_error(status, "Cursor_ItemDescription(): scale")
-            scale = c_scale.value
-            
-            status = oci.OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, byref(c_precision), 0,
-                    oci.OCI_ATTR_PRECISION, self.environment.error_handle)
-            self.environment.check_for_error(status, "Cursor_ItemDescription(): precision")
-            precision = c_precision.value
+        precision, scale = python_type.lookup_precision_and_scale(self.environment, param)
         
         # lookup whether null is permitted for the attribute
         c_null_ok = oci.ub1()
@@ -844,32 +836,10 @@ constantly free the descriptor when an error takes place."""
         null_ok = c_null_ok.value # should make null_ok a bool
         
         # set display size based on data type
-        
-        if python_type == NUMBER:
-            if precision:
-                display_size = precision + 1
-                if scale > 0:
-                    display_size += scale + 1
-            else:
-                display_size = 127
-        else:
-            mapping = {
-                STRING: char_size,
-                BINARY: internal_size,
-                FIXED_CHAR: char_size,
-                DATETIME: 23,
-            }
-            
-            if not python3_or_better():
-                mapping.update({
-                    UNICODE: char_size,
-                    FIXED_UNICODE: char_size,
-                })
-            
-            display_size = mapping.get(python_type, -1)
+        display_size = python_type.get_display_size(precision, scale, char_size, internal_size)
         
         result = cxString_from_encoded_string(name, self.connection.environment.encoding), python_type, display_size, internal_size, precision, scale, null_ok
-    
+        
         return result
     
     def get_item_description(self, pos):

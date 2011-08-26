@@ -16,9 +16,9 @@ class Environment(object):
         self.maxStringBytes = MAX_STRING_CHARS
         self.cloneEnv = None
 
-        self.numberToStringFormatBuffer = cxBuffer()
-        self.numberFromStringFormatBuffer = cxBuffer()
-        self.nlsNumericCharactersBuffer = cxBuffer()
+        self.numberToStringFormatBuffer = cxBuffer.new_null()
+        self.numberFromStringFormatBuffer = cxBuffer.new_null()
+        self.nlsNumericCharactersBuffer = cxBuffer.new_null()
 
         # create the error handle
         null_ptr_type = oci.OCIHandleAlloc.argtypes[-1]

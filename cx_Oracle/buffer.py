@@ -8,42 +8,33 @@
 import ctypes
 from custom_exceptions import CXORA_TYPE_ERROR
 
-# define structure for abstracting string buffers
-class cxBufferStruct(ctypes.Structure):
-    _fields_  = [
-        ('ptr', ctypes.c_void_p),
-        ('num_characters', ctypes.c_ssize_t),
-        ('size', ctypes.c_ssize_t),
-        ('obj', ctypes.py_object)
-    ]
-
 class cxBuffer(object):
-    def __init__(self):
-        self._as_parameter_ = self.c_struct = cxBufferStruct()
-
+    # not using a ctypes.structure here because we don't really use it as a struct.
+    def __init__(self, ptr, size, num_characters, obj):
+        self.ptr = ptr
+        self.size = size
+        self.num_characters = num_characters
+        self.obj = obj
+    
     @staticmethod
     def new_as_copy(copy_from_buf):
         """Copy the contents of the buffer."""
 
-        # could use struct constructor here.
-        result = cxBuffer()
-        buf = result.c_struct
-
-        buf.ptr = copy_from_buf.ptr
-        buf.size = copy_from_buf.size
-        buf.numCharacters = copy_from_buf.numCharacters
-        buf.obj = copy_from_buf.obj
-
+        result = cxBuffer(
+            copy_from_buf.ptr, # shares the ptr!
+            copy_from_buf.size,
+            copy_from_buf.num_characters,
+            copy_from_buf.obj
+        )
+        
         return result
 
     @staticmethod
     def new_from_object(obj, encoding):
         """Populate the string buffer from a unicode object."""
-
-        result = cxBuffer()
-
+        
         if obj is None:
-            return result
+            return cxBuffer.new_null()
         
         if isinstance(obj, unicode):
             as_bytes = obj.encode(encoding)
@@ -52,13 +43,24 @@ class cxBuffer(object):
         else:
             raise TypeError(CXORA_TYPE_ERROR)
         
-        buf = result.c_struct
-        buf.ptr = ctypes.cast(ctypes.create_string_buffer(as_bytes), ctypes.c_void_p)
-        buf.size = len(as_bytes)
-        buf.numCharacters = len(obj)
-
+        typed_ptr = ctypes.create_string_buffer(as_bytes)
+        result = cxBuffer(
+            ctypes.cast(typed_ptr, ctypes.c_void_p), # does not share the ptr!
+            len(as_bytes),
+            len(obj),
+            obj,
+        )
+        result.keepalive = typed_ptr
+        
         return result
-
-    @property
-    def size(self):
-        return self.c_struct.size
+    
+    @staticmethod
+    def new_null():
+        result = cxBuffer(
+            ctypes.c_void_p(),
+            0,
+            0,
+            None
+        )
+        
+        return result

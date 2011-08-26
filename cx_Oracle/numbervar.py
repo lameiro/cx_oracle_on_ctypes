@@ -7,12 +7,39 @@ from utils import python3_or_better, cxString_from_ascii, cxString_from_encoded_
 from buffer import cxBuffer
 from transforms import oracle_number_to_python_float
 import oci
+from variable import Variable
 
-class NUMBER(object):
-    pass
+class NUMBER(Variable):
+    @staticmethod
+    def lookup_precision_and_scale(environment, param):
+        c_scale = oci.sb1(0)
+        c_precision = oci.sb2(0)
+        status = oci.OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, byref(c_scale), 0,
+                oci.OCI_ATTR_SCALE, environment.error_handle)
+        environment.check_for_error(status, "Cursor_ItemDescription(): scale")
+        scale = c_scale.value
+        
+        status = oci.OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, byref(c_precision), 0,
+                oci.OCI_ATTR_PRECISION, environment.error_handle)
+        environment.check_for_error(status, "Cursor_ItemDescription(): precision")
+        precision = c_precision.value
+        
+        return precision, scale
+    
+    @staticmethod
+    def get_display_size(precision, scale, char_size, internal_size):
+        if precision:
+            display_size = precision + 1
+            if scale > 0:
+                display_size += scale + 1
+        else:
+            display_size = 127
+            
+        return display_size
+
 
 # TODO: #ifdef SQLT_BFLOAT whatever
-class NATIVE_FLOAT(object):
+class NATIVE_FLOAT(Variable):
     pass
 
 # variable type declarations
@@ -85,8 +112,8 @@ class BaseNumberVarType(VariableType):
             c_string_length.value = ctypes.sizeof(c_string)
 
             typed_data = ctypes.cast(var.data, oci.POINTER(self.oci_type))
-            status = oci.OCINumberToText(var.environment.error_handle, byref(typed_data[pos]), var.environment.numberToStringFormatBuffer.c_struct.ptr,
-                                     var.environment.numberToStringFormatBuffer.c_struct.size, None, 0, byref(c_string_length), c_string)
+            status = oci.OCINumberToText(var.environment.error_handle, byref(typed_data[pos]), var.environment.numberToStringFormatBuffer.ptr,
+                                     var.environment.numberToStringFormatBuffer.size, None, 0, byref(c_string_length), c_string)
             var.environment.check_for_error(status, "NumberVar_GetValue(): as string")
 
             python_string = c_string.value
@@ -133,9 +160,9 @@ class BaseNumberVarType(VariableType):
         
         typed_data = self.get_typed_data(var)
         
-        status = oci.OCINumberFromText(var.environment.error_handle, text_buffer.c_struct.ptr, 
-                    text_buffer.c_struct.size, var.environment.numberFromStringFormatBuffer.c_struct.ptr,
-                    var.environment.numberFromStringFormatBuffer.c_struct.size, None, 0, 
+        status = oci.OCINumberFromText(var.environment.error_handle, text_buffer.ptr, 
+                    text_buffer.size, var.environment.numberFromStringFormatBuffer.ptr,
+                    var.environment.numberFromStringFormatBuffer.size, None, 0, 
                     byref(typed_data[pos]))
         
         return var.environment.check_for_error(status, "NumberVar_SetValueFromLong()")
@@ -205,9 +232,9 @@ class BaseNumberVarType(VariableType):
         typed_data = self.get_typed_data(var)
         
         status = oci.OCINumberFromText(var.environment.error_handle,
-                text_buffer.c_struct.ptr, text_buffer.c_struct.size, format_buffer.c_struct.ptr,
-                format_buffer.c_struct.size, var.environment.nlsNumericCharactersBuffer.c_struct.ptr,
-                var.environment.nlsNumericCharactersBuffer.c_struct.size, byref(typed_data[pos]))
+                text_buffer.ptr, text_buffer.size, format_buffer.ptr,
+                format_buffer.size, var.environment.nlsNumericCharactersBuffer.ptr,
+                var.environment.nlsNumericCharactersBuffer.size, byref(typed_data[pos]))
 
         return var.environment.check_for_error(status, "NumberVar_SetValueFromDecimal()")
     

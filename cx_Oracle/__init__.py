@@ -11,7 +11,8 @@ from connection import Connection
 connect = Connection # the name "connect" is required by the DB API
 from utils import python3_or_better
 from numbervar import NUMBER #, NATIVE_FLOAT
-from stringvar import STRING
+from stringvar import STRING, BINARY, FIXED_CHAR, FIXED_UNICODE, ROWID, UNICODE
+from longvar import LONG_BINARY, LONG_STRING
 
 def symbol_exists(symbol_name):
     pass

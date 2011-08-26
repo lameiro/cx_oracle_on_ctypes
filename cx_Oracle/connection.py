@@ -64,7 +64,7 @@ class Connection(object):
         buffer = cxBuffer.new_from_object(self.dsn, self.environment.encoding)
 
         # attach to the server
-        status = oci.OCIServerAttach(self.server_handle, self.environment.error_handle, buffer.c_struct.ptr, buffer.c_struct.size, oci.OCI_DEFAULT)
+        status = oci.OCIServerAttach(self.server_handle, self.environment.error_handle, buffer.ptr, buffer.size, oci.OCI_DEFAULT)
         self.environment.check_for_error(status, "Connection_Connect(): server attach")
 
         # allocate the service context handle
@@ -91,19 +91,19 @@ class Connection(object):
         buffer = cxBuffer.new_from_object(self.username, self.environment.encoding)
         if buffer.size > 0:
             credential_type = oci.OCI_CRED_RDBMS
-            status = oci.OCIAttrSet(self.session_handle, oci.OCI_HTYPE_SESSION, buffer.c_struct.ptr, buffer.c_struct.size, oci.OCI_ATTR_USERNAME, self.environment.error_handle)
+            status = oci.OCIAttrSet(self.session_handle, oci.OCI_HTYPE_SESSION, buffer.ptr, buffer.size, oci.OCI_ATTR_USERNAME, self.environment.error_handle)
             self.environment.check_for_error(status, "Connection_Connect(): set user name")
 
         # set password in session handle
         buffer = cxBuffer.new_from_object(self.password, self.environment.encoding)
         if buffer.size > 0:
             credentialType = oci.OCI_CRED_RDBMS
-            status = oci.OCIAttrSet(self.session_handle, oci.OCI_HTYPE_SESSION, buffer.c_struct.ptr, buffer.c_struct.size, oci.OCI_ATTR_PASSWORD, self.environment.error_handle)
+            status = oci.OCIAttrSet(self.session_handle, oci.OCI_HTYPE_SESSION, buffer.ptr, buffer.size, oci.OCI_ATTR_PASSWORD, self.environment.error_handle)
             self.environment.check_for_error(status, "Connection_Connect(): set password")
 
         # TODO: #ifdef OCI_ATTR_DRIVER_NAME
         buffer = cxBuffer.new_from_object(DRIVER_NAME, self.environment.encoding)
-        status = oci.OCIAttrSet(self.session_handle, oci.OCI_HTYPE_SESSION, buffer.c_struct.ptr, buffer.c_struct.size, oci.OCI_ATTR_DRIVER_NAME, self.environment.error_handle)
+        status = oci.OCIAttrSet(self.session_handle, oci.OCI_HTYPE_SESSION, buffer.ptr, buffer.size, oci.OCI_ATTR_DRIVER_NAME, self.environment.error_handle)
         self.environment.check_for_error(status, "Connection_Connect(): set driver name")
         #endif
 
@@ -179,7 +179,7 @@ class Connection(object):
         cursor.callproc("dbms_utility.db_version", list_of_arguments)
 
         # retrieve value
-        self.version_cache = version_var.get_value(0)
+        self.version_cache = version_var.getvalue(0)
         
         return self.version_cache
 

@@ -17,7 +17,7 @@ else:
         return a_str
 
 try:
-    bytes
+    bytes = bytes # puts bytes in the local namespace
 except NameError:
     bytes = str
 
@@ -33,9 +33,8 @@ PySequence_Check.argtypes = [ctypes.py_object]
 PySequence_Check.restype = bool
 
 is_sequence = PySequence_Check
-    
-DRIVER_NAME = 'cx_Oracle-0.1'
 
+DRIVER_NAME = 'cx_Oracle-0.1'
 
 MAX_STRING_CHARS = 4000
 MAX_BINARY_BYTES = 4000
