@@ -1,5 +1,8 @@
 from decimal import Decimal
+
 from datetime import datetime, date
+from datetime import datetime as Timestamp
+from datetime import date as Date
 import sys
 
 import ctypes
@@ -13,6 +16,7 @@ from utils import python3_or_better
 from numbervar import NUMBER #, NATIVE_FLOAT
 from stringvar import STRING, BINARY, FIXED_CHAR, FIXED_UNICODE, ROWID, UNICODE
 from longvar import LONG_BINARY, LONG_STRING
+from datetimevar import DATETIME
 
 def symbol_exists(symbol_name):
     pass
@@ -45,17 +49,15 @@ if ORACLE_VERSION >= ORACLE_VERSION_10GR2:
         
         return (major_version.value, minor_version.value, update_num.value, patch_num.value, port_update_num.value)
 
-# not using Time = TimeFromTicks for compatibility
 def Time(*args):
     raise NotSupportedError("Oracle does not support time only variables")
 
-def TimeFromTicks(*args):
-    raise NotSupportedError("Oracle does not support time only variables")
+TimeFromTicks = Time
 
-def DateFromTicks(*args):
+def DateFromTicks(args):
     return date.fromtimestamp(args)
 
-def TimestampFromTicks(*args):
+def TimestampFromTicks(args):
     return datetime.fromtimestamp(args)
 
 apilevel = '2.0'

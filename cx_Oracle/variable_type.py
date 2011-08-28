@@ -1,3 +1,7 @@
+import ctypes
+
+import oci
+
 class VariableType(object):
     def __init__(self):
         #self.initialize_proc = None
@@ -44,3 +48,8 @@ class VariableType(object):
 
     def get_value_proc(self, var, pos):
         raise NotImplementedError()
+    
+    # Not cx_Oracle
+    
+    def get_typed_data(self, var):
+        return ctypes.cast(var.data, oci.POINTER(self.oci_type))

@@ -34,8 +34,6 @@ class Variable(object):
         self.is_array = False
         self.is_allocated_internally = True
         self.type = type
-        self.indicator = oci.POINTER(oci.sb2)()
-        self.data = oci.POINTER(None)
         self.actual_length = oci.POINTER(oci.ub2)()
         self.return_code = oci.POINTER(oci.ub2)()
 
@@ -87,19 +85,17 @@ class Variable(object):
 
         # set the buffer size for the variable
         # bufferSize is public
-        if self.type.get_buffer_size_proc:
-            # TODO: Refactor self.bufferSize = self.maxlength with a property to help maintain the 2 variables always equal
-            #print "calling getbuffersizeproc of", vt_to_name[self.type]
-            self.bufferSize = self.maxlength = self.type.get_buffer_size_proc(self)
+        if self.type.get_buffer_size_proc: # if we could change this to something like get_buffer_type
+            self.bufferSize = self.type.get_buffer_size_proc(self)
         else:
-            self.bufferSize = self.maxlength = self.size
+            self.bufferSize = self.size
 
         # allocate the data as long as it is small enough
         data_length = self.numElements * self.bufferSize
         if data_length > sys.maxint:
             raise ValueError("array size too large")
 
-        self.data = ctypes.create_string_buffer(data_length) # TODO: would be nicer to use a typed array here.
+        self.data = ctypes.create_string_buffer(data_length) # TODO: then, would be nicer to use a typed array here.
 
 
     def get_single_value(self, array_pos):

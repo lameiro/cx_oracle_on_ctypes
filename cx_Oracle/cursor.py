@@ -117,7 +117,7 @@ class Cursor(object):
         status = oci.OCIAttrGet(self.handle, oci.OCI_HTYPE_STMT, byref(c_statement_type), 0, oci.OCI_ATTR_STMT_TYPE, self.environment.error_handle)
         self.environment.check_for_error(status, "Cursor_GetStatementType()")
         self.statement_type = c_statement_type.value
-        self.fetch_variables = None
+        self.fetchvars = None
 
     def perform_define(self):
         c_num_params = ctypes.c_int()
@@ -129,13 +129,13 @@ class Cursor(object):
         num_params = c_num_params.value
 
         # create a list corresponding to the number of items
-        self.fetch_variables = [None] * num_params # or should I use appends?
+        self.fetchvars = [None] * num_params # or should I use appends?
 
         # define a variable for each select-item
         self.fetch_array_size = self.arraysize
         for pos in xrange(1, num_params+1):
             var = variable_factory.define(self, self.fetch_array_size, pos)
-            self.fetch_variables[pos - 1] = var
+            self.fetchvars[pos - 1] = var
 
     def internal_execute(self, num_iters):
         """Perform the work of executing a cursor and set the rowcount appropriately
@@ -305,7 +305,7 @@ class Cursor(object):
         self.internal_execute(num_iters)
         
         # perform defines, if necessary
-        if is_query and self.fetch_variables is None:
+        if is_query and self.fetchvars is None:
             self.perform_define()
 
         # reset the values of setoutputsize()
@@ -413,10 +413,10 @@ of dictionaries."""
     def internal_fetch(self, num_rows):
         """Performs the actual fetch from Oracle."""
         
-        if not self.fetch_variables:
+        if not self.fetchvars:
             raise InterfaceError("query not executed")
 
-        for var in self.fetch_variables:
+        for var in self.fetchvars:
             var.internal_fetch_num += 1
             if var.type.pre_fetch_proc:
                 var.type.pre_fetch_proc(var)
@@ -440,10 +440,10 @@ of dictionaries."""
            returned."""
 
         # create a new tuple
-        result_as_list = [None] * len(self.fetch_variables)
+        result_as_list = [None] * len(self.fetchvars)
 
         # acquire the value for each item
-        for pos, var in enumerate(self.fetch_variables):
+        for pos, var in enumerate(self.fetchvars):
             item = var.getvalue(self.row_num)
             result_as_list[pos] = item
 
@@ -529,13 +529,13 @@ of dictionaries."""
 
         # initialize the bind variables to the list of positional arguments
         if list_of_arguments:
-            bind_variables = list(list_of_arguments) # copy to avoid messing up with the sequence from the user?
+            bindvars = list(list_of_arguments) # copy to avoid messing up with the sequence from the user?
         else:
-            bind_variables = []
+            bindvars = []
 
         # insert the return variable, if applicable
         if return_value:
-            bind_variables.insert(0, return_value)
+            bindvars.insert(0, return_value)
 
         # initialize format arguments
         format_args = [name]
@@ -564,7 +564,7 @@ of dictionaries."""
         if keyword_arguments:
             pos = 0
             for key, value in keyword_arguments.iteritems():
-                bind_variables.append(value)
+                bindvars.append(value)
                 format_args.append(key)
                 if (arg_num > 1 and not return_value) or (arg_num > 2 and return_value):
                     statement_template += ','
@@ -578,7 +578,7 @@ of dictionaries."""
         
         statement = statement_template % tuple(format_args)
 
-        return statement, bind_variables
+        return statement, bindvars
 
     def call(self, return_value, name, list_of_arguments, keyword_arguments): # kwargs are the stored procedure kwargs, not Python!
         """Call a stored procedure or function."""
@@ -592,10 +592,10 @@ of dictionaries."""
         self.raise_if_not_open()
 
         # determine the statement to execute and the argument to pass
-        statement, bind_variables = self.call_build_statement(name, return_value, list_of_arguments, keyword_arguments)
+        statement, bindvars = self.call_build_statement(name, return_value, list_of_arguments, keyword_arguments)
 
         # execute the statement on the cursor
-        self.execute(statement, bind_variables)
+        self.execute(statement, bindvars)
 
     def callproc(self, name, parameters=None, keywordParameters=None):
         """Call a stored procedure and return the (possibly modified) arguments."""
@@ -888,3 +888,8 @@ constantly free the descriptor when an error takes place."""
             results[index] = description_element
     
         return results
+    
+    def setoutputsize(self, size, column=-1):
+        """Set the size of all of the long columns or just one of them."""
+        self.output_size = size
+        self.output_size_column = column

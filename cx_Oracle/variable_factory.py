@@ -9,11 +9,12 @@ from utils import python3_or_better, cxBinary, cxString, MAX_STRING_CHARS, MAX_B
 from numbervar import vt_Float, vt_NumberAsString, vt_Boolean, vt_LongInteger
 from stringvar import vt_String, vt_FixedNationalChar, vt_NationalCharString, vt_FixedChar, vt_Rowid, vt_Binary
 from longvar import vt_LongString, vt_LongBinary
+from datetimevar import vt_DateTime, vt_Date
 
 if not python3_or_better():
     from numbervar import vt_Integer
     
-all_variable_types = [vt_Float, vt_NumberAsString, vt_Boolean, vt_LongInteger, vt_String, vt_FixedNationalChar, vt_NationalCharString, vt_FixedChar, vt_Rowid, vt_Binary, vt_LongString, vt_LongBinary]
+all_variable_types = [vt_Float, vt_NumberAsString, vt_Boolean, vt_LongInteger, vt_String, vt_FixedNationalChar, vt_NationalCharString, vt_FixedChar, vt_Rowid, vt_Binary, vt_LongString, vt_LongBinary, vt_DateTime, vt_Date]
 
 if not python3_or_better():
     all_variable_types.append(vt_Integer)
@@ -21,15 +22,16 @@ if not python3_or_better():
 from numbervar import NUMBER, NATIVE_FLOAT
 from stringvar import STRING, FIXED_CHAR, ROWID, BINARY
 from longvar import LONG_STRING, LONG_BINARY
-    
+from datetimevar import DATETIME
+
 if not python3_or_better():
     from stringvar import UNICODE, FIXED_UNICODE
 
 
 from variable_type import VariableType
+from custom_exceptions import NotSupportedError
 
 # TODO: Remove this
-vt_DateTime = VariableType()
 vt_Timestamp = VariableType()
 vt_Interval = VariableType()
 vt_BLOB = VariableType()
@@ -85,9 +87,9 @@ mapping_python_type_to_variable_type = {
     float: vt_Float,
     long: vt_LongInteger,
     bool: vt_Boolean,
-    #DATETIME: vt_DateTime,
-    #date: vt_Date,
-    #datetime: vt_DateTime,
+    DATETIME: vt_DateTime,
+    date: vt_Date,
+    datetime: vt_DateTime,
     #INTERVAL: vt_Interval,
     #timedelta: vt_Interval,
     #TIMESTAMP: vt_Timestamp,
@@ -370,7 +372,7 @@ variable type."""
 
         if not python3_or_better():
             if isinstance(value, unicode):
-                size = PyUnicode_GET_SIZE(value)
+                size = len(value)
                 if size > MAX_STRING_CHARS:
                     type = vt_LongString
                 else:

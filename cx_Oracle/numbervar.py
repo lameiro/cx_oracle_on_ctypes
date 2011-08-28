@@ -178,9 +178,6 @@ class BaseNumberVarType(VariableType):
                 ctypes.sizeof(double_value), byref(typed_data[pos]))
         return var.environment.check_for_error(status, "NumberVar_SetValueFromFloat()")
     
-    def get_typed_data(self, var):
-        return ctypes.cast(var.data, oci.POINTER(self.oci_type))
-    
     def get_format_and_text_from_decimal(self, tuple_value):
         """Return the number format and text to use for the Decimal object."""
     

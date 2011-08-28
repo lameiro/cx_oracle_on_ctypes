@@ -3,6 +3,8 @@ import ctypes
 from custom_exceptions import InternalError
 import oci
 
+from utils import python3_or_better
+
 class Error(object):
     def __init__(self, environment, context, retrieve_error):
         self.context = context
@@ -21,11 +23,10 @@ class Error(object):
             if status != oci.OCI_SUCCESS:
                 raise InternalError("No Oracle error?")
 
-    ##if PY_MAJOR_VERSION < 3 # TODO
-            self.message = error_text.value
-    ##else
-    #       self.message = errorText.decode(environment.encoding)
-    #endif
-
+            if not python3_or_better():
+                self.message = error_text.value
+            else:
+                self.message = error_text.decode(environment.encoding)
+    
     def __str__(self):
         return self.message
