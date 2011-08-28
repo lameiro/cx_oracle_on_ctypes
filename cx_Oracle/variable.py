@@ -96,8 +96,7 @@ class Variable(object):
             raise ValueError("array size too large")
 
         self.data = ctypes.create_string_buffer(data_length) # TODO: then, would be nicer to use a typed array here.
-
-
+    
     def get_single_value(self, array_pos):
         """Return the value of the variable at the given position."""
 
@@ -196,19 +195,19 @@ class Variable(object):
         if not python3_or_better():
             # set the charset form and id if applicable
             if self.type.charset_form != oci.SQLCS_IMPLICIT:
-                c_charset_form = oci.ub1()
+                c_charset_form = oci.ub1(self.type.charset_form)
                 status = oci.OCIAttrSet(self.bind_handle, oci.OCI_HTYPE_BIND,
                         byref(c_charset_form), 0, oci.OCI_ATTR_CHARSET_FORM,
                         self.environment.error_handle)
-                self.type.charset_form = c_charset_form.value
                 self.environment.check_for_error(status, "Variable_InternalBind(): set charset form")
-
-                c_buffer_size = oci.ub4()
+                self.type.charset_form = c_charset_form.value
+                
+                c_buffer_size = oci.ub4(self.bufferSize)
                 status = oci.OCIAttrSet(self.bind_handle, oci.OCI_HTYPE_BIND,
                         byref(c_buffer_size), 0, oci.OCI_ATTR_MAXDATA_SIZE,
                         self.environment.error_handle)
-                self.bufferSize = self.maxlength = c_buffer_size.value
                 self.environment.check_for_error(status, "Variable_InternalBind(): set max data size")
+                self.bufferSize = self.maxlength = c_buffer_size.value
 
         # set the max data size for strings
         self.set_max_data_size()

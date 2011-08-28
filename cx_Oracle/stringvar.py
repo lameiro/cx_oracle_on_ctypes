@@ -37,6 +37,7 @@ if not python3_or_better():
 
 class FIXED_CHAR(Variable):
     def set_max_data_size(self):
+        # TODO: well, self.type here always is vt_FixedChar. But we can refactor this better, the code in the if is the same for strings
         if (self.type == vt_String or self.type == vt_FixedChar) and self.size > self.type.size:
             c_size = oci.ub4()
             status = oci.OCIAttrSet(self.bind_handle, oci.OCI_HTYPE_BIND,
@@ -173,13 +174,45 @@ class BinaryType(BaseStringType):
         self.is_character_data = False
         self.is_variable_length = True
 
-
+class BaseNationalType(BaseNonBinaryStringType):
+    def __init__(self):
+        BaseNonBinaryStringType.__init__(self)
+        self.post_define_proc = self.post_define
+        #self.python_type = STRING
+        #self.oracle_type = oci.SQLT_CHR
+        self.charset_form = oci.SQLCS_NCHAR
+        #self.size = MAX_STRING_CHARS
+        
+        self.is_variable_length = True
+        
+    def post_define(self, var):
+        """Set the character set information when values are fetched from this variable."""
+        c_charset_form = oci.ub1(var.type.charset_form)
+        status = OCIAttrSet(var.define_handle, oci.OCI_HTYPE_DEFINE, byref(c_charset_form), 0, 
+                            oci.OCI_ATTR_CHARSET_FORM, var.environment.error_handle)
+        var.environment.check_for_error(status, "StringVar_PostDefine(): setting charset form")
+        var.type.charset_form = c_charset_form.value # warning: mutating shared state. i am not sure why cx oracle does that.
+        
+    
+class NationalCharStringType(BaseNationalType):
+    def __init__(self):
+        BaseNationalType.__init__(self)
+        self.python_type = UNICODE
+        self.oracle_type = oci.SQLT_CHR
+        self.size = MAX_STRING_CHARS
+        
+class FixedNationalCharType(BaseNationalType):
+    def __init__(self):
+        BaseNationalType.__init__(self)
+        self.python_type = FIXED_UNICODE
+        self.oracle_type = oci.SQLT_AFC
+        self.size = 2000
+    
 vt_String = StringType()
 vt_Binary = BinaryType()
 vt_FixedChar = FixedCharType()
 vt_Rowid = RowIdType()
 
-# TODO
-vt_FixedNationalChar = VariableType()
-vt_NationalCharString = VariableType()
-
+if not python3_or_better():
+    vt_NationalCharString = NationalCharStringType()
+    vt_FixedNationalChar = FixedNationalCharType()

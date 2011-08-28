@@ -433,10 +433,14 @@ variable type."""
             size = var_type.size
             return var_type, size, num_elements
 
-        raise NotSupportedError("Variable_TypeByValue(): unhandled data type %.*s", type(value))
+        raise NotSupportedError("Variable_TypeByValue(): unhandled data type %.*s" % type(value))
     
     def new(self, cursor, num_elements, type, size):
         variable_class = mapping_variable_type_to_python_type[type]
+        
+        if variable_class is None:
+            raise NotSupportedError('Type %s not found in mapping to python type' % type)
+        
         var = variable_class(cursor, num_elements, type, size)
         
         return var
