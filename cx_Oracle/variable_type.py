@@ -21,6 +21,8 @@ class VariableType(object):
         self.is_variable_length = None
         self.can_be_copied = None
         self.can_be_in_array = None
+        
+        #self.oci_type = oci.SOME_OCI_TYPE
     
     def initialize_proc(self, var, cursor):
         raise NotImplementedError()
@@ -37,7 +39,7 @@ class VariableType(object):
     def post_define_proc(self, *args, **kwargs):
         raise NotImplementedError()
 
-    def pre_fetch_proc(self, *args, **kwargs):
+    def pre_fetch_proc(self, var):
         raise NotImplementedError()
 
     def is_null_proc(self, *args, **kwargs):

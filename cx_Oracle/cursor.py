@@ -206,7 +206,7 @@ class Cursor(object):
             for key, value in parameters.iteritems():
                 orig_var = self.bindvars.get(key, None)
                 new_var = self.set_bind_variable_helper(num_elements, array_pos, value, orig_var, defer_type_assignment)
-
+                
                 if new_var:
                     self.bindvars[key] = new_var
 

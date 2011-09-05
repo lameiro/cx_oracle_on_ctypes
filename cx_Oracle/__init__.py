@@ -17,6 +17,7 @@ from numbervar import NUMBER #, NATIVE_FLOAT
 from stringvar import STRING, BINARY, FIXED_CHAR, FIXED_UNICODE, ROWID, UNICODE
 from longvar import LONG_BINARY, LONG_STRING
 from datetimevar import DATETIME
+from lobvar import NCLOB, CLOB, BLOB, BFILE
 
 def symbol_exists(symbol_name):
     pass

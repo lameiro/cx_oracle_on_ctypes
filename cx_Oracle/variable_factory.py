@@ -10,11 +10,13 @@ from numbervar import vt_Float, vt_NumberAsString, vt_Boolean, vt_LongInteger
 from stringvar import vt_String, vt_FixedNationalChar, vt_NationalCharString, vt_FixedChar, vt_Rowid, vt_Binary
 from longvar import vt_LongString, vt_LongBinary
 from datetimevar import vt_DateTime, vt_Date
+from lobvar import vt_NCLOB, vt_CLOB, vt_BLOB, vt_BFILE
+
 
 if not python3_or_better():
     from numbervar import vt_Integer
     
-all_variable_types = [vt_Float, vt_NumberAsString, vt_Boolean, vt_LongInteger, vt_String, vt_FixedNationalChar, vt_NationalCharString, vt_FixedChar, vt_Rowid, vt_Binary, vt_LongString, vt_LongBinary, vt_DateTime, vt_Date]
+all_variable_types = [vt_Float, vt_NumberAsString, vt_Boolean, vt_LongInteger, vt_String, vt_FixedNationalChar, vt_NationalCharString, vt_FixedChar, vt_Rowid, vt_Binary, vt_LongString, vt_LongBinary, vt_DateTime, vt_Date, vt_NCLOB, vt_CLOB, vt_BLOB, vt_BFILE]
 
 if not python3_or_better():
     all_variable_types.append(vt_Integer)
@@ -23,6 +25,7 @@ from numbervar import NUMBER, NATIVE_FLOAT
 from stringvar import STRING, FIXED_CHAR, ROWID, BINARY
 from longvar import LONG_STRING, LONG_BINARY
 from datetimevar import DATETIME
+from lobvar import NCLOB, CLOB, BLOB, BFILE
 
 if not python3_or_better():
     from stringvar import UNICODE, FIXED_UNICODE
@@ -34,13 +37,9 @@ from custom_exceptions import NotSupportedError
 # TODO: Remove this
 vt_Timestamp = VariableType()
 vt_Interval = VariableType()
-vt_BLOB = VariableType()
-vt_BFILE = VariableType()
 vt_Cursor = VariableType()
 vt_Object = VariableType()
 vt_NativeFloat = VariableType()
-vt_NCLOB = VariableType()
-vt_CLOB = VariableType()
 
 # this dict is only for debugging purposes.
 vt_to_name = {
@@ -75,15 +74,15 @@ mapping_python_type_to_variable_type = {
     STRING: vt_String,
     str: vt_String,
     FIXED_CHAR: vt_FixedChar,
-    #NCLOB: vt_NCLOB,
+    NCLOB: vt_NCLOB,
     ROWID: vt_Rowid,
     BINARY: vt_Binary,
     cxBinary: vt_Binary,
     LONG_STRING: vt_LongString,
     LONG_BINARY: vt_LongBinary,
-    #BFILE: vt_BFILE,
-    #BLOB: vt_BLOB,
-    #CLOB: vt_CLOB,
+    BFILE: vt_BFILE,
+    BLOB: vt_BLOB,
+    CLOB: vt_CLOB,
     float: vt_Float,
     long: vt_LongInteger,
     bool: vt_Boolean,

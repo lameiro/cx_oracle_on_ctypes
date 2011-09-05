@@ -253,7 +253,8 @@ class Variable(object):
         self.indicator[array_pos] = oci.OCI_IND_NOTNULL
         if self.type.is_variable_length:
             self.return_code[array_pos] = 0
-        self.type.set_value_proc(self, array_pos, value) # ctypes: in C, the return value was to signal exception
+        
+        self.type.set_value_proc(self, array_pos, value)
 
     def set_array_value(self, value):
         """Set all of the array values for the variable."""
