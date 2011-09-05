@@ -155,6 +155,10 @@ class CLOBVariableType(BaseLobVariableType):
         self.oracle_type = oci.SQLT_CLOB
         self.charset_form = oci.SQLCS_IMPLICIT
         self.is_character_data = True
+    
+    def initialize(self, var, cursor):
+        BaseLobVariableType.initialize(self, var, cursor)
+        var.is_file = False
 
 class NCLOBVariableType(BaseLobVariableType):
     def __init__(self):
@@ -163,6 +167,10 @@ class NCLOBVariableType(BaseLobVariableType):
         self.oracle_type = oci.SQLT_CLOB
         self.charset_form = oci.SQLCS_NCHAR
         self.is_character_data = True
+        
+    def initialize(self, var, cursor):
+        BaseLobVariableType.initialize(self, var, cursor)
+        var.is_file = False
 
 class BLOBVariableType(BaseLobVariableType):
     def __init__(self):
@@ -171,6 +179,10 @@ class BLOBVariableType(BaseLobVariableType):
         self.oracle_type = oci.SQLT_BLOB
         self.charset_form = oci.SQLCS_IMPLICIT
         self.is_character_data = False
+    
+    def initialize(self, var, cursor):
+        BaseLobVariableType.initialize(self, var, cursor)
+        var.is_file = False
 
 class BFILEVariableType(BaseLobVariableType):
     def __init__(self):
@@ -179,6 +191,10 @@ class BFILEVariableType(BaseLobVariableType):
         self.oracle_type = oci.SQLT_BFILE
         self.charset_form = oci.SQLCS_IMPLICIT
         self.is_character_data = False
+        
+    def initialize(self, var, cursor):
+        BaseLobVariableType.initialize(self, var, cursor)
+        var.is_file = True
 
 vt_NCLOB = NCLOBVariableType()
 vt_CLOB = CLOBVariableType()
