@@ -20,3 +20,23 @@ def oracle_date_to_python_date(value, python_datetime):
         return datetime(year, month, day, hour, minute, second);
     
     return date(year, month, day)
+
+def oracle_timestamp_to_python_date(environment, value):
+    """Return a Python date object given an Oracle timestamp."""
+    year = oci.sb2()
+    month = oci.ub1()
+    day = oci.ub1()
+    hour = oci.ub1()
+    minute = oci.ub1()
+    second = oci.ub1()
+    fsecond = oci.ub4()
+    
+    status = oci.OCIDateTimeGetDate(environment.handle, environment.error_handle,
+                                    value, byref(year), byref(month), byref(day))
+    environment.check_for_error(status, "OracleTimestampToPythonDate(): date portion")
+    
+    status = oci.OCIDateTimeGetTime(environment.handle, environment.error_handle,
+                                    value, byref(hour), byref(minute), byref(second), byref(fsecond))
+    environment.check_for_error(status, "OracleTimestampToPythonDate(): time portion")
+    
+    return datetime(year.value, month.value, day.value, hour.value, minute.value, second.value, fsecond.value / 1000)

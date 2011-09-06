@@ -8,6 +8,7 @@ from utils import MAX_STRING_CHARS, MAX_BINARY_BYTES
 from buffer import cxBuffer
 from variable import Variable
 from externallobvar import LOB
+from descriptor_manager import DescriptorManager
 
 class CLOB(Variable):
     pass
@@ -20,7 +21,6 @@ class BLOB(Variable):
 
 class BFILE(Variable):
     pass
-
 
 class BaseLobVariableType(VariableType):
     def __init__(self):
@@ -45,18 +45,16 @@ class BaseLobVariableType(VariableType):
         self.is_variable_length = False
         self.can_be_copied = False
         self.can_be_in_array = False
+        
+        self.descriptor_manager = DescriptorManager()
     
     def initialize(self, var, cursor):
         var.connection = cursor.connection
-        
-        typed_data = self.get_typed_data(var)
-        # initialize the LOB locators
-        for i in xrange(var.allocelems):
-            status = oci.OCIDescriptorAlloc(var.environment.handle, byref(typed_data[i]), oci.OCI_DTYPE_LOB, 0, 0);
-            var.environment.check_for_error(status, "LobVar_Initialize()")
+        self.descriptor_manager.initialize(self, var, cursor, oci.OCI_DTYPE_LOB, "LobVar_Initialize()")
     
-    def finalize(self, *args, **kwargs):
-        raise NotImplementedError()
+    def finalize(self, var):
+        self.pre_fetch(var)
+        self.descriptor_manager.finalize(self, var, oci.OCI_DTYPE_LOB)
     
     def pre_fetch(self, var):
         """Free temporary LOBs prior to fetch."""

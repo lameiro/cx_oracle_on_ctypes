@@ -11,12 +11,12 @@ from stringvar import vt_String, vt_FixedNationalChar, vt_NationalCharString, vt
 from longvar import vt_LongString, vt_LongBinary
 from datetimevar import vt_DateTime, vt_Date
 from lobvar import vt_NCLOB, vt_CLOB, vt_BLOB, vt_BFILE
-
+from timestampvar import vt_Timestamp
 
 if not python3_or_better():
     from numbervar import vt_Integer
     
-all_variable_types = [vt_Float, vt_NumberAsString, vt_Boolean, vt_LongInteger, vt_String, vt_FixedNationalChar, vt_NationalCharString, vt_FixedChar, vt_Rowid, vt_Binary, vt_LongString, vt_LongBinary, vt_DateTime, vt_Date, vt_NCLOB, vt_CLOB, vt_BLOB, vt_BFILE]
+all_variable_types = [vt_Float, vt_NumberAsString, vt_Boolean, vt_LongInteger, vt_String, vt_FixedNationalChar, vt_NationalCharString, vt_FixedChar, vt_Rowid, vt_Binary, vt_LongString, vt_LongBinary, vt_DateTime, vt_Date, vt_NCLOB, vt_CLOB, vt_BLOB, vt_BFILE, vt_Timestamp]
 
 if not python3_or_better():
     all_variable_types.append(vt_Integer)
@@ -26,6 +26,7 @@ from stringvar import STRING, FIXED_CHAR, ROWID, BINARY
 from longvar import LONG_STRING, LONG_BINARY
 from datetimevar import DATETIME
 from lobvar import NCLOB, CLOB, BLOB, BFILE
+from timestampvar import TIMESTAMP
 
 if not python3_or_better():
     from stringvar import UNICODE, FIXED_UNICODE
@@ -35,7 +36,6 @@ from variable_type import VariableType
 from custom_exceptions import NotSupportedError
 
 # TODO: Remove this
-vt_Timestamp = VariableType()
 vt_Interval = VariableType()
 vt_Cursor = VariableType()
 vt_Object = VariableType()
@@ -91,7 +91,7 @@ mapping_python_type_to_variable_type = {
     datetime: vt_DateTime,
     #INTERVAL: vt_Interval,
     #timedelta: vt_Interval,
-    #TIMESTAMP: vt_Timestamp,
+    TIMESTAMP: vt_Timestamp,
     #CURSOR: vt_Cursor,
     #OBJECT: vt_Object,
 }
@@ -435,10 +435,10 @@ variable type."""
         raise NotSupportedError("Variable_TypeByValue(): unhandled data type %.*s" % type(value))
     
     def new(self, cursor, num_elements, type, size):
-        variable_class = mapping_variable_type_to_python_type[type]
+        variable_class = mapping_variable_type_to_python_type.get(type)
         
         if variable_class is None:
-            raise NotSupportedError('Type %s not found in mapping to python type' % type)
+            raise NotSupportedError('Type %s (%s) not found in mapping to python type' % (type, vt_to_name[type]))
         
         var = variable_class(cursor, num_elements, type, size)
         

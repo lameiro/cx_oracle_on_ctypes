@@ -18,6 +18,8 @@ from stringvar import STRING, BINARY, FIXED_CHAR, FIXED_UNICODE, ROWID, UNICODE
 from longvar import LONG_BINARY, LONG_STRING
 from datetimevar import DATETIME
 from lobvar import NCLOB, CLOB, BLOB, BFILE
+from externallobvar import LOB
+from timestampvar import TIMESTAMP
 
 def symbol_exists(symbol_name):
     pass

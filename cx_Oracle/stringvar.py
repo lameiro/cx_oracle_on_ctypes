@@ -188,7 +188,7 @@ class BaseNationalType(BaseNonBinaryStringType):
     def post_define(self, var):
         """Set the character set information when values are fetched from this variable."""
         c_charset_form = oci.ub1(var.type.charset_form)
-        status = OCIAttrSet(var.define_handle, oci.OCI_HTYPE_DEFINE, byref(c_charset_form), 0, 
+        status = oci.OCIAttrSet(var.define_handle, oci.OCI_HTYPE_DEFINE, byref(c_charset_form), 0, 
                             oci.OCI_ATTR_CHARSET_FORM, var.environment.error_handle)
         var.environment.check_for_error(status, "StringVar_PostDefine(): setting charset form")
         var.type.charset_form = c_charset_form.value # warning: mutating shared state. i am not sure why cx oracle does that.

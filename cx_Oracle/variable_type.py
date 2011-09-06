@@ -30,7 +30,7 @@ class VariableType(object):
     def get_buffer_size_proc(self, var):
         raise NotImplementedError()
     
-    def finalize_proc(self, *args, **kwargs):
+    def finalize_proc(self, var):
         raise NotImplementedError()
     
     def pre_define_proc(self, *args, **kwargs):
