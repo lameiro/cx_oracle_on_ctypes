@@ -1,8 +1,10 @@
-import oci
 import ctypes
 from ctypes import byref
 from datetime import datetime, date, timedelta
 from decimal import Decimal
+
+import oci
+from pythonic_oci import OCIAttrGet, OCIParamGet
 
 from utils import python3_or_better, cxBinary, cxString, MAX_STRING_CHARS, MAX_BINARY_BYTES
 
@@ -12,6 +14,7 @@ from longvar import vt_LongString, vt_LongBinary
 from datetimevar import vt_DateTime, vt_Date
 from lobvar import vt_NCLOB, vt_CLOB, vt_BLOB, vt_BFILE
 from timestampvar import vt_Timestamp
+from variable import Variable
 
 if not python3_or_better():
     from numbervar import vt_Integer
@@ -125,11 +128,8 @@ class VariableFactory(object):
     def define(self, cursor, num_elements, position):
         """Allocate a variable and define it for the given statement."""
         
-        param = oci.POINTER(oci.OCIParam)()
-
         # retrieve parameter descriptor
-        status = oci.OCIParamGet(cursor.handle, oci.OCI_HTYPE_STMT, cursor.environment.error_handle, byref(param), position)
-        cursor.environment.check_for_error(status, "Variable_Define(): parameter")
+        param = OCIParamGet(cursor.handle, oci.OCI_HTYPE_STMT, cursor.environment, position, "Variable_Define(): parameter")
 
         # call the helper to do the actual work
         var = self.define_helper(cursor, param, position, num_elements)
@@ -150,10 +150,7 @@ class VariableFactory(object):
         size = var_type.size
         if var_type.is_variable_length:
             # determine the maximum length from Oracle
-            c_size_from_oracle = oci.ub2()
-            status = oci.OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, byref(c_size_from_oracle), 0, oci.OCI_ATTR_DATA_SIZE, cursor.environment.error_handle)
-            cursor.environment.check_for_error(status, "Variable_Define(): data size")
-            size_from_oracle = c_size_from_oracle.value
+            size_from_oracle = OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, oci.ub2, oci.OCI_ATTR_DATA_SIZE, cursor.environment, "Variable_Define(): data size")
             
             # use the length from Oracle directly if available
             if size_from_oracle:
@@ -195,19 +192,13 @@ class VariableFactory(object):
         """Return a variable type given an Oracle descriptor."""
     
         # retrieve datatype of the parameter
-        c_data_type = oci.ub2()
-        status = oci.OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, byref(c_data_type), 0, oci.OCI_ATTR_DATA_TYPE, environment.error_handle)
-        environment.check_for_error(status, "Variable_TypeByOracleDescriptor(): data type")
-        data_type = c_data_type.value
+        data_type = OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, oci.ub2, oci.OCI_ATTR_DATA_TYPE, environment, "Variable_TypeByOracleDescriptor(): data type")
 
         # retrieve character set form of the parameter
         if data_type not in (oci.SQLT_CHR, oci.SQLT_AFC, oci.SQLT_CLOB):
             charset_form = oci.SQLCS_IMPLICIT
         else:
-            c_charset_form = oci.ub1()
-            status = oci.OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, byref(c_charset_form), 0, oci.OCI_ATTR_CHARSET_FORM, environment.error_handle)
-            environment.check_for_error(status, "Variable_TypeByOracleDescriptor(): charset form")
-            charset_form = c_charset_form.value
+            charset_form = OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, oci.ub1, oci.OCI_ATTR_CHARSET_FORM, environment, "Variable_TypeByOracleDescriptor(): charset form")
 
         return self.type_by_oracle_data_type(data_type, charset_form)
 

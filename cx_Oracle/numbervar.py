@@ -7,22 +7,17 @@ from utils import python3_or_better, cxString_from_ascii, cxString_from_encoded_
 from buffer import cxBuffer
 from transforms import oracle_number_to_python_float
 import oci
+from pythonic_oci import OCIAttrGet
 from variable import Variable
 
 class NUMBER(Variable):
     @staticmethod
     def lookup_precision_and_scale(environment, param):
-        c_scale = oci.sb1(0)
-        c_precision = oci.sb2(0)
-        status = oci.OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, byref(c_scale), 0,
-                oci.OCI_ATTR_SCALE, environment.error_handle)
-        environment.check_for_error(status, "Cursor_ItemDescription(): scale")
-        scale = c_scale.value
+        scale = OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, oci.sb1,
+                oci.OCI_ATTR_SCALE, environment, "Cursor_ItemDescription(): scale")
         
-        status = oci.OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, byref(c_precision), 0,
-                oci.OCI_ATTR_PRECISION, environment.error_handle)
-        environment.check_for_error(status, "Cursor_ItemDescription(): precision")
-        precision = c_precision.value
+        precision = OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, oci.sb2,
+                oci.OCI_ATTR_PRECISION, environment, "Cursor_ItemDescription(): precision")
         
         return precision, scale
     
@@ -59,7 +54,18 @@ class BaseNumberVarType(VariableType):
 
         self.can_be_copied = True
         self.can_be_in_array = True
-
+        
+        # not standard variable type
+        
+        self.mapping_python_type_to_method = {
+            long: self.set_value_from_long,
+            bool: self.set_value_from_boolean,
+            float: self.set_value_from_float,
+            Decimal: self.set_value_from_decimal,
+           }
+    
+        if not python3_or_better():
+            self.mapping_python_type_to_method[int] = self.set_value_from_integer
 
     def pre_define(self, var, param):
         """Set the type of value (integer, float or string) that will be returned when values are fetched from this variable."""
@@ -67,17 +73,12 @@ class BaseNumberVarType(VariableType):
         # if the return type has not already been specified, check to see if the
         # number can fit inside an integer by looking at the precision and scale
         if var.type is vt_Float:
-            c_scale = oci.sb1()
-            c_precision = oci.sb2()
-
-            status = oci.OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, byref(c_scale), 0, oci.OCI_ATTR_SCALE, var.environment.error_handle)
-            var.environment.check_for_error(status, "NumberVar_PreDefine(): scale")
-            scale = c_scale.value
-
-            status = oci.OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, byref(c_precision), 0, oci.OCI_ATTR_PRECISION, var.environment.error_handle)
-            var.environment.check_for_error(status, "NumberVar_PreDefine(): precision")
-            precision = c_precision.value
-
+            scale = OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, oci.sb1,
+                oci.OCI_ATTR_SCALE, var.environment, "NumberVar_PreDefine(): scale")
+        
+            precision = OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, oci.sb2,
+                oci.OCI_ATTR_PRECISION, var.environment, "NumberVar_PreDefine(): precision")
+            
             if scale == 0 or (scale == -127 and precision == 0):
                 var.type = vt_LongInteger
             
@@ -108,12 +109,14 @@ class BaseNumberVarType(VariableType):
 
         if var.type in (vt_NumberAsString, vt_LongInteger):
             c_string = ctypes.create_string_buffer(200)
+            cast_c_string = ctypes.cast(c_string, oci.POINTER(oci.ub1))
+            
             c_string_length = oci.ub4()
             c_string_length.value = ctypes.sizeof(c_string)
-
-            typed_data = ctypes.cast(var.data, oci.POINTER(self.oci_type))
-            status = oci.OCINumberToText(var.environment.error_handle, byref(typed_data[pos]), var.environment.numberToStringFormatBuffer.ptr,
-                                     var.environment.numberToStringFormatBuffer.size, None, 0, byref(c_string_length), c_string)
+            
+            typed_data = self.get_typed_data(var)
+            status = oci.OCINumberToText(var.environment.error_handle, byref(typed_data[pos]), var.environment.numberToStringFormatBuffer.cast_ptr,
+                                     var.environment.numberToStringFormatBuffer.size, None, 0, byref(c_string_length), cast_c_string)
             var.environment.check_for_error(status, "NumberVar_GetValue(): as string")
 
             python_string = c_string.value
@@ -133,17 +136,7 @@ class BaseNumberVarType(VariableType):
     def set_value(self, var, pos, value):
         """Set the value of the variable."""
         
-        mapping = {
-                    long: self.set_value_from_long,
-                    bool: self.set_value_from_boolean,
-                    float: self.set_value_from_float,
-                    Decimal: self.set_value_from_decimal,
-                   }
-        
-        if not python3_or_better():
-            mapping[int] = self.set_value_from_integer
-            
-        for type, method in mapping.iteritems():
+        for type, method in self.mapping_python_type_to_method.iteritems():
             if isinstance(value, type):
                 break
         else:
@@ -160,8 +153,8 @@ class BaseNumberVarType(VariableType):
         
         typed_data = self.get_typed_data(var)
         
-        status = oci.OCINumberFromText(var.environment.error_handle, text_buffer.ptr, 
-                    text_buffer.size, var.environment.numberFromStringFormatBuffer.ptr,
+        status = oci.OCINumberFromText(var.environment.error_handle, text_buffer.cast_ptr, 
+                    text_buffer.size, var.environment.numberFromStringFormatBuffer.cast_ptr,
                     var.environment.numberFromStringFormatBuffer.size, None, 0, 
                     byref(typed_data[pos]))
         
@@ -229,8 +222,8 @@ class BaseNumberVarType(VariableType):
         typed_data = self.get_typed_data(var)
         
         status = oci.OCINumberFromText(var.environment.error_handle,
-                text_buffer.ptr, text_buffer.size, format_buffer.ptr,
-                format_buffer.size, var.environment.nlsNumericCharactersBuffer.ptr,
+                text_buffer.cast_ptr, text_buffer.size, format_buffer.cast_ptr,
+                format_buffer.size, var.environment.nlsNumericCharactersBuffer.cast_ptr,
                 var.environment.nlsNumericCharactersBuffer.size, byref(typed_data[pos]))
 
         return var.environment.check_for_error(status, "NumberVar_SetValueFromDecimal()")

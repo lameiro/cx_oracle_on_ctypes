@@ -1,16 +1,15 @@
-from ctypes import byref, CFUNCTYPE
+from ctypes import byref
 import ctypes
 import oci
 from buffer import cxBuffer
 from error import Error
-from custom_exceptions import IntegrityError, OperationalError, DatabaseError
-from utils import MAX_STRING_CHARS, MAX_BINARY_BYTES
+from custom_exceptions import IntegrityError, OperationalError, DatabaseError, InterfaceError
+from utils import MAX_STRING_CHARS
 
 
 class Environment(object):
     def __init__(self, handle):
         self.handle = handle
-        self.error_handle = oci.POINTER(oci.OCIError)()
         
         self.fixedWidth = self.maxBytesPerCharacter = 1
         self.maxStringBytes = MAX_STRING_CHARS
@@ -21,11 +20,11 @@ class Environment(object):
         self.nlsNumericCharactersBuffer = cxBuffer.new_null()
 
         # create the error handle
-        null_ptr_type = oci.OCIHandleAlloc.argtypes[-1]
-        null_ptr = null_ptr_type()
-        status = oci.OCIHandleAlloc(handle, byref(self.error_handle), oci.OCI_HTYPE_ERROR, 0, 0)
+        error_handle_as_void_p = ctypes.c_void_p()
+        argtypes = oci.OCIHandleAlloc.argtypes
+        status = oci.OCIHandleAlloc(handle, byref(error_handle_as_void_p), oci.OCI_HTYPE_ERROR, 0, argtypes[4]())
         self.check_for_error(status, "Environment_New(): create error handle")
-
+        self.error_handle = ctypes.cast(error_handle_as_void_p, oci.POINTER(oci.OCIError))
 
     @staticmethod
     def new_from_scratch(threaded, events, encoding, nencoding):
@@ -36,20 +35,13 @@ class Environment(object):
         #    if events:
         #        mode |= ociap.OCI_EVENTS
         
+        argtypes = oci.OCIEnvNlsCreate.argtypes
         handle = oci.POINTER(oci.OCIEnv)()
-        malocfp_type = CFUNCTYPE(oci.UNCHECKED(oci.POINTER(None)), oci.POINTER(None), oci.c_size_t)
-        null_malocfp = malocfp_type()
-
-        ralocfp_type = CFUNCTYPE(oci.UNCHECKED(oci.POINTER(None)), oci.POINTER(None), oci.POINTER(None), oci.c_size_t)
-        null_ralocfp = ralocfp_type()
-
-        mfreefp_type = CFUNCTYPE(oci.UNCHECKED(None), oci.POINTER(None), oci.POINTER(None))
-        null_mfreefp = mfreefp_type()
-
-        status = oci.OCIEnvNlsCreate(byref(handle), mode, oci.POINTER(None)(), null_malocfp, null_ralocfp, null_mfreefp, 0, None, 0, 0)
+        
+        status = oci.OCIEnvNlsCreate(byref(handle), mode, argtypes[2](), argtypes[3](), argtypes[4](), argtypes[5](), 0, None, 0, 0)
 
         if not handle or (status != oci.OCI_SUCCESS and status != oci.OCI_SUCCESS_WITH_INFO):
-            raise InterfaceErrorException("Unable to acquire Oracle environment handle")
+            raise InterfaceError("Unable to acquire Oracle environment handle")
 
         env = Environment(handle)
 
@@ -114,17 +106,20 @@ class Environment(object):
 
         # get character set id
         c_charset_id = oci.ub2()
+        # not using pythonic OCIAttrGet on purpose here.
         status = oci.OCIAttrGet(self.handle, oci.OCI_HTYPE_ENV, byref(c_charset_id), None, attribute, self.error_handle)
         self.check_for_error(status, "Environment_GetCharacterSetName(): get charset id")
 
         # get character set name
-        c_charset_name = ctypes.create_string_buffer(oci.OCI_NLS_MAXBUFSZ)
-        status = oci.OCINlsCharSetIdToName(self.handle, c_charset_name, oci.OCI_NLS_MAXBUFSZ, c_charset_id)
+        c_charset_name_array = ctypes.create_string_buffer(oci.OCI_NLS_MAXBUFSZ)
+        c_charset_name_pointer = ctypes.cast(c_charset_name_array, oci.OCINlsCharSetIdToName.argtypes[1])
+        status = oci.OCINlsCharSetIdToName(self.handle, c_charset_name_pointer, oci.OCI_NLS_MAXBUFSZ, c_charset_id)
         self.check_for_error(status, "Environment_GetCharacterSetName(): get Oracle charset name")
 
         # get IANA character set name
-        c_iana_charset_name = ctypes.create_string_buffer(oci.OCI_NLS_MAXBUFSZ)
-        status = oci.OCINlsNameMap(self.handle, c_iana_charset_name, oci.OCI_NLS_MAXBUFSZ, c_charset_name, oci.OCI_NLS_CS_ORA_TO_IANA)
+        c_iana_charset_name_array = ctypes.create_string_buffer(oci.OCI_NLS_MAXBUFSZ)
+        c_iana_charset_name_pointer = ctypes.cast(c_iana_charset_name_array, oci.OCINlsNameMap.argtypes[1])
+        status = oci.OCINlsNameMap(self.handle, c_iana_charset_name_pointer, oci.OCI_NLS_MAXBUFSZ, c_charset_name_pointer, oci.OCI_NLS_CS_ORA_TO_IANA)
         self.check_for_error(status, "Environment_GetCharacterSetName(): translate NLS charset")
         
-        return c_iana_charset_name.value
+        return c_iana_charset_name_array.value

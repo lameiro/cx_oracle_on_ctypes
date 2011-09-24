@@ -2,7 +2,8 @@ from ctypes import byref
 import ctypes
 
 import oci
-from custom_exceptions import InterfaceError, ProgrammingError, DatabaseError
+from pythonic_oci import OCIAttrGet, OCIParamGet
+from custom_exceptions import InterfaceError, ProgrammingError, DatabaseError, NotSupportedError
 from buffer import cxBuffer
 from utils import is_sequence, cxString_from_encoded_string, python3_or_better
 from variable_factory import VariableFactory
@@ -56,7 +57,7 @@ class Cursor(object):
                     if raise_exception:
                         raise
 
-                status = oci.OCIStmtRelease(self.handle, self.environment.error_handle, buffer.ptr, buffer.size, oci.OCI_DEFAULT)
+                status = oci.OCIStmtRelease(self.handle, self.environment.error_handle, buffer.cast_ptr, buffer.size, oci.OCI_DEFAULT)
 
                 if raise_exception:
                     self.environment.check_for_error(status, "Cursor_FreeHandle()")
@@ -90,7 +91,7 @@ class Cursor(object):
 
         tag_buffer = cxBuffer.new_from_object(statement_tag, self.environment.encoding)
 
-        status = oci.OCIStmtPrepare2(self.connection.handle, byref(self.handle), self.environment.error_handle, statement_buffer.ptr, statement_buffer.size, tag_buffer.ptr, tag_buffer.size, oci.OCI_NTV_SYNTAX, oci.OCI_DEFAULT)
+        status = oci.OCIStmtPrepare2(self.connection.handle, byref(self.handle), self.environment.error_handle, statement_buffer.cast_ptr, statement_buffer.size, tag_buffer.cast_ptr, tag_buffer.size, oci.OCI_NTV_SYNTAX, oci.OCI_DEFAULT)
 
         try:
             self.environment.check_for_error(status, "Cursor_InternalPrepare(): prepare")
@@ -112,21 +113,13 @@ class Cursor(object):
         self.get_statement_type()
 
     def get_statement_type(self):
-        c_statement_type = oci.ub2()
-
-        status = oci.OCIAttrGet(self.handle, oci.OCI_HTYPE_STMT, byref(c_statement_type), 0, oci.OCI_ATTR_STMT_TYPE, self.environment.error_handle)
-        self.environment.check_for_error(status, "Cursor_GetStatementType()")
-        self.statement_type = c_statement_type.value
+        self.statement_type = OCIAttrGet(self.handle, oci.OCI_HTYPE_STMT, oci.ub2, oci.OCI_ATTR_STMT_TYPE, self.environment, "Cursor_GetStatementType()")
         self.fetchvars = None
 
     def perform_define(self):
-        c_num_params = ctypes.c_int()
 
         # determine number of items in select-list
-        status = oci.OCIAttrGet(self.handle, oci.OCI_HTYPE_STMT, byref(c_num_params), 0, oci.OCI_ATTR_PARAM_COUNT, self.environment.error_handle)
-        self.environment.check_for_error(status, "Cursor_PerformDefine()")
-
-        num_params = c_num_params.value
+        num_params = OCIAttrGet(self.handle, oci.OCI_HTYPE_STMT, ctypes.c_int, oci.OCI_ATTR_PARAM_COUNT, self.environment, "Cursor_PerformDefine()")
 
         # create a list corresponding to the number of items
         self.fetchvars = [None] * num_params # or should I use appends?
@@ -146,7 +139,8 @@ class Cursor(object):
         else:   
             mode = oci.OCI_DEFAULT
 
-        status = oci.OCIStmtExecute(self.connection.handle, self.handle, self.environment.error_handle, num_iters, 0, 0, 0, mode)
+        argtypes = oci.OCIStmtExecute.argtypes
+        status = oci.OCIStmtExecute(self.connection.handle, self.handle, self.environment.error_handle, num_iters, 0, argtypes[5](), argtypes[6](), mode)
         # here the OCI will change variable.c_actual_elements, given at bind time
         
         try:
@@ -365,10 +359,7 @@ of dictionaries."""
             self.row_num = 0
         else:
             if self.statement_type in (oci.OCI_STMT_INSERT, oci.OCI_STMT_UPDATE, oci.OCI_STMT_DELETE):
-                c_row_count = oci.ub4()
-                status = oci.OCIAttrGet(self.handle, oci.OCI_HTYPE_STMT, byref(c_row_count), 0, oci.OCI_ATTR_ROW_COUNT, self.environment.error_handle)
-                self.environment.check_for_error(status, "Cursor_SetRowCount()")
-                self.rowcount = c_row_count.value
+                self.rowcount = OCIAttrGet(self.handle, oci.OCI_HTYPE_STMT, oci.ub4, oci.OCI_ATTR_ROW_COUNT, self.environment, "Cursor_SetRowCount()")
             else:
                 self.rowcount = -1
 
@@ -426,11 +417,9 @@ of dictionaries."""
         if status != oci.OCI_NO_DATA:
             self.environment.check_for_error(status, "Cursor_InternalFetch(): fetch")
 
-        row_count = oci.ub4()
-        status = oci.OCIAttrGet(self.handle, oci.OCI_HTYPE_STMT, byref(row_count), 0, oci.OCI_ATTR_ROW_COUNT, self.environment.error_handle)
-        self.environment.check_for_error(status, "Cursor_InternalFetch(): row count")
+        row_count = OCIAttrGet(self.handle, oci.OCI_HTYPE_STMT, oci.ub4, oci.OCI_ATTR_ROW_COUNT, self.environment, "Cursor_InternalFetch(): row count")
 
-        self.actual_rows = row_count.value - self.rowcount
+        self.actual_rows = row_count - self.rowcount
         self.row_num = 0
 
     def create_row(self):
@@ -516,9 +505,10 @@ of dictionaries."""
         """Set the error offset on the error object, if applicable."""
         if isinstance(exception, DatabaseError):
             error = exception.args[0]
-            c_offset = oci.ub4()
-            oci.OCIAttrGet(self.handle, oci.OCI_HTYPE_STMT, byref(c_offset), 0, oci.OCI_ATTR_PARSE_ERROR_OFFSET, self.environment.error_handle)
-            error.offset = c_offset.value
+            try:
+                error.offset = OCIAttrGet(self.handle, oci.OCI_HTYPE_STMT, oci.ub4, oci.OCI_ATTR_PARSE_ERROR_OFFSET, self.environment, "Cursor_SetErrorOffset: can't get get oci attr") # invented message, should never happen
+            except DatabaseError:
+                pass
 
         return exception
 
@@ -646,11 +636,15 @@ of dictionaries."""
         indicator_name_lengths = (oci.ub1 * num_elements)()
         duplicate = (oci.ub1 * num_elements)()
         bind_handles = (oci.POINTER(oci.OCIBind) * num_elements)()
+        
+        # cast vars
+        cast_bind_names = ctypes.cast(bind_names, oci.POINTER(oci.POINTER(oci.ub1)))
+        cast_indicator_names = ctypes.cast(indicator_names, oci.POINTER(oci.POINTER(oci.ub1)))
     
         c_found_elements = oci.sb4()
         # get the bind information
         status = oci.OCIStmtGetBindInfo(self.handle, self.environment.error_handle, num_elements, 
-                                    1, byref(c_found_elements), bind_names, bind_name_lengths, indicator_names,
+                                    1, byref(c_found_elements), cast_bind_names, bind_name_lengths, cast_indicator_names,
                                     indicator_name_lengths, duplicate, bind_handles)
         found_elements = c_found_elements.value
         
@@ -702,7 +696,7 @@ of dictionaries."""
         if more_rows_available:
             return self.create_row()
         
-        raise StopIteration() # TODO: is this right?
+        raise StopIteration()
 
     def __del__(self):
         self.free_handle(False)
@@ -801,19 +795,13 @@ constantly free the descriptor when an error takes place."""
         # acquire usable type of item
         var_type = variable_factory.type_by_oracle_descriptor(param, self.environment)
         
-        c_internal_size = oci.ub2()
         # acquire internal size of item
-        status = oci.OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, byref(c_internal_size), 0,
-                oci.OCI_ATTR_DATA_SIZE, self.environment.error_handle)
-        self.environment.check_for_error(status, "Cursor_ItemDescription(): internal size")
-        internal_size = c_internal_size.value
+        internal_size = OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, oci.ub2,
+                oci.OCI_ATTR_DATA_SIZE, self.environment, "Cursor_ItemDescription(): internal size")
     
         # acquire character size of item
-        c_char_size = oci.ub2()
-        status = oci.OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, byref(c_char_size), 0,
-                oci.OCI_ATTR_CHAR_SIZE, self.environment.error_handle)
-        self.environment.check_for_error(status, "Cursor_ItemDescription(): character size")
-        char_size = c_char_size.value
+        char_size = OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, oci.ub2,
+                oci.OCI_ATTR_CHAR_SIZE, self.environment, "Cursor_ItemDescription(): character size")
         
         # aquire name of item
         c_name = ctypes.c_char_p()
@@ -829,11 +817,9 @@ constantly free the descriptor when an error takes place."""
         precision, scale = python_type.lookup_precision_and_scale(self.environment, param)
         
         # lookup whether null is permitted for the attribute
-        c_null_ok = oci.ub1()
-        status = oci.OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, byref(c_null_ok), 0,
-                oci.OCI_ATTR_IS_NULL, self.environment.error_handle)
-        self.environment.check_for_error(status, "Cursor_ItemDescription(): nullable")
-        null_ok = c_null_ok.value # should make null_ok a bool
+        null_ok = OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, oci.ub1,
+                oci.OCI_ATTR_IS_NULL, self.environment, "Cursor_ItemDescription(): nullable")
+        # should make null_ok a bool
         
         # set display size based on data type
         display_size = python_type.get_display_size(precision, scale, char_size, internal_size)
@@ -844,12 +830,9 @@ constantly free the descriptor when an error takes place."""
     
     def get_item_description(self, pos):
         """Return a tuple describing the item at the given position."""
-        param = oci.POINTER(oci.OCIParam)()
         
         # acquire parameter descriptor
-        status = oci.OCIParamGet(self.handle, oci.OCI_HTYPE_STMT, self.environment.error_handle,
-                                 byref(param), pos)
-        self.environment.check_for_error(status, "Cursor_ItemDescription(): parameter")
+        param = OCIParamGet(self.handle, oci.OCI_HTYPE_STMT, self.environment, pos, "Cursor_ItemDescription(): parameter")
         
         # use helper routine to get tuple
         description_element = self.get_item_description_helper(pos, param)
@@ -872,12 +855,8 @@ constantly free the descriptor when an error takes place."""
             return None
     
         # determine number of items in select-list
-        c_num_items = ctypes.c_int()
-        status = oci.OCIAttrGet(self.handle, oci.OCI_HTYPE_STMT, byref(c_num_items), 0,
-                                oci.OCI_ATTR_PARAM_COUNT, self.environment.error_handle)
-        self.environment.check_for_error(status, "Cursor_GetDescription()")
-        
-        num_items = c_num_items.value
+        num_items = OCIAttrGet(self.handle, oci.OCI_HTYPE_STMT, ctypes.c_int, # c_int?!
+                                oci.OCI_ATTR_PARAM_COUNT, self.environment, "Cursor_GetDescription()")
         
         # create a list of the required length
         results = [None] * num_items

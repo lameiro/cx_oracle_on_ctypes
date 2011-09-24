@@ -7,6 +7,8 @@
 
 import ctypes
 from custom_exceptions import CXORA_TYPE_ERROR
+from utils import bytes
+import oci
 
 class cxBuffer(object):
     # not using a ctypes.structure here because we don't really use it as a struct.
@@ -15,6 +17,8 @@ class cxBuffer(object):
         self.size = size
         self.num_characters = num_characters
         self.obj = obj
+        
+        self.cast_ptr = ctypes.cast(ptr, ctypes.POINTER(oci.ub1))
     
     @staticmethod
     def new_as_copy(copy_from_buf):
@@ -38,14 +42,14 @@ class cxBuffer(object):
         
         if isinstance(obj, unicode):
             as_bytes = obj.encode(encoding)
-        elif isinstance(obj, str):
+        elif isinstance(obj, bytes):
             as_bytes = obj
         else:
             raise TypeError(CXORA_TYPE_ERROR)
         
         typed_ptr = ctypes.create_string_buffer(as_bytes)
         result = cxBuffer(
-            ctypes.cast(typed_ptr, ctypes.c_void_p), # does not share the ptr!
+            typed_ptr,
             len(as_bytes),
             len(obj),
             obj,

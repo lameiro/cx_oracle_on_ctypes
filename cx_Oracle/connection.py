@@ -1,3 +1,4 @@
+import ctypes
 from ctypes import byref
 
 import oci
@@ -6,15 +7,14 @@ from environment import Environment
 from cursor import Cursor
 from custom_exceptions import Error, InterfaceError
 from variable import Variable
-from stringvar import vt_String
-from utils import DRIVER_NAME
+from stringvar import STRING, vt_String
+from utils import DRIVER_NAME, ReplaceArgtypeByVoidPointerContextManager
 
 class Connection(object):
     def __init__(self, user=None, password=None, dsn=None, mode=None, handle=None, pool=None, threaded=True, twophase=True, events=True, cclass=None, purity=0, newpassword=None, encoding=None, nencoding=None):
-        
-        self.handle = oci.POINTER(oci.OCISvcCtx)()
-        self.server_handle = oci.POINTER(oci.OCIServer)()
-        self.session_handle = oci.POINTER(oci.OCISession)()
+        self.server_handle = None #oci.POINTER(oci.OCIServer)()
+        self.handle = None #oci.POINTER(oci.OCISvcCtx)()
+        self.session_handle = None #oci.POINTER(oci.OCISession)()
         self.autocommit = None
         self.inputtypehandler = None # public interface
         self.outputtypehandler = None # public interface
@@ -58,17 +58,31 @@ class Connection(object):
         credential_type = oci.OCI_CRED_EXT
 
         # allocate the server handle
-        status = oci.OCIHandleAlloc(self.environment.handle, byref(self.server_handle), oci.OCI_HTYPE_SERVER, 0, 0)
+        self.server_handle = oci.POINTER(oci.OCIServer)()
+        context_manager = ReplaceArgtypeByVoidPointerContextManager(oci.OCIHandleAlloc, 1)
+        try:
+            context_manager.__enter__()
+            argtypes = oci.OCIHandleAlloc.argtypes
+            status = oci.OCIHandleAlloc(self.environment.handle, byref(self.server_handle), oci.OCI_HTYPE_SERVER, 0, argtypes[4]())
+        finally:
+            context_manager.__exit__()
+        
         self.environment.check_for_error(status, "Connection_Connect(): allocate server handle")
 
         buffer = cxBuffer.new_from_object(self.dsn, self.environment.encoding)
 
         # attach to the server
-        status = oci.OCIServerAttach(self.server_handle, self.environment.error_handle, buffer.ptr, buffer.size, oci.OCI_DEFAULT)
+        status = oci.OCIServerAttach(self.server_handle, self.environment.error_handle, buffer.cast_ptr, buffer.size, oci.OCI_DEFAULT)
         self.environment.check_for_error(status, "Connection_Connect(): server attach")
 
         # allocate the service context handle
-        status = oci.OCIHandleAlloc(self.environment.handle, byref(self.handle), oci.OCI_HTYPE_SVCCTX, 0, 0)
+        self.handle = oci.POINTER(oci.OCISvcCtx)()
+        try:
+            context_manager.__enter__()
+            status = oci.OCIHandleAlloc(self.environment.handle, byref(self.handle), oci.OCI_HTYPE_SVCCTX, 0, argtypes[4]())
+        finally:
+            context_manager.__exit__()
+        
         self.environment.check_for_error(status, "Connection_Connect(): allocate service context handle")
 
         # set attribute for server handle
@@ -84,7 +98,13 @@ class Connection(object):
             status = oci.OCIAttrSet(self.server_handle, oci.OCI_HTYPE_SERVER, "cx_Oracle", 0, oci.OCI_ATTR_EXTERNAL_NAME, self.environment.error_handle)
             self.environment.check_for_error(status, "Connection_Connect(): set external name")
         
-        status = oci.OCIHandleAlloc(self.environment.handle, byref(self.session_handle), oci.OCI_HTYPE_SESSION, 0, 0)
+        self.session_handle = oci.POINTER(oci.OCISession)()
+        try:
+            context_manager.__enter__()
+            status = oci.OCIHandleAlloc(self.environment.handle, byref(self.session_handle), oci.OCI_HTYPE_SESSION, 0, argtypes[4]())
+        finally:
+            context_manager.__exit__()
+        
         self.environment.check_for_error(status, "Connection_Connect(): allocate session handle")
 
         # set user name in session handle
@@ -97,7 +117,7 @@ class Connection(object):
         # set password in session handle
         buffer = cxBuffer.new_from_object(self.password, self.environment.encoding)
         if buffer.size > 0:
-            credentialType = oci.OCI_CRED_RDBMS
+            credential_type = oci.OCI_CRED_RDBMS
             status = oci.OCIAttrSet(self.session_handle, oci.OCI_HTYPE_SESSION, buffer.ptr, buffer.size, oci.OCI_ATTR_PASSWORD, self.environment.error_handle)
             self.environment.check_for_error(status, "Connection_Connect(): set password")
 
@@ -166,6 +186,7 @@ class Connection(object):
         # allocate a cursor to retrieve the version
         cursor = self.cursor()
 
+        # TODO: Use proper subclass
         # allocate version variable
         version_var = Variable(cursor, cursor.arraysize, vt_String, vt_String.size)
 
@@ -187,7 +208,7 @@ class Connection(object):
         """Deallocate the connection, disconnecting from the database if necessary."""
         if self.release:
             oci.OCITransRollback(self.handle, self.environment.error_handle, oci.OCI_DEFAULT)
-            oci.OCISessionRelease(self.handle, self.environment.error_handle, NULL, 0, oci.OCI_DEFAULT)
+            oci.OCISessionRelease(self.handle, self.environment.error_handle, None, 0, oci.OCI_DEFAULT)
         elif not self.attached:
             if self.session_handle:
                 oci.OCITransRollback(self.handle, self.environment.error_handle, oci.OCI_DEFAULT)

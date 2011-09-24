@@ -111,7 +111,11 @@ class BaseStringType(VariableType):
         # keep a copy of the string
         var.actual_length[pos] = buffer.size
         if buffer.size:
-            ctypes.memmove(byref(var.data, var.bufferSize * pos), buffer.ptr, buffer.size)
+            pointer_to_pos = ctypes.c_void_p(ctypes.addressof(var.data) + var.bufferSize * pos)
+            #start_index = var.bufferSize * pos
+            #var.data[start_index:start_index+buffer.size] = buffer.ptr.raw[:buffer.size]
+            #ctypes.memmove(byref(var.data, var.bufferSize * pos), buffer.ptr, buffer.size)
+            ctypes.memmove(pointer_to_pos, buffer.ptr, buffer.size)
 
 class BaseNonBinaryStringType(BaseStringType):
     def __init__(self):

@@ -2,10 +2,9 @@ from ctypes import byref
 import ctypes
 import sys
 
-from utils import python3_or_better, cxBinary, cxString, MAX_STRING_CHARS, MAX_BINARY_BYTES
+from utils import python3_or_better
 from custom_exceptions import NotSupportedError, DatabaseError
 from error import Error
-from variable_type import VariableType
 from buffer import cxBuffer
 
 import oci
@@ -67,6 +66,7 @@ class Variable(object):
         return self.c_actual_elements.value
     
     def set_actual_elements(self, value):
+        #TODO: PyCharm says it is read-only.
         self.c_actual_elements.value = value
         
     actual_elements = property(get_actual_elements, set_actual_elements)
@@ -172,13 +172,13 @@ class Variable(object):
             actual_elements_ref = byref(self.c_actual_elements)
         else:
             alloc_elems = 0
-            actual_elements_ref = 0
+            actual_elements_ref = oci.POINTER(oci.ub4)()
         
         # perform the bind
         if self.bound_name:
             buffer = cxBuffer.new_from_object(self.bound_name, self.environment.encoding)
             status = oci.OCIBindByName(self.bound_cursor_handle, byref(self.bind_handle),
-                        self.environment.error_handle, buffer.ptr,
+                        self.environment.error_handle, buffer.cast_ptr,
                         buffer.size, self.data, self.bufferSize,
                         self.type.oracle_type, self.indicator, self.actual_length,
                         self.return_code, alloc_elems,
@@ -286,9 +286,13 @@ class Variable(object):
     
         # copy the data from the original array to the new array
         for i in xrange(self.allocelems):
-            ctypes.memmove(byref(self.data, self.bufferSize*i),
-                           byref(orig_data, orig_buffer_size * i),
-                           orig_buffer_size)
+            to = ctypes.c_void_p(ctypes.addressof(self.data) + self.bufferSize*i)
+            frm = ctypes.c_void_p(ctypes.addressof(orig_data) + orig_buffer_size*i)
+            #ctypes.memmove(byref(self.data, self.bufferSize*i),
+            #               byref(orig_data, orig_buffer_size * i),
+            #               orig_buffer_size)
+            
+            ctypes.memmove(to, frm, orig_buffer_size)
     
         # force rebinding
         if self.bound_name or self.bound_pos > 0:
@@ -301,6 +305,11 @@ class Variable(object):
     @staticmethod
     def get_display_size(precision, scale, char_size, internal_size):
         return -1
+    
+    def __del__(self):
+        if self.is_allocated_internally:
+            if self.type.finalize_proc:
+                self.type.finalize_proc(self)
     
     #def __repr__(self):
         #if self.is_array:

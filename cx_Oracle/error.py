@@ -17,8 +17,10 @@ class Error(object):
                 handle_type = oci.OCI_HTYPE_ENV
 
             error_text = ctypes.create_string_buffer(4096)
+            error_text_as_ub1_pointer = ctypes.cast(error_text, oci.POINTER(oci.ub1))
             c_code = oci.sb4()
-            status = oci.OCIErrorGet(handle, 1, 0, byref(c_code), error_text, len(error_text), handle_type)
+            argtypes = oci.OCIErrorGet.argtypes
+            status = oci.OCIErrorGet(handle, 1, argtypes[2](), byref(c_code), error_text_as_ub1_pointer, len(error_text), handle_type)
             self.code = c_code.value
             if status != oci.OCI_SUCCESS:
                 raise InternalError("No Oracle error?")
@@ -30,3 +32,5 @@ class Error(object):
     
     def __str__(self):
         return self.message
+
+    __repr__ = __str__

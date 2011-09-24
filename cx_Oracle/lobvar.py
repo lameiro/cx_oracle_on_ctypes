@@ -3,8 +3,7 @@ from ctypes import byref
 
 from variable_type import VariableType
 import oci
-from utils import python3_or_better, cxString_from_encoded_string
-from utils import MAX_STRING_CHARS, MAX_BINARY_BYTES
+from utils import python3_or_better
 from buffer import cxBuffer
 from variable import Variable
 from externallobvar import LOB
@@ -62,21 +61,22 @@ class BaseLobVariableType(VariableType):
         
         for i in xrange(var.allocelems):
             if typed_data[i]:
-                c_is_temporary = ctypes.c_bool()
+                c_is_temporary = ctypes.c_long()
                 status = oci.OCILobIsTemporary(var.environment.handle,
                         var.environment.error_handle, typed_data[i], byref(c_is_temporary))
                 var.environment.check_for_error(status, "LobVar_PreFetch(): is temporary LOB?")
                 is_temporary = c_is_temporary.value
-                
-                if is_temporary:
+
+                 # connection can be closed already, therefore we need to check for a non-null handle
+                if is_temporary and var.connection.handle:
                     status = oci.OCILobFreeTemporary(var.connection.handle, var.environment.error_handle,
                                                  typed_data[i])
                     var.environment.check_for_error(status, "LobVar_PreFetch(): free temporary LOB")
-                
+
     def set_value(self, var, pos, value):
         # make sure have temporary LOBs set up
         typed_data = self.get_typed_data(var)
-        c_is_temporary = ctypes.c_bool()
+        c_is_temporary = ctypes.c_long()
         status = oci.OCILobIsTemporary(var.environment.handle, var.environment.error_handle,
                                        typed_data[pos], byref(c_is_temporary))
         var.environment.check_for_error(status, "LobVar_SetValue(): is temporary?")
