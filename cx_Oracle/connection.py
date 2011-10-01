@@ -11,7 +11,8 @@ from stringvar import STRING, vt_String
 from utils import DRIVER_NAME, ReplaceArgtypeByVoidPointerContextManager
 
 class Connection(object):
-    def __init__(self, user=None, password=None, dsn=None, mode=None, handle=None, pool=None, threaded=True, twophase=True, events=True, cclass=None, purity=0, newpassword=None, encoding=None, nencoding=None):
+    def __init__(self, user=None, password=None, dsn=None, mode=None, handle=None, pool=None, threaded=True,
+                 twophase=True, events=True, cclass=None, purity=None, newpassword=None, encoding=None, nencoding=None):
         self.server_handle = None #oci.POINTER(oci.OCIServer)()
         self.handle = None #oci.POINTER(oci.OCISvcCtx)()
         self.session_handle = None #oci.POINTER(oci.OCISession)()
@@ -24,11 +25,15 @@ class Connection(object):
         
         self.commit_mode = oci.OCI_DEFAULT # from Connection_New
 
-        # is the purity right?
-        # TODO: if oracle version bla bla bla
-        purity = 0
-        # else
-        # purity = oci.OCI_DEFAULT
+        if oci.ORACLE_11:
+            if purity is None: # purity not passed, use default
+                purity = oci.OCI_ATTR_PURITY_DEFAULT
+        else:
+            purity = 0 # not used in oracle 10.
+
+        if mode is None: # mode not passed, use default
+            mode = oci.OCI_DEFAULT
+
 
         if pool:
             self.environment = pool.environment.clone()
@@ -46,12 +51,13 @@ class Connection(object):
         self.password = password
         self.tnsentry = self.dsn = dsn
 
+        # TODO: attach and get_connection are not implemented
         if handle:
             self.attach(handle)
         if pool or cclass:
             self.get_connection(pool, cclass, purity)
 
-        self.connect(oci.OCI_DEFAULT, twophase, newpassword)
+        self.connect(mode, twophase, newpassword)
 
     def connect(self, mode, twophase, newpassword):
         """Create a new connection object by connecting to the database."""
@@ -70,7 +76,6 @@ class Connection(object):
         self.environment.check_for_error(status, "Connection_Connect(): allocate server handle")
 
         buffer = cxBuffer.new_from_object(self.dsn, self.environment.encoding)
-
         # attach to the server
         status = oci.OCIServerAttach(self.server_handle, self.environment.error_handle, buffer.cast_ptr, buffer.size, oci.OCI_DEFAULT)
         self.environment.check_for_error(status, "Connection_Connect(): server attach")
@@ -121,11 +126,10 @@ class Connection(object):
             status = oci.OCIAttrSet(self.session_handle, oci.OCI_HTYPE_SESSION, buffer.ptr, buffer.size, oci.OCI_ATTR_PASSWORD, self.environment.error_handle)
             self.environment.check_for_error(status, "Connection_Connect(): set password")
 
-        # TODO: #ifdef OCI_ATTR_DRIVER_NAME
-        buffer = cxBuffer.new_from_object(DRIVER_NAME, self.environment.encoding)
-        status = oci.OCIAttrSet(self.session_handle, oci.OCI_HTYPE_SESSION, buffer.ptr, buffer.size, oci.OCI_ATTR_DRIVER_NAME, self.environment.error_handle)
-        self.environment.check_for_error(status, "Connection_Connect(): set driver name")
-        #endif
+        if hasattr(oci, 'OCI_ATTR_DRIVER_NAME'):
+            buffer = cxBuffer.new_from_object(DRIVER_NAME, self.environment.encoding)
+            status = oci.OCIAttrSet(self.session_handle, oci.OCI_HTYPE_SESSION, buffer.ptr, buffer.size, oci.OCI_ATTR_DRIVER_NAME, self.environment.error_handle)
+            self.environment.check_for_error(status, "Connection_Connect(): set driver name")
 
         # set the session handle on the service context handle
         status = oci.OCIAttrSet(self.handle, oci.OCI_HTYPE_SVCCTX, self.session_handle, 0, oci.OCI_ATTR_SESSION, self.environment.error_handle)
@@ -133,6 +137,7 @@ class Connection(object):
         
         # if a new password has been specified, change it which will also
         # establish the session
+        #TODO: implement change_password
         if newpassword:
             return self.change_password(self.password) # TODO: removed one arg, what about the new password?!?!
 
@@ -231,3 +236,12 @@ class Connection(object):
     def maxBytesPerCharacter(self):
         """Return the maximum number of bytes per character."""
         return self.environment.maxBytesPerCharacter
+
+    def attach(self, handle):
+        raise NotImplementedError()
+
+    def get_connection(self, pool, cclass, purity):
+        raise NotImplementedError()
+
+    def change_password(self, password):
+        raise NotImplementedError()

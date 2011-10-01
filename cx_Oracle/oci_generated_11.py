@@ -1,7 +1,7 @@
 '''Wrapper for oci.h
 
 Generated with:
-ctypesgen.py /home/lameiro/projects/cx_oracle_on_ctypes/instantclient_11_2/sdk/include/oci.h /home/lameiro/projects/cx_oracle_on_ctypes/instantclient_11_2/sdk/include/ociap.h /home/lameiro/projects/cx_oracle_on_ctypes/instantclient_11_2/sdk/include/ocidfn.h /home/lameiro/projects/cx_oracle_on_ctypes/instantclient_11_2/sdk/include/ori.h /home/lameiro/projects/cx_oracle_on_ctypes/instantclient_11_2/sdk/include/ort.h /home/lameiro/projects/cx_oracle_on_ctypes/instantclient_11_2/sdk/include/orl.h /home/lameiro/projects/cx_oracle_on_ctypes/instantclient_11_2/sdk/include/oro.h -I /home/lameiro/projects/cx_oracle_on_ctypes/instantclient_11_2/sdk/include -o oci.py -l libclntsh.so.11.1
+/home/lameiro/projects/ctypesgen/ctypesgen.py /home/lameiro/projects/cx_oracle_on_ctypes/instantclient_11_2/sdk/include/oci.h /home/lameiro/projects/cx_oracle_on_ctypes/instantclient_11_2/sdk/include/ociap.h /home/lameiro/projects/cx_oracle_on_ctypes/instantclient_11_2/sdk/include/ocidfn.h /home/lameiro/projects/cx_oracle_on_ctypes/instantclient_11_2/sdk/include/ori.h /home/lameiro/projects/cx_oracle_on_ctypes/instantclient_11_2/sdk/include/ort.h /home/lameiro/projects/cx_oracle_on_ctypes/instantclient_11_2/sdk/include/orl.h /home/lameiro/projects/cx_oracle_on_ctypes/instantclient_11_2/sdk/include/oro.h -I /home/lameiro/projects/cx_oracle_on_ctypes/instantclient_11_2/sdk/include -o oci_generated_11.py -l libclntsh.so.11.1
 
 Do not modify this file.
 '''

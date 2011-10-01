@@ -440,11 +440,12 @@ of dictionaries."""
         self.row_num += 1
         self.rowcount += 1
 
+        result_as_tuple = tuple(result_as_list)
         # if a row factory is defined, call it
         if self.rowfactory is not None:
-            return self.rowfactory(tuple)
-
-        return tuple(result_as_list)
+            return self.rowfactory(result_as_tuple) #TODO: Apparently not covered by tests
+        
+        return result_as_tuple
 
     def more_rows(self):
         """Returns a boolean indicating if more rows can be retrieved from the cursor."""
@@ -474,9 +475,9 @@ of dictionaries."""
 
         # setup return value
         more_rows_to_fetch = self.more_rows()
-        if not more_rows_to_fetch:
-            return None
-        return self.create_row()
+        if more_rows_to_fetch:
+            return self.create_row()
+
 
     def fetchall(self):
         """Fetch all remaining rows from the cursor."""
