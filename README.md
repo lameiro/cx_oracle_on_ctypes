@@ -6,7 +6,7 @@ cx_Oracle built on ctypes. 100% API-compatible with cx_Oracle.
 Why?!
 -----
 
-cx_Oracle is great code, but as many CPython extensions, it is not compatible with other Python implementations. I rewrote it in pure-Python to be able to use PyPy and possibly Jython and IronPython.
+cx_Oracle is great code, but as many CPython extensions, it is not compatible with other Python implementations. I rewrote it in pure-Python to be able to use PyPy and possibly Jython and IronPython. Also, ctypes is the recommended way to integrate C code with PyPy, as it can benefit from the JIT and no CPython emulation must be done.
 
 How good is it?
 ---------------
