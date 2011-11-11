@@ -1,7 +1,7 @@
 What
 ----
 
-cx_Oracle built on ctypes. 100% API-compatible with cx_Oracle.
+cx_Oracle written in 100% pure-Python, on top of ctypes. 100% API-compatible with cx_Oracle.
 
 Why?!
 -----

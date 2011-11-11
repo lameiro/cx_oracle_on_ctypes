@@ -66,7 +66,7 @@ class Variable(object):
         return self.c_actual_elements.value
     
     def set_actual_elements(self, value):
-        #TODO: PyCharm says it is read-only.
+        #TODO: PyCharm says it is read-only. Is it right?
         self.c_actual_elements.value = value
         
     actual_elements = property(get_actual_elements, set_actual_elements)

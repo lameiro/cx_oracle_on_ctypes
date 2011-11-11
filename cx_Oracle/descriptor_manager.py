@@ -11,10 +11,9 @@ class DescriptorManager(object):
                 
     def initialize(self, variable_type, var, cursor, oracle_descriptor_type, message):
         typed_data = variable_type.get_typed_data(var)
-        # initialize the LOB locators
         
         context_manager = ReplaceArgtypeByVoidPointerContextManager(oci.OCIDescriptorAlloc, 1)
-
+        
         try:
             context_manager.__enter__()
             arg4 = oci.OCIDescriptorAlloc.argtypes[4]()

@@ -20,6 +20,7 @@ from datetimevar import DATETIME
 from lobvar import NCLOB, CLOB, BLOB, BFILE
 from externallobvar import LOB
 from timestampvar import TIMESTAMP
+from intervalvar import INTERVAL
 
 def symbol_exists(symbol_name):
     pass
