@@ -31,9 +31,6 @@ def makedsn(*args):
 
     return format % args
 
-
-# broken start!
-
 ORACLE_VERSION_10G, ORACLE_VERSION_10GR2, ORACLE_VERSION_11G = range(3)
 
 ORACLE_VERSION = ORACLE_VERSION_11G

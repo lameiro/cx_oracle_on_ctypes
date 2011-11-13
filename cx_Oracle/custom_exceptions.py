@@ -1,10 +1,10 @@
 from utils import python3_or_better
 
 if python3_or_better():
-    CXORA_BASE_EXCEPTION = StandardError
+    CXORA_BASE_EXCEPTION = Exception
     CXORA_TYPE_ERROR = 'expecting string or bytes object'
 else:
-    CXORA_BASE_EXCEPTION = Exception
+    CXORA_BASE_EXCEPTION = StandardError
     CXORA_TYPE_ERROR = 'expecting string, unicode or buffer object'
 
 class Warning(CXORA_BASE_EXCEPTION):
