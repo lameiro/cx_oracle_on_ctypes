@@ -21,6 +21,7 @@ from lobvar import NCLOB, CLOB, BLOB, BFILE
 from externallobvar import LOB
 from timestampvar import TIMESTAMP
 from intervalvar import INTERVAL
+from cursorvar import CURSOR
 
 def symbol_exists(symbol_name):
     pass

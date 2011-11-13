@@ -2,7 +2,7 @@ from ctypes import byref
 import ctypes
 
 import oci
-from pythonic_oci import OCIAttrGet, OCIParamGet
+from pythonic_oci import OCIAttrGet, OCIParamGet, OCIHandleAlloc
 from custom_exceptions import InterfaceError, ProgrammingError, DatabaseError, NotSupportedError
 from buffer import cxBuffer
 from utils import is_sequence, cxString_from_encoded_string, python3_or_better
@@ -36,6 +36,8 @@ class Cursor(object):
         self.inputtypehandler = None # public interface
         self.outputtypehandler = None # public interface
         self.rowfactory = None # public interface
+        
+        self.is_owned = False # WARNING: cx_Oracle doesn't initialize it
 
     def raise_if_not_open(self):
         if not self.is_open:
@@ -873,3 +875,7 @@ constantly free the descriptor when an error takes place."""
         """Set the size of all of the long columns or just one of them."""
         self.output_size = size
         self.output_size_column = column
+        
+    def allocate_handle(self):
+        self.is_owned = True
+        OCIHandleAlloc(self.environment, self.handle, oci.OCI_HTYPE_STMT, "Cursor_New()")

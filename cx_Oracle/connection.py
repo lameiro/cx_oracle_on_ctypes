@@ -8,7 +8,8 @@ from cursor import Cursor
 from custom_exceptions import Error, InterfaceError
 from variable import Variable
 from stringvar import STRING, vt_String
-from utils import DRIVER_NAME, ReplaceArgtypeByVoidPointerContextManager
+from utils import DRIVER_NAME
+from pythonic_oci import OCIHandleAlloc
 
 class Connection(object):
     def __init__(self, user=None, password=None, dsn=None, mode=None, handle=None, pool=None, threaded=True,
@@ -65,15 +66,7 @@ class Connection(object):
 
         # allocate the server handle
         self.server_handle = oci.POINTER(oci.OCIServer)()
-        context_manager = ReplaceArgtypeByVoidPointerContextManager(oci.OCIHandleAlloc, 1)
-        try:
-            context_manager.__enter__()
-            argtypes = oci.OCIHandleAlloc.argtypes
-            status = oci.OCIHandleAlloc(self.environment.handle, byref(self.server_handle), oci.OCI_HTYPE_SERVER, 0, argtypes[4]())
-        finally:
-            context_manager.__exit__()
-        
-        self.environment.check_for_error(status, "Connection_Connect(): allocate server handle")
+        OCIHandleAlloc(self.environment, self.server_handle, oci.OCI_HTYPE_SERVER, "Connection_Connect(): allocate server handle")
 
         buffer = cxBuffer.new_from_object(self.dsn, self.environment.encoding)
         # attach to the server
@@ -82,13 +75,7 @@ class Connection(object):
 
         # allocate the service context handle
         self.handle = oci.POINTER(oci.OCISvcCtx)()
-        try:
-            context_manager.__enter__()
-            status = oci.OCIHandleAlloc(self.environment.handle, byref(self.handle), oci.OCI_HTYPE_SVCCTX, 0, argtypes[4]())
-        finally:
-            context_manager.__exit__()
-        
-        self.environment.check_for_error(status, "Connection_Connect(): allocate service context handle")
+        OCIHandleAlloc(self.environment, self.handle, oci.OCI_HTYPE_SVCCTX, "Connection_Connect(): allocate service context handle")
 
         # set attribute for server handle
         status = oci.OCIAttrSet(self.handle, oci.OCI_HTYPE_SVCCTX, self.server_handle, 0, oci.OCI_ATTR_SERVER, self.environment.error_handle)
@@ -103,14 +90,9 @@ class Connection(object):
             status = oci.OCIAttrSet(self.server_handle, oci.OCI_HTYPE_SERVER, "cx_Oracle", 0, oci.OCI_ATTR_EXTERNAL_NAME, self.environment.error_handle)
             self.environment.check_for_error(status, "Connection_Connect(): set external name")
         
+        # allocate session handle
         self.session_handle = oci.POINTER(oci.OCISession)()
-        try:
-            context_manager.__enter__()
-            status = oci.OCIHandleAlloc(self.environment.handle, byref(self.session_handle), oci.OCI_HTYPE_SESSION, 0, argtypes[4]())
-        finally:
-            context_manager.__exit__()
-        
-        self.environment.check_for_error(status, "Connection_Connect(): allocate session handle")
+        OCIHandleAlloc(self.environment, self.session_handle, oci.OCI_HTYPE_SESSION, "Connection_Connect(): allocate session handle")
 
         # set user name in session handle
         buffer = cxBuffer.new_from_object(self.username, self.environment.encoding)

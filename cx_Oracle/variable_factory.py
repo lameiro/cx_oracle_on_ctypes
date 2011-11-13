@@ -15,13 +15,14 @@ from datetimevar import vt_DateTime, vt_Date
 from lobvar import vt_NCLOB, vt_CLOB, vt_BLOB, vt_BFILE
 from timestampvar import vt_Timestamp
 from intervalvar import vt_Interval
+from cursorvar import vt_Cursor
 
 from variable import Variable
 
 if not python3_or_better():
     from numbervar import vt_Integer
     
-all_variable_types = [vt_Float, vt_NumberAsString, vt_Boolean, vt_LongInteger, vt_String, vt_FixedNationalChar, vt_NationalCharString, vt_FixedChar, vt_Rowid, vt_Binary, vt_LongString, vt_LongBinary, vt_DateTime, vt_Date, vt_NCLOB, vt_CLOB, vt_BLOB, vt_BFILE, vt_Timestamp, vt_Interval]
+all_variable_types = [vt_Float, vt_NumberAsString, vt_Boolean, vt_LongInteger, vt_String, vt_FixedNationalChar, vt_NationalCharString, vt_FixedChar, vt_Rowid, vt_Binary, vt_LongString, vt_LongBinary, vt_DateTime, vt_Date, vt_NCLOB, vt_CLOB, vt_BLOB, vt_BFILE, vt_Timestamp, vt_Interval, vt_Cursor]
 
 if not python3_or_better():
     all_variable_types.append(vt_Integer)
@@ -33,6 +34,7 @@ from datetimevar import DATETIME
 from lobvar import NCLOB, CLOB, BLOB, BFILE
 from timestampvar import TIMESTAMP
 from intervalvar import INTERVAL
+from cursorvar import CURSOR
 
 if not python3_or_better():
     from stringvar import UNICODE, FIXED_UNICODE
@@ -41,7 +43,6 @@ from variable_type import VariableType
 from custom_exceptions import NotSupportedError
 
 # TODO: Not implemented yet
-vt_Cursor = VariableType()
 vt_Object = VariableType()
 vt_NativeFloat = VariableType()
 
@@ -96,7 +97,7 @@ mapping_python_type_to_variable_type = {
     INTERVAL: vt_Interval,
     #timedelta: vt_Interval,
     TIMESTAMP: vt_Timestamp,
-    #CURSOR: vt_Cursor,
+    CURSOR: vt_Cursor,
     #OBJECT: vt_Object,
 }
 
