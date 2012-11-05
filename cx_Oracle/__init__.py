@@ -23,6 +23,9 @@ from timestampvar import TIMESTAMP
 from intervalvar import INTERVAL
 from cursorvar import CURSOR
 
+# compatible with cx_Oracle
+from oci import OCI_SYSDBA as SYSDBA
+
 def symbol_exists(symbol_name):
     pass
 
