@@ -25,6 +25,7 @@ from cursorvar import CURSOR
 
 # compatible with cx_Oracle
 from oci import OCI_SYSDBA as SYSDBA
+from oci import OCI_SYSOPER as SYSOPER
 
 def symbol_exists(symbol_name):
     pass
@@ -68,6 +69,7 @@ def TimestampFromTicks(args):
 apilevel = '2.0'
 threadsafety = 2
 paramstyle = 'named'
+buildtime = '' # TODO: Find out what cx_oracle puts here
 
 version = '0.1'
 

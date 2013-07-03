@@ -587,7 +587,12 @@ add_library_search_dirs([])
 
 # Begin libraries
 
-_libs["libclntsh.so.10.1"] = load_library("libclntsh.so.10.1")
+# MANUALLY changed: fix for windows, which has a different library name
+if sys.platform == 'win32':
+    _libs["libclntsh.so.10.1"] = load_library("oci.dll")
+else:
+    _libs["libclntsh.so.10.1"] = load_library("libclntsh.so.10.1")
+
 
 # 1 libraries
 # End libraries
