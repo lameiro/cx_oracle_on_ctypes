@@ -61,7 +61,7 @@ class BaseLobVariableType(VariableType):
         
         for i in xrange(var.allocelems):
             if typed_data[i]:
-                c_is_temporary = ctypes.c_long()
+                c_is_temporary = ctypes.c_int()
                 status = oci.OCILobIsTemporary(var.environment.handle,
                         var.environment.error_handle, typed_data[i], byref(c_is_temporary))
                 var.environment.check_for_error(status, "LobVar_PreFetch(): is temporary LOB?")
@@ -76,7 +76,7 @@ class BaseLobVariableType(VariableType):
     def set_value(self, var, pos, value):
         # make sure have temporary LOBs set up
         typed_data = self.get_typed_data(var)
-        c_is_temporary = ctypes.c_long()
+        c_is_temporary = ctypes.c_int()
         status = oci.OCILobIsTemporary(var.environment.handle, var.environment.error_handle,
                                        typed_data[pos], byref(c_is_temporary))
         var.environment.check_for_error(status, "LobVar_SetValue(): is temporary?")
