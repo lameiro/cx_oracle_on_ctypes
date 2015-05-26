@@ -1,0 +1,68 @@
+--- ../scripts/manual_patches/oci_generated_12_orig.py	2015-05-25 17:38:10.080787086 +0200
++++ oci_generated_12.py	2015-05-26 02:15:59.949488737 +0200
+@@ -31,20 +31,20 @@
+     # POINTER(c_void), so it can be treated as a real pointer.
+     _fields_ = [('dummy', c_int)]
+ 
+-def POINTER(obj):
+-    p = ctypes.POINTER(obj)
+-
+-    # Convert None to a real NULL pointer to work around bugs
+-    # in how ctypes handles None on 64-bit platforms
+-    if not isinstance(p.from_param, classmethod):
+-        def from_param(cls, x):
+-            if x is None:
+-                return cls()
+-            else:
+-                return x
+-        p.from_param = classmethod(from_param)
+-
+-    return p
++#def POINTER(obj):
++#    p = ctypes.POINTER(obj)
++#
++#    # Convert None to a real NULL pointer to work around bugs
++#    # in how ctypes handles None on 64-bit platforms
++#    if not isinstance(p.from_param, classmethod):
++#        def from_param(cls, x):
++#            if x is None:
++#                return cls()
++#            else:
++#                return x
++#        p.from_param = classmethod(from_param)
++#
++#    return p
+ 
+ class UserString:
+     def __init__(self, seq):
+@@ -604,7 +604,11 @@
+ 
+ # Begin libraries
+ 
+-_libs["libclntsh.so.12.1"] = load_library("libclntsh.so.12.1")
++# MANUALLY changed: fix for windows, which has a different library name
++if sys.platform == 'win32':
++    _libs["libclntsh.so.12.1"] = load_library("oci.dll")
++else:
++    _libs["libclntsh.so.12.1"] = load_library("libclntsh.so.12.1")
+ 
+ # 1 libraries
+ # End libraries
+@@ -2674,16 +2678,12 @@
+     'OCIDateYYYY',
+     'OCIDateMM',
+     'OCIDateDD',
+-    'unnamed_1',
+-]
+-struct_OCIDate._anonymous_ = [
+-    'unnamed_1',
+ ]
++
+ struct_OCIDate._fields_ = [
+     ('OCIDateYYYY', sb2),
+     ('OCIDateMM', ub1),
+     ('OCIDateDD', ub1),
+-    ('unnamed_1', OCIDateTime),
+ ]
+ 
+ OCIDate = struct_OCIDate # /home/lameiro/projects/instantclient/instantclient_12_1/sdk/include/orl.h: 1733
