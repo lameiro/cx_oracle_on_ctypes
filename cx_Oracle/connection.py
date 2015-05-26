@@ -193,6 +193,8 @@ class Connection(object):
 
     def __del__(self):
         """Deallocate the connection, disconnecting from the database if necessary."""
+        if not self.environment:
+            return
         if self.release:
             oci.OCITransRollback(self.handle, self.environment.error_handle, oci.OCI_DEFAULT)
             oci.OCISessionRelease(self.handle, self.environment.error_handle, None, 0, oci.OCI_DEFAULT)
@@ -202,6 +204,9 @@ class Connection(object):
                 oci.OCISessionEnd(self.handle, self.environment.error_handle, self.session_handle, oci.OCI_DEFAULT)
             if self.server_handle:
                 oci.OCIServerDetach(self.server_handle, self.environment.error_handle, oci.OCI_DEFAULT)
+        oci.OCIHandleFree(self.environment.error_handle, oci.OCI_HTYPE_ERROR)
+        oci.OCIHandleFree(self.environment.handle, oci.OCI_HTYPE_ENV)
+        self.environment = None
                 
     def commit(self):
         """Commit the transaction on the connection."""
