@@ -202,6 +202,8 @@ class Connection(object):
                 oci.OCISessionEnd(self.handle, self.environment.error_handle, self.session_handle, oci.OCI_DEFAULT)
             if self.server_handle:
                 oci.OCIServerDetach(self.server_handle, self.environment.error_handle, oci.OCI_DEFAULT)
+
+        self.environment = None # break GC cycle, needed at least for CPy because both Connection and Environment have __del__
                 
     def commit(self):
         """Commit the transaction on the connection."""

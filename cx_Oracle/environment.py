@@ -13,7 +13,7 @@ class Environment(object):
         
         self.fixedWidth = self.maxBytesPerCharacter = 1
         self.maxStringBytes = MAX_STRING_CHARS
-        self.cloneEnv = None
+        self.cloneEnv = None # used for connection pooling, but that is still TODO
 
         self.numberToStringFormatBuffer = cxBuffer.new_null()
         self.numberFromStringFormatBuffer = cxBuffer.new_null()
@@ -123,3 +123,11 @@ class Environment(object):
         self.check_for_error(status, "Environment_GetCharacterSetName(): translate NLS charset")
         
         return c_iana_charset_name_array.value
+
+    def __del__(self):
+        if self.error_handle:
+            oci.OCIHandleFree(self.error_handle, oci.OCI_HTYPE_ERROR)
+        if self.handle and not self.cloneEnv:
+            oci.OCIHandleFree(self.handle, oci.OCI_HTYPE_ENV)
+
+        self.cloneEnv = None # break GC cycles 
