@@ -30,10 +30,11 @@ from oci import OCI_SYSOPER as SYSOPER
 def symbol_exists(symbol_name):
     pass
 
-def makedsn(*args):
+def makedsn(*args, **kwargs):
+    args = list(args)
+    args.append(kwargs['sid'])
     format = "(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=%s)(PORT=%s)))(CONNECT_DATA=(SID=%s)))"
-
-    return format % args
+    return format % tuple(args)
 
 ORACLE_VERSION_10G, ORACLE_VERSION_10GR2, ORACLE_VERSION_11G = range(3)
 
