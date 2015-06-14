@@ -30,10 +30,18 @@ from oci import OCI_SYSOPER as SYSOPER
 def symbol_exists(symbol_name):
     pass
 
-def makedsn(*args):
-    format = "(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=%s)(PORT=%s)))(CONNECT_DATA=(SID=%s)))"
+def makedsn(host, port, sid='', service_name=''):
+    if sid == '' and service_name == '':
+        raise TypeError('makedsn requires either sid or servicename, but both were passed empty')
 
-    return format % args
+    if sid:
+        connect_data_obj = sid
+        dsn_format = "(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=%s)(PORT=%s)))(CONNECT_DATA=(SID=%s)))"
+    else:
+        connect_data_obj = service_name
+        dsn_format = "(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=%s)(PORT=%s)))(CONNECT_DATA=(SERVICE_NAME=%s)))"
+
+    return dsn_format % (host, port, connect_data_obj)
 
 ORACLE_VERSION_10G, ORACLE_VERSION_10GR2, ORACLE_VERSION_11G = range(3)
 
