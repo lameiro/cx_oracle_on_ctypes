@@ -24,8 +24,7 @@ To install the python module, just put the cx_Oracle dir in your PYTHONPATH.
 License
 -------
 
-3-clause BSD, like cx_Oracle.
-For cx_Oracle license, see: http://cx-oracle.sourceforge.net/html/license.html
+3-clause BSD, like cx_Oracle. See http://opensource.org/licenses/BSD-3-Clause
 
 Differences
 -----------
