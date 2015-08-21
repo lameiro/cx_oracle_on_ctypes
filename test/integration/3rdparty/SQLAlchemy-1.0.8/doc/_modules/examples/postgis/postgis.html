@@ -1,0 +1,413 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        
+        <title>
+            
+    
+    examples.postgis.postgis
+ &mdash;
+    SQLAlchemy 1.0 Documentation
+
+        </title>
+
+        
+            <!-- begin iterate through SQLA + sphinx environment css_files -->
+                <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+                <link rel="stylesheet" href="../../../_static/changelog.css" type="text/css" />
+                <link rel="stylesheet" href="../../../_static/sphinx_paramlinks.css" type="text/css" />
+                <link rel="stylesheet" href="../../../_static/docs.css" type="text/css" />
+            <!-- end iterate through SQLA + sphinx environment css_files -->
+        
+
+        
+
+    
+
+    <!-- begin layout.mako headers -->
+
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+        <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="top" title="SQLAlchemy 1.0 Documentation" href="../../../index.html" />
+        <link rel="up" title="Module code" href="../../index.html" />
+    <!-- end layout.mako headers -->
+
+
+    </head>
+    <body>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="docs-container">
+
+
+
+
+
+<div id="docs-top-navigation-container" class="body-background">
+<div id="docs-header">
+    <div id="docs-version-header">
+        Release: <span class="version-num">1.0.8</span> | Release Date: July 22, 2015
+    </div>
+
+    <h1>SQLAlchemy 1.0 Documentation</h1>
+
+</div>
+</div>
+
+<div id="docs-body-container">
+
+    <div id="fixed-sidebar" class="">
+
+        <div id="index-nav">
+            <form class="search" action="../../../search.html" method="get">
+              <input type="text" name="q" size="12" /> <input type="submit" value="Search" />
+              <input type="hidden" name="check_keywords" value="yes" />
+              <input type="hidden" name="area" value="default" />
+            </form>
+
+            <p>
+            <a href="../../../contents.html">Contents</a> |
+            <a href="../../../genindex.html">Index</a>
+            </p>
+
+        </div>
+
+
+    </div>
+
+    
+
+    <div id="docs-body" class="" >
+        
+<h1>Source code for examples.postgis.postgis</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">sqlalchemy.types</span> <span class="kn">import</span> <span class="n">UserDefinedType</span><span class="p">,</span> <span class="n">_Binary</span><span class="p">,</span> <span class="n">TypeDecorator</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.sql</span> <span class="kn">import</span> <span class="n">expression</span><span class="p">,</span> <span class="n">type_coerce</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span><span class="p">,</span> <span class="n">Table</span>
+<span class="kn">import</span> <span class="nn">binascii</span>
+
+<span class="c"># Python datatypes</span>
+
+<span class="k">class</span> <span class="nc">GisElement</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents a geometry value.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">desc</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;&lt;</span><span class="si">%s</span><span class="s"> at 0x</span><span class="si">%x</span><span class="s">; </span><span class="si">%r</span><span class="s">&gt;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+                                    <span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">desc</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">BinaryGisElement</span><span class="p">(</span><span class="n">GisElement</span><span class="p">,</span> <span class="n">expression</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents a Geometry value expressed as binary.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="n">expression</span><span class="o">.</span><span class="n">Function</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;ST_GeomFromEWKB&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span>
+                                    <span class="n">type_</span><span class="o">=</span><span class="n">Geometry</span><span class="p">(</span><span class="n">coerce_</span><span class="o">=</span><span class="s">&quot;binary&quot;</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">desc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_hex</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">as_hex</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">binascii</span><span class="o">.</span><span class="n">hexlify</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">TextualGisElement</span><span class="p">(</span><span class="n">GisElement</span><span class="p">,</span> <span class="n">expression</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents a Geometry value expressed as text.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">srid</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">desc</span> <span class="o">=</span> <span class="n">desc</span>
+        <span class="n">expression</span><span class="o">.</span><span class="n">Function</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;ST_GeomFromText&quot;</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">srid</span><span class="p">,</span>
+                                    <span class="n">type_</span><span class="o">=</span><span class="n">Geometry</span><span class="p">)</span>
+
+
+<span class="c"># SQL datatypes.</span>
+
+<span class="k">class</span> <span class="nc">Geometry</span><span class="p">(</span><span class="n">UserDefinedType</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base PostGIS Geometry column type.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;GEOMETRY&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">srid</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">coerce_</span><span class="o">=</span><span class="s">&quot;text&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dimension</span> <span class="o">=</span> <span class="n">dimension</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">srid</span> <span class="o">=</span> <span class="n">srid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coerce</span> <span class="o">=</span> <span class="n">coerce_</span>
+
+    <span class="k">class</span> <span class="nc">comparator_factory</span><span class="p">(</span><span class="n">UserDefinedType</span><span class="o">.</span><span class="n">Comparator</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Define custom operations for geometry types.&quot;&quot;&quot;</span>
+
+        <span class="c"># override the __eq__() operator</span>
+        <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">op</span><span class="p">(</span><span class="s">&#39;~=&#39;</span><span class="p">)(</span><span class="n">other</span><span class="p">)</span>
+
+        <span class="c"># add a custom operator</span>
+        <span class="k">def</span> <span class="nf">intersects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">op</span><span class="p">(</span><span class="s">&#39;&amp;&amp;&#39;</span><span class="p">)(</span><span class="n">other</span><span class="p">)</span>
+
+        <span class="c"># any number of GIS operators can be overridden/added here</span>
+        <span class="c"># using the techniques above.</span>
+
+    <span class="k">def</span> <span class="nf">_coerce_compared_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">get_col_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="k">def</span> <span class="nf">bind_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bindvalue</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">coerce</span> <span class="o">==</span> <span class="s">&quot;text&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">TextualGisElement</span><span class="p">(</span><span class="n">bindvalue</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">coerce</span> <span class="o">==</span> <span class="s">&quot;binary&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">BinaryGisElement</span><span class="p">(</span><span class="n">bindvalue</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">column_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">coerce</span> <span class="o">==</span> <span class="s">&quot;text&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">func</span><span class="o">.</span><span class="n">ST_AsText</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">type_</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">coerce</span> <span class="o">==</span> <span class="s">&quot;binary&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">func</span><span class="o">.</span><span class="n">ST_AsBinary</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">type_</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">bind_processor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dialect</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">GisElement</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">desc</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">process</span>
+
+    <span class="k">def</span> <span class="nf">result_processor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dialect</span><span class="p">,</span> <span class="n">coltype</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">coerce</span> <span class="o">==</span> <span class="s">&quot;text&quot;</span><span class="p">:</span>
+            <span class="n">fac</span> <span class="o">=</span> <span class="n">TextualGisElement</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">coerce</span> <span class="o">==</span> <span class="s">&quot;binary&quot;</span><span class="p">:</span>
+            <span class="n">fac</span> <span class="o">=</span> <span class="n">BinaryGisElement</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">False</span>
+        <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">fac</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">process</span>
+
+    <span class="k">def</span> <span class="nf">adapt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">impltype</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">impltype</span><span class="p">(</span><span class="n">dimension</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dimension</span><span class="p">,</span>
+                <span class="n">srid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">srid</span><span class="p">,</span> <span class="n">coerce_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">coerce</span><span class="p">)</span>
+
+<span class="c"># other datatypes can be added as needed.</span>
+
+<span class="k">class</span> <span class="nc">Point</span><span class="p">(</span><span class="n">Geometry</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;POINT&#39;</span>
+
+<span class="k">class</span> <span class="nc">Curve</span><span class="p">(</span><span class="n">Geometry</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;CURVE&#39;</span>
+
+<span class="k">class</span> <span class="nc">LineString</span><span class="p">(</span><span class="n">Curve</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;LINESTRING&#39;</span>
+
+<span class="c"># ... etc.</span>
+
+
+<span class="c"># DDL integration</span>
+<span class="c"># Postgis historically has required AddGeometryColumn/DropGeometryColumn</span>
+<span class="c"># and other management methods in order to create Postgis columns.  Newer</span>
+<span class="c"># versions don&#39;t appear to require these special steps anymore.  However,</span>
+<span class="c"># here we illustrate how to set up these features in any case.</span>
+
+<span class="k">def</span> <span class="nf">setup_ddl_events</span><span class="p">():</span>
+    <span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">Table</span><span class="p">,</span> <span class="s">&quot;before_create&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">before_create</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        <span class="n">dispatch</span><span class="p">(</span><span class="s">&quot;before-create&quot;</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">connection</span><span class="p">)</span>
+
+    <span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">Table</span><span class="p">,</span> <span class="s">&quot;after_create&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">after_create</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        <span class="n">dispatch</span><span class="p">(</span><span class="s">&quot;after-create&quot;</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">connection</span><span class="p">)</span>
+
+    <span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">Table</span><span class="p">,</span> <span class="s">&quot;before_drop&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">before_drop</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        <span class="n">dispatch</span><span class="p">(</span><span class="s">&quot;before-drop&quot;</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">connection</span><span class="p">)</span>
+
+    <span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">Table</span><span class="p">,</span> <span class="s">&quot;after_drop&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">after_drop</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        <span class="n">dispatch</span><span class="p">(</span><span class="s">&quot;after-drop&quot;</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">connection</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">dispatch</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">bind</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">event</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;before-create&#39;</span><span class="p">,</span> <span class="s">&#39;before-drop&#39;</span><span class="p">):</span>
+            <span class="n">regular_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">c</span> <span class="k">if</span> <span class="ow">not</span>
+                                    <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">Geometry</span><span class="p">)]</span>
+            <span class="n">gis_cols</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">regular_cols</span><span class="p">)</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s">&quot;_saved_columns&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">c</span>
+
+            <span class="c"># temporarily patch a set of columns not including the</span>
+            <span class="c"># Geometry columns</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">expression</span><span class="o">.</span><span class="n">ColumnCollection</span><span class="p">(</span><span class="o">*</span><span class="n">regular_cols</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">event</span> <span class="o">==</span> <span class="s">&#39;before-drop&#39;</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">gis_cols</span><span class="p">:</span>
+                    <span class="n">bind</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                            <span class="n">select</span><span class="p">([</span>
+                                <span class="n">func</span><span class="o">.</span><span class="n">DropGeometryColumn</span><span class="p">(</span>
+                                    <span class="s">&#39;public&#39;</span><span class="p">,</span> <span class="n">table</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">)],</span>
+                                    <span class="n">autocommit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                            <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="s">&#39;after-create&#39;</span><span class="p">:</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;_saved_columns&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">c</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">Geometry</span><span class="p">):</span>
+                    <span class="n">bind</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                            <span class="n">select</span><span class="p">([</span>
+                                    <span class="n">func</span><span class="o">.</span><span class="n">AddGeometryColumn</span><span class="p">(</span>
+                                        <span class="n">table</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                        <span class="n">c</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">srid</span><span class="p">,</span>
+                                        <span class="n">c</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                        <span class="n">c</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">dimension</span><span class="p">)],</span>
+                                <span class="n">autocommit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                        <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="s">&#39;after-drop&#39;</span><span class="p">:</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;_saved_columns&#39;</span><span class="p">)</span>
+<span class="n">setup_ddl_events</span><span class="p">()</span>
+
+
+
+<span class="c"># illustrate usage</span>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="p">(</span><span class="n">create_engine</span><span class="p">,</span> <span class="n">MetaData</span><span class="p">,</span> <span class="n">Column</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span>
+        <span class="n">func</span><span class="p">,</span> <span class="n">select</span><span class="p">)</span>
+    <span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">sessionmaker</span>
+    <span class="kn">from</span> <span class="nn">sqlalchemy.ext.declarative</span> <span class="kn">import</span> <span class="n">declarative_base</span>
+
+    <span class="n">engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="s">&#39;postgresql://scott:tiger@localhost/test&#39;</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="n">MetaData</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+    <span class="n">Base</span> <span class="o">=</span> <span class="n">declarative_base</span><span class="p">(</span><span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Road</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+        <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;roads&#39;</span>
+
+        <span class="n">road_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">road_name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+        <span class="n">road_geom</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Geometry</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+
+
+    <span class="n">metadata</span><span class="o">.</span><span class="n">drop_all</span><span class="p">()</span>
+    <span class="n">metadata</span><span class="o">.</span><span class="n">create_all</span><span class="p">()</span>
+
+    <span class="n">session</span> <span class="o">=</span> <span class="n">sessionmaker</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="n">engine</span><span class="p">)()</span>
+
+    <span class="c"># Add objects.  We can use strings...</span>
+    <span class="n">session</span><span class="o">.</span><span class="n">add_all</span><span class="p">([</span>
+        <span class="n">Road</span><span class="p">(</span><span class="n">road_name</span><span class="o">=</span><span class="s">&#39;Jeff Rd&#39;</span><span class="p">,</span> <span class="n">road_geom</span><span class="o">=</span><span class="s">&#39;LINESTRING(191232 243118,191108 243242)&#39;</span><span class="p">),</span>
+        <span class="n">Road</span><span class="p">(</span><span class="n">road_name</span><span class="o">=</span><span class="s">&#39;Geordie Rd&#39;</span><span class="p">,</span> <span class="n">road_geom</span><span class="o">=</span><span class="s">&#39;LINESTRING(189141 244158,189265 244817)&#39;</span><span class="p">),</span>
+        <span class="n">Road</span><span class="p">(</span><span class="n">road_name</span><span class="o">=</span><span class="s">&#39;Paul St&#39;</span><span class="p">,</span> <span class="n">road_geom</span><span class="o">=</span><span class="s">&#39;LINESTRING(192783 228138,192612 229814)&#39;</span><span class="p">),</span>
+        <span class="n">Road</span><span class="p">(</span><span class="n">road_name</span><span class="o">=</span><span class="s">&#39;Graeme Ave&#39;</span><span class="p">,</span> <span class="n">road_geom</span><span class="o">=</span><span class="s">&#39;LINESTRING(189412 252431,189631 259122)&#39;</span><span class="p">),</span>
+        <span class="n">Road</span><span class="p">(</span><span class="n">road_name</span><span class="o">=</span><span class="s">&#39;Phil Tce&#39;</span><span class="p">,</span> <span class="n">road_geom</span><span class="o">=</span><span class="s">&#39;LINESTRING(190131 224148,190871 228134)&#39;</span><span class="p">),</span>
+    <span class="p">])</span>
+
+    <span class="c"># or use an explicit TextualGisElement (similar to saying func.GeomFromText())</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">Road</span><span class="p">(</span><span class="n">road_name</span><span class="o">=</span><span class="s">&#39;Dave Cres&#39;</span><span class="p">,</span> <span class="n">road_geom</span><span class="o">=</span><span class="n">TextualGisElement</span><span class="p">(</span><span class="s">&#39;LINESTRING(198231 263418,198213 268322)&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+    <span class="c"># pre flush, the TextualGisElement represents the string we sent.</span>
+    <span class="k">assert</span> <span class="nb">str</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">road_geom</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;LINESTRING(198231 263418,198213 268322)&#39;</span>
+
+    <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+    <span class="c"># after flush and/or commit, all the TextualGisElements become PersistentGisElements.</span>
+    <span class="k">assert</span> <span class="nb">str</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">road_geom</span><span class="p">)</span> <span class="o">==</span> <span class="s">&quot;LINESTRING(198231 263418,198213 268322)&quot;</span>
+
+    <span class="n">r1</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Road</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Road</span><span class="o">.</span><span class="n">road_name</span> <span class="o">==</span> <span class="s">&#39;Graeme Ave&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+
+    <span class="c"># illustrate the overridden __eq__() operator.</span>
+
+    <span class="c"># strings come in as TextualGisElements</span>
+    <span class="n">r2</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Road</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Road</span><span class="o">.</span><span class="n">road_geom</span> <span class="o">==</span> <span class="s">&#39;LINESTRING(189412 252431,189631 259122)&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+
+    <span class="n">r3</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Road</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Road</span><span class="o">.</span><span class="n">road_geom</span> <span class="o">==</span> <span class="n">r1</span><span class="o">.</span><span class="n">road_geom</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+
+    <span class="k">assert</span> <span class="n">r1</span> <span class="ow">is</span> <span class="n">r2</span> <span class="ow">is</span> <span class="n">r3</span>
+
+    <span class="c"># core usage just fine:</span>
+
+    <span class="n">road_table</span> <span class="o">=</span> <span class="n">Road</span><span class="o">.</span><span class="n">__table__</span>
+    <span class="n">stmt</span> <span class="o">=</span> <span class="n">select</span><span class="p">([</span><span class="n">road_table</span><span class="p">])</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">road_table</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">road_geom</span><span class="o">.</span><span class="n">intersects</span><span class="p">(</span><span class="n">r1</span><span class="o">.</span><span class="n">road_geom</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">stmt</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">())</span>
+
+    <span class="c"># TODO: for some reason the auto-generated labels have the internal replacement</span>
+    <span class="c"># strings exposed, even though PG doesn&#39;t complain</span>
+
+    <span class="c"># look up the hex binary version, using SQLAlchemy casts</span>
+    <span class="n">as_binary</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">select</span><span class="p">([</span><span class="n">type_coerce</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">road_geom</span><span class="p">,</span> <span class="n">Geometry</span><span class="p">(</span><span class="n">coerce_</span><span class="o">=</span><span class="s">&quot;binary&quot;</span><span class="p">))]))</span>
+    <span class="k">assert</span> <span class="n">as_binary</span><span class="o">.</span><span class="n">as_hex</span> <span class="o">==</span> \
+        <span class="s">&#39;01020000000200000000000000b832084100000000e813104100000000283208410000000088601041&#39;</span>
+
+    <span class="c"># back again, same method !</span>
+    <span class="n">as_text</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">select</span><span class="p">([</span><span class="n">type_coerce</span><span class="p">(</span><span class="n">as_binary</span><span class="p">,</span> <span class="n">Geometry</span><span class="p">(</span><span class="n">coerce_</span><span class="o">=</span><span class="s">&quot;text&quot;</span><span class="p">))]))</span>
+    <span class="k">assert</span> <span class="n">as_text</span><span class="o">.</span><span class="n">desc</span> <span class="o">==</span> <span class="s">&quot;LINESTRING(198231 263418,198213 268322)&quot;</span>
+
+
+    <span class="n">session</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+
+    <span class="n">metadata</span><span class="o">.</span><span class="n">drop_all</span><span class="p">()</span></pre></div>
+    </div>
+
+</div>
+
+<div id="docs-bottom-navigation" class="docs-navigation-links">
+
+    <div id="docs-copyright">
+        &copy; <a href="../../../copyright.html">Copyright</a> 2007-2015, the SQLAlchemy authors and contributors.
+        Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.3.1.
+    </div>
+</div>
+
+</div>
+
+
+        
+        
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+          URL_ROOT:    '../../../',
+          VERSION:     '1.0.8',
+          COLLAPSE_MODINDEX: false,
+          FILE_SUFFIX: '.html'
+      };
+    </script>
+
+    <!-- begin iterate through sphinx environment script_files -->
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <!-- end iterate through sphinx environment script_files -->
+
+    <script type="text/javascript" src="../../../_static/detectmobile.js"></script>
+    <script type="text/javascript" src="../../../_static/init.js"></script>
+
+
+    </body>
+</html>
+
+

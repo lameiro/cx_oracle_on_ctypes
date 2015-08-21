@@ -1,0 +1,258 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        
+        <title>
+            
+    
+    Dialects
+ &mdash;
+    SQLAlchemy 1.0 Documentation
+
+        </title>
+
+        
+            <!-- begin iterate through SQLA + sphinx environment css_files -->
+                <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+                <link rel="stylesheet" href="../_static/changelog.css" type="text/css" />
+                <link rel="stylesheet" href="../_static/sphinx_paramlinks.css" type="text/css" />
+                <link rel="stylesheet" href="../_static/docs.css" type="text/css" />
+            <!-- end iterate through SQLA + sphinx environment css_files -->
+        
+
+        
+
+    
+
+    <!-- begin layout.mako headers -->
+
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+        <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="top" title="SQLAlchemy 1.0 Documentation" href="../index.html" />
+        <link rel="next" title="Firebird" href="firebird.html" />
+        <link rel="prev" title="Core Internals" href="../core/internals.html" />
+    <!-- end layout.mako headers -->
+
+
+    </head>
+    <body>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="docs-container">
+
+
+
+
+
+<div id="docs-top-navigation-container" class="body-background">
+<div id="docs-header">
+    <div id="docs-version-header">
+        Release: <span class="version-num">1.0.8</span> | Release Date: July 22, 2015
+    </div>
+
+    <h1>SQLAlchemy 1.0 Documentation</h1>
+
+</div>
+</div>
+
+<div id="docs-body-container">
+
+    <div id="fixed-sidebar" class="withsidebar">
+
+
+        <div id="docs-sidebar-popout">
+            <h3><a href="../index.html">SQLAlchemy 1.0 Documentation</a></h3>
+
+            <p id="sidebar-topnav">
+                <a href="../contents.html">Contents</a> |
+                <a href="../genindex.html">Index</a>
+            </p>
+
+            <div id="sidebar-search">
+                <form class="search" action="../search.html" method="get">
+                  <input type="text" name="q" size="12" /> <input type="submit" value="Search" />
+                  <input type="hidden" name="check_keywords" value="yes" />
+                  <input type="hidden" name="area" value="default" />
+                </form>
+            </div>
+
+        </div>
+
+        <div id="docs-sidebar">
+
+        
+        <h3>
+            <a href="../index.html" title="SQLAlchemy 1.0 Documentation">SQLAlchemy 1.0 Documentation</a>
+        </h3>
+
+        <ul>
+<li><span class="link-container first"><a class="reference external" href="../intro.html">Overview</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="../orm/index.html">SQLAlchemy ORM</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="../core/index.html">SQLAlchemy Core</a></span></li>
+<li class="selected"><span class="link-container first"><strong>Dialects</strong><a class="paramlink headerlink reference internal" href="#">¶</a></span><ul>
+<li><span class="link-container first"><a class="reference external" href="#included-dialects">Included Dialects</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#external-dialects">External Dialects</a></span><ul>
+<li><span class="link-container first"><a class="reference external" href="#production-ready">Production Ready</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#experimental-incomplete">Experimental / Incomplete</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#attic">Attic</a></span></li>
+</ul>
+</li>
+<li><span class="link-container first"><a class="reference external" href="firebird.html">Firebird</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="mssql.html">Microsoft SQL Server</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="mysql.html">MySQL</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="oracle.html">Oracle</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="postgresql.html">PostgreSQL</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="sqlite.html">SQLite</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="sybase.html">Sybase</a></span></li>
+</ul>
+</li>
+<li><span class="link-container first"><a class="reference external" href="../faq/index.html">Frequently Asked Questions</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="../changelog/index.html">Changes and Migration</a></span></li>
+</ul>
+
+
+
+        </div>
+
+    </div>
+
+    
+
+    <div id="docs-body" class="withsidebar" >
+        
+<div class="section" id="dialects">
+<span id="dialect-toplevel"></span><h1>Dialects<a class="headerlink" href="#dialects" title="Permalink to this headline">¶</a></h1>
+<p>The <strong>dialect</strong> is the system SQLAlchemy uses to communicate with various types of <a class="reference internal" href="../glossary.html#term-dbapi"><span class="xref std std-term">DBAPI</span></a> implementations and databases.
+The sections that follow contain reference documentation and notes specific to the usage of each backend, as well as notes
+for the various DBAPIs.</p>
+<p>All dialects require that an appropriate DBAPI driver is installed.</p>
+<div class="section" id="included-dialects">
+<h2>Included Dialects<a class="headerlink" href="#included-dialects" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firebird.html">Firebird</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mssql.html">Microsoft SQL Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mysql.html">MySQL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oracle.html">Oracle</a></li>
+<li class="toctree-l1"><a class="reference internal" href="postgresql.html">PostgreSQL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sqlite.html">SQLite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sybase.html">Sybase</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="external-dialects">
+<span id="external-toplevel"></span><h2>External Dialects<a class="headerlink" href="#external-dialects" title="Permalink to this headline">¶</a></h2>
+<div class="versionchanged">
+<p><span class="versionmodified">Changed in version 0.8: </span>As of SQLAlchemy 0.8, several dialects have been moved to external
+projects, and dialects for new databases will also be published
+as external projects.   The rationale here is to keep the base
+SQLAlchemy install and test suite from growing inordinately large.</p>
+<p>The &#8220;classic&#8221; dialects such as SQLite, MySQL, Postgresql, Oracle,
+SQL Server, and Firebird will remain in the Core for the time being.</p>
+</div>
+<div class="versionchanged">
+<p><span class="versionmodified">Changed in version 1.0: </span>The Drizzle dialect has been moved into the third party system.</p>
+</div>
+<p>Current external dialect projects for SQLAlchemy include:</p>
+<div class="section" id="production-ready">
+<h3>Production Ready<a class="headerlink" href="#production-ready" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><a class="reference external" href="http://code.google.com/p/ibm-db/wiki/README">ibm_db_sa</a> - driver for IBM DB2 and Informix,
+developed jointly by IBM and SQLAlchemy developers.</li>
+<li><a class="reference external" href="https://pypi.python.org/pypi/redshift-sqlalchemy">redshift-sqlalchemy</a> - driver for Amazon Redshift, adapts
+the existing Postgresql/psycopg2 driver.</li>
+<li><a class="reference external" href="https://github.com/blue-yonder/sqlalchemy_exasol">sqlalchemy_exasol</a> - driver for EXASolution.</li>
+<li><a class="reference external" href="https://github.com/sqlanywhere/sqlalchemy-sqlany">sqlalchemy-sqlany</a> - driver for SAP Sybase SQL
+Anywhere, developed by SAP.</li>
+<li><a class="reference external" href="https://github.com/gijzelaerr/sqlalchemy-monetdb">sqlalchemy-monetdb</a> - driver for MonetDB.</li>
+</ul>
+</div>
+<div class="section" id="experimental-incomplete">
+<h3>Experimental / Incomplete<a class="headerlink" href="#experimental-incomplete" title="Permalink to this headline">¶</a></h3>
+<p>Dialects that are in an incomplete state or are considered somewhat experimental.</p>
+<ul class="simple">
+<li><a class="reference external" href="https://bitbucket.org/zzzeek/calchipan/">CALCHIPAN</a> - Adapts <a class="reference external" href="http://pandas.pydata.org/">Pandas</a> dataframes to SQLAlchemy.</li>
+<li><a class="reference external" href="https://bitbucket.org/zzzeek/sqlalchemy-cubrid">sqlalchemy-cubrid</a> - driver for the CUBRID database.</li>
+</ul>
+</div>
+<div class="section" id="attic">
+<h3>Attic<a class="headerlink" href="#attic" title="Permalink to this headline">¶</a></h3>
+<p>Dialects in the &#8220;attic&#8221; are those that were contributed for SQLAlchemy long ago
+but have received little attention or demand since then, and are now moved out to
+their own repositories in at best a semi-working state.
+Community members interested in these dialects should feel free to pick up on
+their current codebase and fork off into working libraries.</p>
+<ul class="simple">
+<li><a class="reference external" href="https://bitbucket.org/zzzeek/sqlalchemy-access">sqlalchemy-access</a> - driver for Microsoft Access.</li>
+<li><a class="reference external" href="https://bitbucket.org/zzzeek/sqlalchemy-drizzle">sqlalchemy-drizzle</a> - driver for the Drizzle MySQL variant.</li>
+<li><a class="reference external" href="https://bitbucket.org/zzzeek/sqlalchemy-informixdb">sqlalchemy-informixdb</a> - driver for the informixdb DBAPI.</li>
+<li><a class="reference external" href="https://bitbucket.org/zzzeek/sqlalchemy-maxdb">sqlalchemy-maxdb</a> - driver for the MaxDB database</li>
+</ul>
+</div>
+</div>
+</div>
+
+    </div>
+
+</div>
+
+<div id="docs-bottom-navigation" class="docs-navigation-links">
+        Previous:
+        <a href="../core/internals.html" title="previous chapter">Core Internals</a>
+        Next:
+        <a href="firebird.html" title="next chapter">Firebird</a>
+
+    <div id="docs-copyright">
+        &copy; <a href="../copyright.html">Copyright</a> 2007-2015, the SQLAlchemy authors and contributors.
+        Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.3.1.
+    </div>
+</div>
+
+</div>
+
+
+        
+        
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+          URL_ROOT:    '../',
+          VERSION:     '1.0.8',
+          COLLAPSE_MODINDEX: false,
+          FILE_SUFFIX: '.html'
+      };
+    </script>
+
+    <!-- begin iterate through sphinx environment script_files -->
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+    <!-- end iterate through sphinx environment script_files -->
+
+    <script type="text/javascript" src="../_static/detectmobile.js"></script>
+    <script type="text/javascript" src="../_static/init.js"></script>
+
+
+    </body>
+</html>
+
+

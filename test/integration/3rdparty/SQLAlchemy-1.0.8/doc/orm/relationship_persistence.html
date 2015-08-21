@@ -1,0 +1,396 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        
+        <title>
+            
+    
+    Special Relationship Persistence Patterns
+ &mdash;
+    SQLAlchemy 1.0 Documentation
+
+        </title>
+
+        
+            <!-- begin iterate through SQLA + sphinx environment css_files -->
+                <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+                <link rel="stylesheet" href="../_static/changelog.css" type="text/css" />
+                <link rel="stylesheet" href="../_static/sphinx_paramlinks.css" type="text/css" />
+                <link rel="stylesheet" href="../_static/docs.css" type="text/css" />
+            <!-- end iterate through SQLA + sphinx environment css_files -->
+        
+
+        
+
+    
+
+    <!-- begin layout.mako headers -->
+
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+        <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="top" title="SQLAlchemy 1.0 Documentation" href="../index.html" />
+        <link rel="up" title="Relationship Configuration" href="relationships.html" />
+        <link rel="next" title="Relationships API" href="relationship_api.html" />
+        <link rel="prev" title="Collection Configuration and Techniques" href="collections.html" />
+    <!-- end layout.mako headers -->
+
+
+    </head>
+    <body>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="docs-container">
+
+
+
+
+
+<div id="docs-top-navigation-container" class="body-background">
+<div id="docs-header">
+    <div id="docs-version-header">
+        Release: <span class="version-num">1.0.8</span> | Release Date: July 22, 2015
+    </div>
+
+    <h1>SQLAlchemy 1.0 Documentation</h1>
+
+</div>
+</div>
+
+<div id="docs-body-container">
+
+    <div id="fixed-sidebar" class="withsidebar">
+
+
+        <div id="docs-sidebar-popout">
+            <h3><a href="../index.html">SQLAlchemy 1.0 Documentation</a></h3>
+
+            <p id="sidebar-topnav">
+                <a href="../contents.html">Contents</a> |
+                <a href="../genindex.html">Index</a>
+            </p>
+
+            <div id="sidebar-search">
+                <form class="search" action="../search.html" method="get">
+                  <input type="text" name="q" size="12" /> <input type="submit" value="Search" />
+                  <input type="hidden" name="check_keywords" value="yes" />
+                  <input type="hidden" name="area" value="default" />
+                </form>
+            </div>
+
+        </div>
+
+        <div id="docs-sidebar">
+
+        
+        <h3>
+            <a href="index.html" title="SQLAlchemy ORM">SQLAlchemy ORM</a>
+        </h3>
+
+        <ul>
+<li><span class="link-container first"><a class="reference external" href="tutorial.html">Object Relational Tutorial</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="mapper_config.html">Mapper Configuration</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="relationships.html">Relationship Configuration</a></span><ul>
+<li><span class="link-container first"><a class="reference external" href="basic_relationships.html">Basic Relationship Patterns</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="self_referential.html">Adjacency List Relationships</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="backref.html">Linking Relationships with Backref</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="join_conditions.html">Configuring how Relationship Joins</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="collections.html">Collection Configuration and Techniques</a></span></li>
+<li class="selected"><span class="link-container first"><strong>Special Relationship Persistence Patterns</strong><a class="paramlink headerlink reference internal" href="#">¶</a></span><ul>
+<li><span class="link-container first"><a class="reference external" href="#rows-that-point-to-themselves-mutually-dependent-rows">Rows that point to themselves / Mutually Dependent Rows</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#mutable-primary-keys-update-cascades">Mutable Primary Keys / Update Cascades</a></span></li>
+</ul>
+</li>
+<li><span class="link-container first"><a class="reference external" href="relationship_api.html">Relationships API</a></span></li>
+</ul>
+</li>
+<li><span class="link-container first"><a class="reference external" href="loading_objects.html">Loading Objects</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="session.html">Using the Session</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="extending.html">Events and Internals</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="extensions/index.html">ORM Extensions</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="examples.html">ORM Examples</a></span></li>
+</ul>
+
+
+
+        </div>
+
+    </div>
+
+    
+
+    <div id="docs-body" class="withsidebar" >
+        
+<div class="section" id="special-relationship-persistence-patterns">
+<h1>Special Relationship Persistence Patterns<a class="headerlink" href="#special-relationship-persistence-patterns" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="rows-that-point-to-themselves-mutually-dependent-rows">
+<span id="post-update"></span><h2>Rows that point to themselves / Mutually Dependent Rows<a class="headerlink" href="#rows-that-point-to-themselves-mutually-dependent-rows" title="Permalink to this headline">¶</a></h2>
+<p>This is a very specific case where relationship() must perform an INSERT and a
+second UPDATE in order to properly populate a row (and vice versa an UPDATE
+and DELETE in order to delete without violating foreign key constraints). The
+two use cases are:</p>
+<ul class="simple">
+<li>A table contains a foreign key to itself, and a single row will
+have a foreign key value pointing to its own primary key.</li>
+<li>Two tables each contain a foreign key referencing the other
+table, with a row in each table referencing the other.</li>
+</ul>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>          user
+---------------------------------
+user_id    name   related_user_id
+   1       &#39;ed&#39;          1</pre></div>
+</div>
+<p>Or:</p>
+<div class="highlight-python"><div class="highlight"><pre>             widget                                                  entry
+-------------------------------------------             ---------------------------------
+widget_id     name        favorite_entry_id             entry_id      name      widget_id
+   1       &#39;somewidget&#39;          5                         5       &#39;someentry&#39;     1</pre></div>
+</div>
+<p>In the first case, a row points to itself. Technically, a database that uses
+sequences such as PostgreSQL or Oracle can INSERT the row at once using a
+previously generated value, but databases which rely upon autoincrement-style
+primary key identifiers cannot. The <a class="reference internal" href="relationship_api.html#sqlalchemy.orm.relationship" title="sqlalchemy.orm.relationship"><code class="xref py py-func docutils literal"><span class="pre">relationship()</span></code></a>
+always assumes a &#8220;parent/child&#8221; model of row population during flush, so
+unless you are populating the primary key/foreign key columns directly,
+<a class="reference internal" href="relationship_api.html#sqlalchemy.orm.relationship" title="sqlalchemy.orm.relationship"><code class="xref py py-func docutils literal"><span class="pre">relationship()</span></code></a> needs to use two statements.</p>
+<p>In the second case, the &#8220;widget&#8221; row must be inserted before any referring
+&#8220;entry&#8221; rows, but then the &#8220;favorite_entry_id&#8221; column of that &#8220;widget&#8221; row
+cannot be set until the &#8220;entry&#8221; rows have been generated. In this case, it&#8217;s
+typically impossible to insert the &#8220;widget&#8221; and &#8220;entry&#8221; rows using just two
+INSERT statements; an UPDATE must be performed in order to keep foreign key
+constraints fulfilled. The exception is if the foreign keys are configured as
+&#8220;deferred until commit&#8221; (a feature some databases support) and if the
+identifiers were populated manually (again essentially bypassing
+<a class="reference internal" href="relationship_api.html#sqlalchemy.orm.relationship" title="sqlalchemy.orm.relationship"><code class="xref py py-func docutils literal"><span class="pre">relationship()</span></code></a>).</p>
+<p>To enable the usage of a supplementary UPDATE statement,
+we use the <a class="reference internal" href="relationship_api.html#sqlalchemy.orm.relationship.params.post_update" title="sqlalchemy.orm.relationship"><code class="xref py py-paramref docutils literal"><span class="pre">post_update</span></code></a> option
+of <a class="reference internal" href="relationship_api.html#sqlalchemy.orm.relationship" title="sqlalchemy.orm.relationship"><code class="xref py py-func docutils literal"><span class="pre">relationship()</span></code></a>.  This specifies that the linkage between the
+two rows should be created using an UPDATE statement after both rows
+have been INSERTED; it also causes the rows to be de-associated with
+each other via UPDATE before a DELETE is emitted.  The flag should
+be placed on just <em>one</em> of the relationships, preferably the
+many-to-one side.  Below we illustrate
+a complete example, including two <a class="reference internal" href="../core/constraints.html#sqlalchemy.schema.ForeignKey" title="sqlalchemy.schema.ForeignKey"><code class="xref py py-class docutils literal"><span class="pre">ForeignKey</span></code></a> constructs:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">,</span> <span class="n">Column</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.ext.declarative</span> <span class="kn">import</span> <span class="n">declarative_base</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">relationship</span>
+
+<span class="n">Base</span> <span class="o">=</span> <span class="n">declarative_base</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">Entry</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;entry&#39;</span>
+    <span class="n">entry_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">widget_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;widget.widget_id&#39;</span><span class="p">))</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">50</span><span class="p">))</span>
+
+<span class="k">class</span> <span class="nc">Widget</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;widget&#39;</span>
+
+    <span class="n">widget_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">favorite_entry_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span>
+                            <span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;entry.entry_id&#39;</span><span class="p">,</span>
+                            <span class="n">name</span><span class="o">=</span><span class="s">&quot;fk_favorite_entry&quot;</span><span class="p">))</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">50</span><span class="p">))</span>
+
+    <span class="n">entries</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="n">Entry</span><span class="p">,</span> <span class="n">primaryjoin</span><span class="o">=</span>
+                                    <span class="n">widget_id</span><span class="o">==</span><span class="n">Entry</span><span class="o">.</span><span class="n">widget_id</span><span class="p">)</span>
+    <span class="n">favorite_entry</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="n">Entry</span><span class="p">,</span>
+                                <span class="n">primaryjoin</span><span class="o">=</span>
+                                    <span class="n">favorite_entry_id</span><span class="o">==</span><span class="n">Entry</span><span class="o">.</span><span class="n">entry_id</span><span class="p">,</span>
+                                <span class="n">post_update</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></pre></div>
+</div>
+<p>When a structure against the above configuration is flushed, the &#8220;widget&#8221; row will be
+INSERTed minus the &#8220;favorite_entry_id&#8221; value, then all the &#8220;entry&#8221; rows will
+be INSERTed referencing the parent &#8220;widget&#8221; row, and then an UPDATE statement
+will populate the &#8220;favorite_entry_id&#8221; column of the &#8220;widget&#8221; table (it&#8217;s one
+row at a time for the time being):</p>
+<div class="highlight-pycon+sql"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">w1</span> <span class="o">=</span> <span class="n">Widget</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;somewidget&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e1</span> <span class="o">=</span> <span class="n">Entry</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;someentry&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">w1</span><span class="o">.</span><span class="n">favorite_entry</span> <span class="o">=</span> <span class="n">e1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">w1</span><span class="o">.</span><span class="n">entries</span> <span class="o">=</span> <span class="p">[</span><span class="n">e1</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">session</span><span class="o">.</span><span class="n">add_all</span><span class="p">([</span><span class="n">w1</span><span class="p">,</span> <span class="n">e1</span><span class="p">])</span>
+<a href='#' class='sql_link'>sql</a><span class="gp">&gt;&gt;&gt; </span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<div class='popup_sql'>BEGIN (implicit)
+INSERT INTO widget (favorite_entry_id, name) VALUES (?, ?)
+(None, 'somewidget')
+INSERT INTO entry (widget_id, name) VALUES (?, ?)
+(1, 'someentry')
+UPDATE widget SET favorite_entry_id=? WHERE widget.widget_id = ?
+(1, 1)
+COMMIT</div></pre></div>
+</div>
+<p>An additional configuration we can specify is to supply a more
+comprehensive foreign key constraint on <code class="docutils literal"><span class="pre">Widget</span></code>, such that
+it&#8217;s guaranteed that <code class="docutils literal"><span class="pre">favorite_entry_id</span></code> refers to an <code class="docutils literal"><span class="pre">Entry</span></code>
+that also refers to this <code class="docutils literal"><span class="pre">Widget</span></code>.  We can use a composite foreign key,
+as illustrated below:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> \
+        <span class="n">Column</span><span class="p">,</span> <span class="n">UniqueConstraint</span><span class="p">,</span> <span class="n">ForeignKeyConstraint</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.ext.declarative</span> <span class="kn">import</span> <span class="n">declarative_base</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">relationship</span>
+
+<span class="n">Base</span> <span class="o">=</span> <span class="n">declarative_base</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">Entry</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;entry&#39;</span>
+    <span class="n">entry_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">widget_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;widget.widget_id&#39;</span><span class="p">))</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">50</span><span class="p">))</span>
+    <span class="n">__table_args__</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">UniqueConstraint</span><span class="p">(</span><span class="s">&quot;entry_id&quot;</span><span class="p">,</span> <span class="s">&quot;widget_id&quot;</span><span class="p">),</span>
+    <span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Widget</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;widget&#39;</span>
+
+    <span class="n">widget_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">autoincrement</span><span class="o">=</span><span class="s">&#39;ignore_fk&#39;</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">favorite_entry_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">50</span><span class="p">))</span>
+
+    <span class="n">__table_args__</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">ForeignKeyConstraint</span><span class="p">(</span>
+            <span class="p">[</span><span class="s">&quot;widget_id&quot;</span><span class="p">,</span> <span class="s">&quot;favorite_entry_id&quot;</span><span class="p">],</span>
+            <span class="p">[</span><span class="s">&quot;entry.widget_id&quot;</span><span class="p">,</span> <span class="s">&quot;entry.entry_id&quot;</span><span class="p">],</span>
+            <span class="n">name</span><span class="o">=</span><span class="s">&quot;fk_favorite_entry&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="n">entries</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="n">Entry</span><span class="p">,</span> <span class="n">primaryjoin</span><span class="o">=</span>
+                                    <span class="n">widget_id</span><span class="o">==</span><span class="n">Entry</span><span class="o">.</span><span class="n">widget_id</span><span class="p">,</span>
+                                    <span class="n">foreign_keys</span><span class="o">=</span><span class="n">Entry</span><span class="o">.</span><span class="n">widget_id</span><span class="p">)</span>
+    <span class="n">favorite_entry</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="n">Entry</span><span class="p">,</span>
+                                <span class="n">primaryjoin</span><span class="o">=</span>
+                                    <span class="n">favorite_entry_id</span><span class="o">==</span><span class="n">Entry</span><span class="o">.</span><span class="n">entry_id</span><span class="p">,</span>
+                                <span class="n">foreign_keys</span><span class="o">=</span><span class="n">favorite_entry_id</span><span class="p">,</span>
+                                <span class="n">post_update</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></pre></div>
+</div>
+<p>The above mapping features a composite <a class="reference internal" href="../core/constraints.html#sqlalchemy.schema.ForeignKeyConstraint" title="sqlalchemy.schema.ForeignKeyConstraint"><code class="xref py py-class docutils literal"><span class="pre">ForeignKeyConstraint</span></code></a>
+bridging the <code class="docutils literal"><span class="pre">widget_id</span></code> and <code class="docutils literal"><span class="pre">favorite_entry_id</span></code> columns.  To ensure
+that <code class="docutils literal"><span class="pre">Widget.widget_id</span></code> remains an &#8220;autoincrementing&#8221; column we specify
+<a class="reference internal" href="../core/metadata.html#sqlalchemy.schema.Column.params.autoincrement" title="sqlalchemy.schema.Column"><code class="xref py py-paramref docutils literal"><span class="pre">autoincrement</span></code></a> to the value <code class="docutils literal"><span class="pre">&quot;ignore_fk&quot;</span></code>
+on <a class="reference internal" href="../core/metadata.html#sqlalchemy.schema.Column" title="sqlalchemy.schema.Column"><code class="xref py py-class docutils literal"><span class="pre">Column</span></code></a>, and additionally on each
+<a class="reference internal" href="relationship_api.html#sqlalchemy.orm.relationship" title="sqlalchemy.orm.relationship"><code class="xref py py-func docutils literal"><span class="pre">relationship()</span></code></a> we must limit those columns considered as part of
+the foreign key for the purposes of joining and cross-population.</p>
+</div>
+<div class="section" id="mutable-primary-keys-update-cascades">
+<span id="passive-updates"></span><h2>Mutable Primary Keys / Update Cascades<a class="headerlink" href="#mutable-primary-keys-update-cascades" title="Permalink to this headline">¶</a></h2>
+<p>When the primary key of an entity changes, related items
+which reference the primary key must also be updated as
+well. For databases which enforce referential integrity,
+it&#8217;s required to use the database&#8217;s ON UPDATE CASCADE
+functionality in order to propagate primary key changes
+to referenced foreign keys - the values cannot be out
+of sync for any moment.</p>
+<p>For databases that don&#8217;t support this, such as SQLite and
+MySQL without their referential integrity options turned
+on, the <a class="reference internal" href="relationship_api.html#sqlalchemy.orm.relationship.params.passive_updates" title="sqlalchemy.orm.relationship"><code class="xref py py-paramref docutils literal"><span class="pre">passive_updates</span></code></a> flag can
+be set to <code class="docutils literal"><span class="pre">False</span></code>, most preferably on a one-to-many or
+many-to-many <a class="reference internal" href="relationship_api.html#sqlalchemy.orm.relationship" title="sqlalchemy.orm.relationship"><code class="xref py py-func docutils literal"><span class="pre">relationship()</span></code></a>, which instructs
+SQLAlchemy to issue UPDATE statements individually for
+objects referenced in the collection, loading them into
+memory if not already locally present. The
+<a class="reference internal" href="relationship_api.html#sqlalchemy.orm.relationship.params.passive_updates" title="sqlalchemy.orm.relationship"><code class="xref py py-paramref docutils literal"><span class="pre">passive_updates</span></code></a> flag can also be <code class="docutils literal"><span class="pre">False</span></code> in
+conjunction with ON UPDATE CASCADE functionality,
+although in that case the unit of work will be issuing
+extra SELECT and UPDATE statements unnecessarily.</p>
+<p>A typical mutable primary key setup might look like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;user&#39;</span>
+
+    <span class="n">username</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">50</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">fullname</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
+
+    <span class="c"># passive_updates=False *only* needed if the database</span>
+    <span class="c"># does not implement ON UPDATE CASCADE</span>
+    <span class="n">addresses</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s">&quot;Address&quot;</span><span class="p">,</span> <span class="n">passive_updates</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Address</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;address&#39;</span>
+
+    <span class="n">email</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">50</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">username</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">50</span><span class="p">),</span>
+                <span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;user.username&#39;</span><span class="p">,</span> <span class="n">onupdate</span><span class="o">=</span><span class="s">&quot;cascade&quot;</span><span class="p">)</span>
+            <span class="p">)</span></pre></div>
+</div>
+<p><a class="reference internal" href="relationship_api.html#sqlalchemy.orm.relationship.params.passive_updates" title="sqlalchemy.orm.relationship"><code class="xref py py-paramref docutils literal"><span class="pre">passive_updates</span></code></a> is set to <code class="docutils literal"><span class="pre">True</span></code> by default,
+indicating that ON UPDATE CASCADE is expected to be in
+place in the usual case for foreign keys that expect
+to have a mutating parent key.</p>
+<p>A <a class="reference internal" href="relationship_api.html#sqlalchemy.orm.relationship.params.passive_updates" title="sqlalchemy.orm.relationship"><code class="xref py py-paramref docutils literal"><span class="pre">passive_updates</span></code></a> setting of False may be configured on any
+direction of relationship, i.e. one-to-many, many-to-one,
+and many-to-many, although it is much more effective when
+placed just on the one-to-many or many-to-many side.
+Configuring the <a class="reference internal" href="relationship_api.html#sqlalchemy.orm.relationship.params.passive_updates" title="sqlalchemy.orm.relationship"><code class="xref py py-paramref docutils literal"><span class="pre">passive_updates</span></code></a>
+to False only on the
+many-to-one side will have only a partial effect, as the
+unit of work searches only through the current identity
+map for objects that may be referencing the one with a
+mutating primary key, not throughout the database.</p>
+</div>
+</div>
+
+    </div>
+
+</div>
+
+<div id="docs-bottom-navigation" class="docs-navigation-links">
+        Previous:
+        <a href="collections.html" title="previous chapter">Collection Configuration and Techniques</a>
+        Next:
+        <a href="relationship_api.html" title="next chapter">Relationships API</a>
+
+    <div id="docs-copyright">
+        &copy; <a href="../copyright.html">Copyright</a> 2007-2015, the SQLAlchemy authors and contributors.
+        Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.3.1.
+    </div>
+</div>
+
+</div>
+
+
+        
+        
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+          URL_ROOT:    '../',
+          VERSION:     '1.0.8',
+          COLLAPSE_MODINDEX: false,
+          FILE_SUFFIX: '.html'
+      };
+    </script>
+
+    <!-- begin iterate through sphinx environment script_files -->
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+    <!-- end iterate through sphinx environment script_files -->
+
+    <script type="text/javascript" src="../_static/detectmobile.js"></script>
+    <script type="text/javascript" src="../_static/init.js"></script>
+
+
+    </body>
+</html>
+
+

@@ -1,0 +1,356 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        
+        <title>
+            
+    
+    examples.elementtree.optimized_al
+ &mdash;
+    SQLAlchemy 1.0 Documentation
+
+        </title>
+
+        
+            <!-- begin iterate through SQLA + sphinx environment css_files -->
+                <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+                <link rel="stylesheet" href="../../../_static/changelog.css" type="text/css" />
+                <link rel="stylesheet" href="../../../_static/sphinx_paramlinks.css" type="text/css" />
+                <link rel="stylesheet" href="../../../_static/docs.css" type="text/css" />
+            <!-- end iterate through SQLA + sphinx environment css_files -->
+        
+
+        
+
+    
+
+    <!-- begin layout.mako headers -->
+
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+        <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="top" title="SQLAlchemy 1.0 Documentation" href="../../../index.html" />
+        <link rel="up" title="Module code" href="../../index.html" />
+    <!-- end layout.mako headers -->
+
+
+    </head>
+    <body>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="docs-container">
+
+
+
+
+
+<div id="docs-top-navigation-container" class="body-background">
+<div id="docs-header">
+    <div id="docs-version-header">
+        Release: <span class="version-num">1.0.8</span> | Release Date: July 22, 2015
+    </div>
+
+    <h1>SQLAlchemy 1.0 Documentation</h1>
+
+</div>
+</div>
+
+<div id="docs-body-container">
+
+    <div id="fixed-sidebar" class="">
+
+        <div id="index-nav">
+            <form class="search" action="../../../search.html" method="get">
+              <input type="text" name="q" size="12" /> <input type="submit" value="Search" />
+              <input type="hidden" name="check_keywords" value="yes" />
+              <input type="hidden" name="area" value="default" />
+            </form>
+
+            <p>
+            <a href="../../../contents.html">Contents</a> |
+            <a href="../../../genindex.html">Index</a>
+            </p>
+
+        </div>
+
+
+    </div>
+
+    
+
+    <div id="docs-body" class="" >
+        
+<h1>Source code for examples.elementtree.optimized_al</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;Uses the same strategy as</span>
+<span class="sd">  ``adjacency_list.py``, but associates each   DOM row with its owning</span>
+<span class="sd">  document row, so that a full document of DOM nodes can be loaded</span>
+<span class="sd">  using O(1) queries - the construction of the &quot;hierarchy&quot; is performed</span>
+<span class="sd">  after the load in a non-recursive fashion and is more</span>
+<span class="sd">  efficient.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c">##################### PART I - Imports/Configuration #########################</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="p">(</span><span class="n">MetaData</span><span class="p">,</span> <span class="n">Table</span><span class="p">,</span> <span class="n">Column</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">,</span>
+    <span class="n">Unicode</span><span class="p">,</span> <span class="n">and_</span><span class="p">,</span> <span class="n">create_engine</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">mapper</span><span class="p">,</span> <span class="n">relationship</span><span class="p">,</span> <span class="n">Session</span><span class="p">,</span> <span class="n">lazyload</span>
+
+<span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">io</span><span class="o">,</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">xml.etree</span> <span class="kn">import</span> <span class="n">ElementTree</span>
+
+<span class="n">e</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="s">&#39;sqlite://&#39;</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">meta</span> <span class="o">=</span> <span class="n">MetaData</span><span class="p">()</span>
+
+<span class="c">####################### PART II - Table Metadata #############################</span>
+
+<span class="c"># stores a top level record of an XML document.</span>
+<span class="n">documents</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s">&#39;documents&#39;</span><span class="p">,</span> <span class="n">meta</span><span class="p">,</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;document_id&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;filename&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">30</span><span class="p">),</span> <span class="n">unique</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="c"># stores XML nodes in an adjacency list model.  This corresponds to</span>
+<span class="c"># Element and SubElement objects.</span>
+<span class="n">elements</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s">&#39;elements&#39;</span><span class="p">,</span> <span class="n">meta</span><span class="p">,</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;element_id&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;parent_id&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;elements.element_id&#39;</span><span class="p">)),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;document_id&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;documents.document_id&#39;</span><span class="p">)),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;tag&#39;</span><span class="p">,</span> <span class="n">Unicode</span><span class="p">(</span><span class="mi">30</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;text&#39;</span><span class="p">,</span> <span class="n">Unicode</span><span class="p">),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;tail&#39;</span><span class="p">,</span> <span class="n">Unicode</span><span class="p">)</span>
+    <span class="p">)</span>
+
+<span class="c"># stores attributes.  This corresponds to the dictionary of attributes</span>
+<span class="c"># stored by an Element or SubElement.</span>
+<span class="n">attributes</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s">&#39;attributes&#39;</span><span class="p">,</span> <span class="n">meta</span><span class="p">,</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;element_id&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;elements.element_id&#39;</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;name&#39;</span><span class="p">,</span> <span class="n">Unicode</span><span class="p">(</span><span class="mi">100</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;value&#39;</span><span class="p">,</span> <span class="n">Unicode</span><span class="p">(</span><span class="mi">255</span><span class="p">)))</span>
+
+<span class="n">meta</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+<span class="c">########################### PART III - Model #################################</span>
+
+<span class="c"># our document class.  contains a string name,</span>
+<span class="c"># and the ElementTree root element.</span>
+<span class="k">class</span> <span class="nc">Document</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">element</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">element</span> <span class="o">=</span> <span class="n">element</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+
+<span class="c">########################## PART IV - Persistence Mapping #####################</span>
+
+<span class="c"># Node class.  a non-public class which will represent</span>
+<span class="c"># the DB-persisted Element/SubElement object.  We cannot create mappers for</span>
+<span class="c"># ElementTree elements directly because they are at the very least not new-style</span>
+<span class="c"># classes, and also may be backed by native implementations.</span>
+<span class="c"># so here we construct an adapter.</span>
+<span class="k">class</span> <span class="nc">_Node</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="c"># Attribute class.  also internal, this will represent the key/value attributes stored for</span>
+<span class="c"># a particular Node.</span>
+<span class="k">class</span> <span class="nc">_Attribute</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+
+<span class="c"># setup mappers.  Document will eagerly load a list of _Node objects.</span>
+<span class="c"># they will be ordered in primary key/insert order, so that we can reconstruct</span>
+<span class="c"># an ElementTree structure from the list.</span>
+<span class="n">mapper</span><span class="p">(</span><span class="n">Document</span><span class="p">,</span> <span class="n">documents</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">{</span>
+    <span class="s">&#39;_nodes&#39;</span><span class="p">:</span><span class="n">relationship</span><span class="p">(</span><span class="n">_Node</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="s">&#39;joined&#39;</span><span class="p">,</span> <span class="n">cascade</span><span class="o">=</span><span class="s">&quot;all, delete-orphan&quot;</span><span class="p">)</span>
+<span class="p">})</span>
+
+<span class="c"># the _Node objects change the way they load so that a list of _Nodes will organize</span>
+<span class="c"># themselves hierarchically using the ElementTreeMarshal.  this depends on the ordering of</span>
+<span class="c"># nodes being hierarchical as well; relationship() always applies at least ROWID/primary key</span>
+<span class="c"># ordering to rows which will suffice.</span>
+<span class="n">mapper</span><span class="p">(</span><span class="n">_Node</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">{</span>
+    <span class="s">&#39;children&#39;</span><span class="p">:</span><span class="n">relationship</span><span class="p">(</span><span class="n">_Node</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="bp">None</span><span class="p">),</span>  <span class="c"># doesnt load; used only for the save relationship</span>
+    <span class="s">&#39;attributes&#39;</span><span class="p">:</span><span class="n">relationship</span><span class="p">(</span><span class="n">_Attribute</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="s">&#39;joined&#39;</span><span class="p">,</span> <span class="n">cascade</span><span class="o">=</span><span class="s">&quot;all, delete-orphan&quot;</span><span class="p">),</span> <span class="c"># eagerly load attributes</span>
+<span class="p">})</span>
+
+<span class="n">mapper</span><span class="p">(</span><span class="n">_Attribute</span><span class="p">,</span> <span class="n">attributes</span><span class="p">)</span>
+
+<span class="c"># define marshalling functions that convert from _Node/_Attribute to/from ElementTree objects.</span>
+<span class="c"># this will set the ElementTree element as &quot;document._element&quot;, and append the root _Node</span>
+<span class="c"># object to the &quot;_nodes&quot; mapped collection.</span>
+<span class="k">class</span> <span class="nc">ElementTreeMarshal</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">document</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">document</span><span class="p">,</span> <span class="s">&#39;_element&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">document</span><span class="o">.</span><span class="n">_element</span>
+
+        <span class="n">nodes</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">document</span><span class="o">.</span><span class="n">_nodes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">parent_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">parent</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">parent_id</span><span class="p">]</span>
+                <span class="n">elem</span> <span class="o">=</span> <span class="n">ElementTree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">tag</span><span class="p">)</span>
+                <span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">element_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">elem</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">parent</span> <span class="o">=</span> <span class="bp">None</span>
+                <span class="n">elem</span> <span class="o">=</span> <span class="n">root</span> <span class="o">=</span> <span class="n">ElementTree</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">tag</span><span class="p">)</span>
+                <span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">element_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">root</span>
+            <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">attributes</span><span class="p">:</span>
+                <span class="n">elem</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="n">attr</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">attr</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">elem</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">text</span>
+            <span class="n">elem</span><span class="o">.</span><span class="n">tail</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">tail</span>
+
+        <span class="n">document</span><span class="o">.</span><span class="n">_element</span> <span class="o">=</span> <span class="n">ElementTree</span><span class="o">.</span><span class="n">ElementTree</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">document</span><span class="o">.</span><span class="n">_element</span>
+
+    <span class="k">def</span> <span class="nf">__set__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">,</span> <span class="n">element</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">traverse</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">_Node</span><span class="p">()</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">tag</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">tag</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">tail</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">tail</span><span class="p">)</span>
+            <span class="n">document</span><span class="o">.</span><span class="n">_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="p">[</span><span class="n">traverse</span><span class="p">(</span><span class="n">n2</span><span class="p">)</span> <span class="k">for</span> <span class="n">n2</span> <span class="ow">in</span> <span class="n">node</span><span class="p">]</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">attributes</span> <span class="o">=</span> <span class="p">[</span><span class="n">_Attribute</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+            <span class="k">return</span> <span class="n">n</span>
+
+        <span class="n">traverse</span><span class="p">(</span><span class="n">element</span><span class="o">.</span><span class="n">getroot</span><span class="p">())</span>
+        <span class="n">document</span><span class="o">.</span><span class="n">_element</span> <span class="o">=</span> <span class="n">element</span>
+
+    <span class="k">def</span> <span class="nf">__delete__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">):</span>
+        <span class="k">del</span> <span class="n">document</span><span class="o">.</span><span class="n">_element</span>
+        <span class="n">document</span><span class="o">.</span><span class="n">_nodes</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="c"># override Document&#39;s &quot;element&quot; attribute with the marshaller.</span>
+<span class="n">Document</span><span class="o">.</span><span class="n">element</span> <span class="o">=</span> <span class="n">ElementTreeMarshal</span><span class="p">()</span>
+
+<span class="c">###################### PART V - Basic Persistence Example ####################</span>
+
+<span class="n">line</span> <span class="o">=</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">--------------------------------------------------------&quot;</span>
+
+<span class="c"># save to DB</span>
+<span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+<span class="c"># get ElementTree documents</span>
+<span class="k">for</span> <span class="nb">file</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;test.xml&#39;</span><span class="p">,</span> <span class="s">&#39;test2.xml&#39;</span><span class="p">,</span> <span class="s">&#39;test3.xml&#39;</span><span class="p">):</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">),</span> <span class="nb">file</span><span class="p">)</span>
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">ElementTree</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Document</span><span class="p">(</span><span class="nb">file</span><span class="p">,</span> <span class="n">doc</span><span class="p">))</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">Saving three documents...&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Done.&quot;</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">Full text of document &#39;text.xml&#39;:&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Document</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s">&quot;test.xml&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+
+<span class="c">######################## PART VI - Searching for Paths #######################</span>
+
+<span class="c"># manually search for a document which contains &quot;/somefile/header/field1:hi&quot;</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">Manual search for /somefile/header/field1==&#39;hi&#39;:&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Document</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&#39;_nodes&#39;</span><span class="p">,</span> <span class="n">aliased</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span>\
+                <span class="nb">filter</span><span class="p">(</span><span class="n">and_</span><span class="p">(</span><span class="n">_Node</span><span class="o">.</span><span class="n">parent_id</span><span class="o">==</span><span class="bp">None</span><span class="p">,</span> <span class="n">_Node</span><span class="o">.</span><span class="n">tag</span><span class="o">==</span><span class="s">&#39;somefile&#39;</span><span class="p">))</span><span class="o">.</span>\
+                <span class="n">join</span><span class="p">(</span><span class="s">&#39;children&#39;</span><span class="p">,</span> <span class="n">aliased</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">from_joinpoint</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span>\
+                <span class="nb">filter</span><span class="p">(</span><span class="n">_Node</span><span class="o">.</span><span class="n">tag</span><span class="o">==</span><span class="s">&#39;header&#39;</span><span class="p">)</span><span class="o">.</span>\
+                <span class="n">join</span><span class="p">(</span><span class="s">&#39;children&#39;</span><span class="p">,</span> <span class="n">aliased</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">from_joinpoint</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span>\
+                <span class="nb">filter</span><span class="p">(</span><span class="n">and_</span><span class="p">(</span><span class="n">_Node</span><span class="o">.</span><span class="n">tag</span><span class="o">==</span><span class="s">&#39;field1&#39;</span><span class="p">,</span> <span class="n">_Node</span><span class="o">.</span><span class="n">text</span><span class="o">==</span><span class="s">&#39;hi&#39;</span><span class="p">))</span><span class="o">.</span>\
+                <span class="n">one</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+<span class="c"># generalize the above approach into an extremely impoverished xpath function:</span>
+<span class="k">def</span> <span class="nf">find_document</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">compareto</span><span class="p">):</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">documents</span>
+    <span class="n">prev_elements</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Document</span><span class="p">)</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">match</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="s">r&#39;/([\w_]+)(?:\[@([\w_]+)(?:=(.*))?\])?&#39;</span><span class="p">,</span> <span class="n">path</span><span class="p">)):</span>
+        <span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">attrname</span><span class="p">,</span> <span class="n">attrvalue</span><span class="p">)</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&#39;_nodes&#39;</span><span class="p">,</span> <span class="n">aliased</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">_Node</span><span class="o">.</span><span class="n">parent_id</span><span class="o">==</span><span class="bp">None</span><span class="p">)</span>
+            <span class="n">first</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&#39;children&#39;</span><span class="p">,</span> <span class="n">aliased</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">from_joinpoint</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">_Node</span><span class="o">.</span><span class="n">tag</span><span class="o">==</span><span class="n">token</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">attrname</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&#39;attributes&#39;</span><span class="p">,</span> <span class="n">aliased</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">from_joinpoint</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">attrvalue</span><span class="p">:</span>
+                <span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">and_</span><span class="p">(</span><span class="n">_Attribute</span><span class="o">.</span><span class="n">name</span><span class="o">==</span><span class="n">attrname</span><span class="p">,</span> <span class="n">_Attribute</span><span class="o">.</span><span class="n">value</span><span class="o">==</span><span class="n">attrvalue</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">_Attribute</span><span class="o">.</span><span class="n">name</span><span class="o">==</span><span class="n">attrname</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">query</span><span class="o">.</span><span class="n">options</span><span class="p">(</span><span class="n">lazyload</span><span class="p">(</span><span class="s">&#39;_nodes&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">_Node</span><span class="o">.</span><span class="n">text</span><span class="o">==</span><span class="n">compareto</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">compareto</span> <span class="ow">in</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s">&#39;/somefile/header/field1&#39;</span><span class="p">,</span> <span class="s">&#39;hi&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&#39;/somefile/field1&#39;</span><span class="p">,</span> <span class="s">&#39;hi&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&#39;/somefile/header/field2&#39;</span><span class="p">,</span> <span class="s">&#39;there&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&#39;/somefile/header/field2[@attr=foo]&#39;</span><span class="p">,</span> <span class="s">&#39;there&#39;</span><span class="p">)</span>
+    <span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">Documents containing &#39;</span><span class="si">%s</span><span class="s">=</span><span class="si">%s</span><span class="s">&#39;:&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">compareto</span><span class="p">),</span> <span class="n">line</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">filename</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">find_document</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">compareto</span><span class="p">)])</span></pre></div>
+    </div>
+
+</div>
+
+<div id="docs-bottom-navigation" class="docs-navigation-links">
+
+    <div id="docs-copyright">
+        &copy; <a href="../../../copyright.html">Copyright</a> 2007-2015, the SQLAlchemy authors and contributors.
+        Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.3.1.
+    </div>
+</div>
+
+</div>
+
+
+        
+        
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+          URL_ROOT:    '../../../',
+          VERSION:     '1.0.8',
+          COLLAPSE_MODINDEX: false,
+          FILE_SUFFIX: '.html'
+      };
+    </script>
+
+    <!-- begin iterate through sphinx environment script_files -->
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <!-- end iterate through sphinx environment script_files -->
+
+    <script type="text/javascript" src="../../../_static/detectmobile.js"></script>
+    <script type="text/javascript" src="../../../_static/init.js"></script>
+
+
+    </body>
+</html>
+
+

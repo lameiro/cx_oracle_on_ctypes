@@ -1,0 +1,759 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        
+        <title>
+            
+    
+    Column Insert/Update Defaults
+ &mdash;
+    SQLAlchemy 1.0 Documentation
+
+        </title>
+
+        
+            <!-- begin iterate through SQLA + sphinx environment css_files -->
+                <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+                <link rel="stylesheet" href="../_static/changelog.css" type="text/css" />
+                <link rel="stylesheet" href="../_static/sphinx_paramlinks.css" type="text/css" />
+                <link rel="stylesheet" href="../_static/docs.css" type="text/css" />
+            <!-- end iterate through SQLA + sphinx environment css_files -->
+        
+
+        
+
+    
+
+    <!-- begin layout.mako headers -->
+
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+        <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="top" title="SQLAlchemy 1.0 Documentation" href="../index.html" />
+        <link rel="up" title="Schema Definition Language" href="schema.html" />
+        <link rel="next" title="Defining Constraints and Indexes" href="constraints.html" />
+        <link rel="prev" title="Reflecting Database Objects" href="reflection.html" />
+    <!-- end layout.mako headers -->
+
+
+    </head>
+    <body>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="docs-container">
+
+
+
+
+
+<div id="docs-top-navigation-container" class="body-background">
+<div id="docs-header">
+    <div id="docs-version-header">
+        Release: <span class="version-num">1.0.8</span> | Release Date: July 22, 2015
+    </div>
+
+    <h1>SQLAlchemy 1.0 Documentation</h1>
+
+</div>
+</div>
+
+<div id="docs-body-container">
+
+    <div id="fixed-sidebar" class="withsidebar">
+
+
+        <div id="docs-sidebar-popout">
+            <h3><a href="../index.html">SQLAlchemy 1.0 Documentation</a></h3>
+
+            <p id="sidebar-topnav">
+                <a href="../contents.html">Contents</a> |
+                <a href="../genindex.html">Index</a>
+            </p>
+
+            <div id="sidebar-search">
+                <form class="search" action="../search.html" method="get">
+                  <input type="text" name="q" size="12" /> <input type="submit" value="Search" />
+                  <input type="hidden" name="check_keywords" value="yes" />
+                  <input type="hidden" name="area" value="default" />
+                </form>
+            </div>
+
+        </div>
+
+        <div id="docs-sidebar">
+
+        
+        <h3>
+            <a href="index.html" title="SQLAlchemy Core">SQLAlchemy Core</a>
+        </h3>
+
+        <ul>
+<li><span class="link-container first"><a class="reference external" href="tutorial.html">SQL Expression Language Tutorial</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="expression_api.html">SQL Statements and Expressions API</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="schema.html">Schema Definition Language</a></span><ul>
+<li><span class="link-container first"><a class="reference external" href="metadata.html">Describing Databases with MetaData</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="reflection.html">Reflecting Database Objects</a></span></li>
+<li class="selected"><span class="link-container first"><strong>Column Insert/Update Defaults</strong><a class="paramlink headerlink reference internal" href="#">¶</a></span><ul>
+<li><span class="link-container first"><a class="reference external" href="#scalar-defaults">Scalar Defaults</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#python-executed-functions">Python-Executed Functions</a></span><ul>
+<li><span class="link-container first"><a class="reference external" href="#context-sensitive-default-functions">Context-Sensitive Default Functions</a></span></li>
+</ul>
+</li>
+<li><span class="link-container first"><a class="reference external" href="#sql-expressions">SQL Expressions</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#server-side-defaults">Server Side Defaults</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#triggered-columns">Triggered Columns</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#defining-sequences">Defining Sequences</a></span><ul>
+<li><span class="link-container first"><a class="reference external" href="#associating-a-sequence-as-the-server-side-default">Associating a Sequence as the Server Side Default</a></span></li>
+</ul>
+</li>
+<li><span class="link-container first"><a class="reference external" href="#default-objects-api">Default Objects API</a></span></li>
+</ul>
+</li>
+<li><span class="link-container first"><a class="reference external" href="constraints.html">Defining Constraints and Indexes</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="ddl.html">Customizing DDL</a></span></li>
+</ul>
+</li>
+<li><span class="link-container first"><a class="reference external" href="types.html">Column and Data Types</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="engines_connections.html">Engine and Connection Use</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="api_basics.html">Core API Basics</a></span></li>
+</ul>
+
+
+
+        </div>
+
+    </div>
+
+    
+
+    <div id="docs-body" class="withsidebar" >
+        
+<span class="target" id="module-sqlalchemy.schema"></span><div class="section" id="column-insert-update-defaults">
+<span id="metadata-defaults"></span><span id="metadata-defaults-toplevel"></span><h1>Column Insert/Update Defaults<a class="headerlink" href="#column-insert-update-defaults" title="Permalink to this headline">¶</a></h1>
+<p>SQLAlchemy provides a very rich featureset regarding column level events which
+take place during INSERT and UPDATE statements. Options include:</p>
+<ul class="simple">
+<li>Scalar values used as defaults during INSERT and UPDATE operations</li>
+<li>Python functions which execute upon INSERT and UPDATE operations</li>
+<li>SQL expressions which are embedded in INSERT statements (or in some cases execute beforehand)</li>
+<li>SQL expressions which are embedded in UPDATE statements</li>
+<li>Server side default values used during INSERT</li>
+<li>Markers for server-side triggers used during UPDATE</li>
+</ul>
+<p>The general rule for all insert/update defaults is that they only take effect
+if no value for a particular column is passed as an <code class="docutils literal"><span class="pre">execute()</span></code> parameter;
+otherwise, the given value is used.</p>
+<div class="section" id="scalar-defaults">
+<h2>Scalar Defaults<a class="headerlink" href="#scalar-defaults" title="Permalink to this headline">¶</a></h2>
+<p>The simplest kind of default is a scalar value used as the default value of a column:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Table</span><span class="p">(</span><span class="s">&quot;mytable&quot;</span><span class="p">,</span> <span class="n">meta</span><span class="p">,</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&quot;somecolumn&quot;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="p">)</span></pre></div>
+</div>
+<p>Above, the value &#8220;12&#8221; will be bound as the column value during an INSERT if no
+other value is supplied.</p>
+<p>A scalar value may also be associated with an UPDATE statement, though this is
+not very common (as UPDATE statements are usually looking for dynamic
+defaults):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Table</span><span class="p">(</span><span class="s">&quot;mytable&quot;</span><span class="p">,</span> <span class="n">meta</span><span class="p">,</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&quot;somecolumn&quot;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">onupdate</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
+<span class="p">)</span></pre></div>
+</div>
+</div>
+<div class="section" id="python-executed-functions">
+<h2>Python-Executed Functions<a class="headerlink" href="#python-executed-functions" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal"><span class="pre">default</span></code> and <code class="docutils literal"><span class="pre">onupdate</span></code> keyword arguments also accept Python
+functions. These functions are invoked at the time of insert or update if no
+other value for that column is supplied, and the value returned is used for
+the column&#8217;s value. Below illustrates a crude &#8220;sequence&#8221; that assigns an
+incrementing counter to a primary key column:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># a function which counts upwards</span>
+<span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">def</span> <span class="nf">mydefault</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">i</span>
+    <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">i</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s">&quot;mytable&quot;</span><span class="p">,</span> <span class="n">meta</span><span class="p">,</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">mydefault</span><span class="p">),</span>
+<span class="p">)</span></pre></div>
+</div>
+<p>It should be noted that for real &#8220;incrementing sequence&#8221; behavior, the
+built-in capabilities of the database should normally be used, which may
+include sequence objects or other autoincrementing capabilities. For primary
+key columns, SQLAlchemy will in most cases use these capabilities
+automatically. See the API documentation for
+<a class="reference internal" href="metadata.html#sqlalchemy.schema.Column" title="sqlalchemy.schema.Column"><code class="xref py py-class docutils literal"><span class="pre">Column</span></code></a> including the <code class="docutils literal"><span class="pre">autoincrement</span></code> flag, as
+well as the section on <a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> later in this
+chapter for background on standard primary key generation techniques.</p>
+<p>To illustrate onupdate, we assign the Python <code class="docutils literal"><span class="pre">datetime</span></code> function <code class="docutils literal"><span class="pre">now</span></code> to
+the <code class="docutils literal"><span class="pre">onupdate</span></code> attribute:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">datetime</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s">&quot;mytable&quot;</span><span class="p">,</span> <span class="n">meta</span><span class="p">,</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+
+    <span class="c"># define &#39;last_updated&#39; to be populated with datetime.now()</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;last_updated&#39;</span><span class="p">,</span> <span class="n">DateTime</span><span class="p">,</span> <span class="n">onupdate</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">),</span>
+<span class="p">)</span></pre></div>
+</div>
+<p>When an update statement executes and no value is passed for <code class="docutils literal"><span class="pre">last_updated</span></code>,
+the <code class="docutils literal"><span class="pre">datetime.datetime.now()</span></code> Python function is executed and its return
+value used as the value for <code class="docutils literal"><span class="pre">last_updated</span></code>. Notice that we provide <code class="docutils literal"><span class="pre">now</span></code>
+as the function itself without calling it (i.e. there are no parenthesis
+following) - SQLAlchemy will execute the function at the time the statement
+executes.</p>
+<div class="section" id="context-sensitive-default-functions">
+<h3>Context-Sensitive Default Functions<a class="headerlink" href="#context-sensitive-default-functions" title="Permalink to this headline">¶</a></h3>
+<p>The Python functions used by <code class="docutils literal"><span class="pre">default</span></code> and <code class="docutils literal"><span class="pre">onupdate</span></code> may also make use of
+the current statement&#8217;s context in order to determine a value. The <cite>context</cite>
+of a statement is an internal SQLAlchemy object which contains all information
+about the statement being executed, including its source expression, the
+parameters associated with it and the cursor. The typical use case for this
+context with regards to default generation is to have access to the other
+values being inserted or updated on the row. To access the context, provide a
+function that accepts a single <code class="docutils literal"><span class="pre">context</span></code> argument:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">mydefault</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">context</span><span class="o">.</span><span class="n">current_parameters</span><span class="p">[</span><span class="s">&#39;counter&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">12</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s">&#39;mytable&#39;</span><span class="p">,</span> <span class="n">meta</span><span class="p">,</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;counter&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;counter_plus_twelve&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">mydefault</span><span class="p">,</span> <span class="n">onupdate</span><span class="o">=</span><span class="n">mydefault</span><span class="p">)</span>
+<span class="p">)</span></pre></div>
+</div>
+<p>Above we illustrate a default function which will execute for all INSERT and
+UPDATE statements where a value for <code class="docutils literal"><span class="pre">counter_plus_twelve</span></code> was otherwise not
+provided, and the value will be that of whatever value is present in the
+execution for the <code class="docutils literal"><span class="pre">counter</span></code> column, plus the number 12.</p>
+<p>While the context object passed to the default function has many attributes,
+the <code class="docutils literal"><span class="pre">current_parameters</span></code> member is a special member provided only during the
+execution of a default function for the purposes of deriving defaults from its
+existing values. For a single statement that is executing many sets of bind
+parameters, the user-defined function is called for each set of parameters,
+and <code class="docutils literal"><span class="pre">current_parameters</span></code> will be provided with each individual parameter set
+for each execution.</p>
+</div>
+</div>
+<div class="section" id="sql-expressions">
+<h2>SQL Expressions<a class="headerlink" href="#sql-expressions" title="Permalink to this headline">¶</a></h2>
+<p>The &#8220;default&#8221; and &#8220;onupdate&#8221; keywords may also be passed SQL expressions,
+including select statements or direct function calls:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">t</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s">&quot;mytable&quot;</span><span class="p">,</span> <span class="n">meta</span><span class="p">,</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+
+    <span class="c"># define &#39;create_date&#39; to default to now()</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;create_date&#39;</span><span class="p">,</span> <span class="n">DateTime</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">func</span><span class="o">.</span><span class="n">now</span><span class="p">()),</span>
+
+    <span class="c"># define &#39;key&#39; to pull its default from the &#39;keyvalues&#39; table</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;key&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="n">keyvalues</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">keyvalues</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">type</span><span class="o">=</span><span class="s">&#39;type1&#39;</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">1</span><span class="p">)),</span>
+
+    <span class="c"># define &#39;last_modified&#39; to use the current_timestamp SQL function on update</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;last_modified&#39;</span><span class="p">,</span> <span class="n">DateTime</span><span class="p">,</span> <span class="n">onupdate</span><span class="o">=</span><span class="n">func</span><span class="o">.</span><span class="n">utc_timestamp</span><span class="p">())</span>
+    <span class="p">)</span></pre></div>
+</div>
+<p>Above, the <code class="docutils literal"><span class="pre">create_date</span></code> column will be populated with the result of the
+<code class="docutils literal"><span class="pre">now()</span></code> SQL function (which, depending on backend, compiles into <code class="docutils literal"><span class="pre">NOW()</span></code>
+or <code class="docutils literal"><span class="pre">CURRENT_TIMESTAMP</span></code> in most cases) during an INSERT statement, and the
+<code class="docutils literal"><span class="pre">key</span></code> column with the result of a SELECT subquery from another table. The
+<code class="docutils literal"><span class="pre">last_modified</span></code> column will be populated with the value of
+<code class="docutils literal"><span class="pre">UTC_TIMESTAMP()</span></code>, a function specific to MySQL, when an UPDATE statement is
+emitted for this table.</p>
+<p>Note that when using <code class="docutils literal"><span class="pre">func</span></code> functions, unlike when using Python <cite>datetime</cite>
+functions we <em>do</em> call the function, i.e. with parenthesis &#8220;()&#8221; - this is
+because what we want in this case is the return value of the function, which
+is the SQL expression construct that will be rendered into the INSERT or
+UPDATE statement.</p>
+<p>The above SQL functions are usually executed &#8220;inline&#8221; with the INSERT or
+UPDATE statement being executed, meaning, a single statement is executed which
+embeds the given expressions or subqueries within the VALUES or SET clause of
+the statement. Although in some cases, the function is &#8220;pre-executed&#8221; in a
+SELECT statement of its own beforehand. This happens when all of the following
+is true:</p>
+<ul class="simple">
+<li>the column is a primary key column</li>
+<li>the database dialect does not support a usable <code class="docutils literal"><span class="pre">cursor.lastrowid</span></code> accessor
+(or equivalent); this currently includes PostgreSQL, Oracle, and Firebird, as
+well as some MySQL dialects.</li>
+<li>the dialect does not support the &#8220;RETURNING&#8221; clause or similar, or the
+<code class="docutils literal"><span class="pre">implicit_returning</span></code> flag is set to <code class="docutils literal"><span class="pre">False</span></code> for the dialect. Dialects
+which support RETURNING currently include Postgresql, Oracle, Firebird, and
+MS-SQL.</li>
+<li>the statement is a single execution, i.e. only supplies one set of
+parameters and doesn&#8217;t use &#8220;executemany&#8221; behavior</li>
+<li>the <code class="docutils literal"><span class="pre">inline=True</span></code> flag is not set on the
+<a class="reference internal" href="dml.html#sqlalchemy.sql.expression.Insert" title="sqlalchemy.sql.expression.Insert"><code class="xref py py-class docutils literal"><span class="pre">Insert()</span></code></a> or
+<a class="reference internal" href="dml.html#sqlalchemy.sql.expression.Update" title="sqlalchemy.sql.expression.Update"><code class="xref py py-class docutils literal"><span class="pre">Update()</span></code></a> construct, and the statement has
+not defined an explicit <cite>returning()</cite> clause.</li>
+</ul>
+<p>Whether or not the default generation clause &#8220;pre-executes&#8221; is not something
+that normally needs to be considered, unless it is being addressed for
+performance reasons.</p>
+<p>When the statement is executed with a single set of parameters (that is, it is
+not an &#8220;executemany&#8221; style execution), the returned
+<a class="reference internal" href="connections.html#sqlalchemy.engine.ResultProxy" title="sqlalchemy.engine.ResultProxy"><code class="xref py py-class docutils literal"><span class="pre">ResultProxy</span></code></a> will contain a collection
+accessible via <code class="docutils literal"><span class="pre">result.postfetch_cols()</span></code> which contains a list of all
+<a class="reference internal" href="metadata.html#sqlalchemy.schema.Column" title="sqlalchemy.schema.Column"><code class="xref py py-class docutils literal"><span class="pre">Column</span></code></a> objects which had an inline-executed
+default. Similarly, all parameters which were bound to the statement,
+including all Python and SQL expressions which were pre-executed, are present
+in the <code class="docutils literal"><span class="pre">last_inserted_params()</span></code> or <code class="docutils literal"><span class="pre">last_updated_params()</span></code> collections on
+<a class="reference internal" href="connections.html#sqlalchemy.engine.ResultProxy" title="sqlalchemy.engine.ResultProxy"><code class="xref py py-class docutils literal"><span class="pre">ResultProxy</span></code></a>. The <code class="docutils literal"><span class="pre">inserted_primary_key</span></code>
+collection contains a list of primary key values for the row inserted (a list
+so that single-column and composite-column primary keys are represented in the
+same format).</p>
+</div>
+<div class="section" id="server-side-defaults">
+<h2>Server Side Defaults<a class="headerlink" href="#server-side-defaults" title="Permalink to this headline">¶</a></h2>
+<p>A variant on the SQL expression default is the <code class="docutils literal"><span class="pre">server_default</span></code>, which gets
+placed in the CREATE TABLE statement during a <code class="docutils literal"><span class="pre">create()</span></code> operation:</p>
+<div class="highlight-python+sql"><div class="highlight"><pre><span class="n">t</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s">&#39;test&#39;</span><span class="p">,</span> <span class="n">meta</span><span class="p">,</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;abc&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="n">server_default</span><span class="o">=</span><span class="s">&#39;abc&#39;</span><span class="p">),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;created_at&#39;</span><span class="p">,</span> <span class="n">DateTime</span><span class="p">,</span> <span class="n">server_default</span><span class="o">=</span><span class="n">text</span><span class="p">(</span><span class="s">&quot;sysdate&quot;</span><span class="p">))</span>
+<span class="p">)</span></pre></div>
+</div>
+<p>A create call for the above table will produce:</p>
+<div class="highlight-python"><div class="highlight"><pre>CREATE TABLE test (
+    abc varchar(20) default &#39;abc&#39;,
+    created_at datetime default sysdate
+)</pre></div>
+</div>
+<p>The behavior of <code class="docutils literal"><span class="pre">server_default</span></code> is similar to that of a regular SQL
+default; if it&#8217;s placed on a primary key column for a database which doesn&#8217;t
+have a way to &#8220;postfetch&#8221; the ID, and the statement is not &#8220;inlined&#8221;, the SQL
+expression is pre-executed; otherwise, SQLAlchemy lets the default fire off on
+the database side normally.</p>
+</div>
+<div class="section" id="triggered-columns">
+<span id="id1"></span><h2>Triggered Columns<a class="headerlink" href="#triggered-columns" title="Permalink to this headline">¶</a></h2>
+<p>Columns with values set by a database trigger or other external process may be
+called out using <a class="reference internal" href="#sqlalchemy.schema.FetchedValue" title="sqlalchemy.schema.FetchedValue"><code class="xref py py-class docutils literal"><span class="pre">FetchedValue</span></code></a> as a marker:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">t</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s">&#39;test&#39;</span><span class="p">,</span> <span class="n">meta</span><span class="p">,</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;abc&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="n">server_default</span><span class="o">=</span><span class="n">FetchedValue</span><span class="p">()),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;def&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="n">server_onupdate</span><span class="o">=</span><span class="n">FetchedValue</span><span class="p">())</span>
+<span class="p">)</span></pre></div>
+</div>
+<div class="versionchanged">
+<p><span class="versionmodified">Changed in version 0.8.0b2,0.7.10: </span>The <code class="docutils literal"><span class="pre">for_update</span></code> argument on <a class="reference internal" href="#sqlalchemy.schema.FetchedValue" title="sqlalchemy.schema.FetchedValue"><code class="xref py py-class docutils literal"><span class="pre">FetchedValue</span></code></a> is set automatically
+when specified as the <code class="docutils literal"><span class="pre">server_onupdate</span></code> argument.  If using an older version,
+specify the onupdate above as <code class="docutils literal"><span class="pre">server_onupdate=FetchedValue(for_update=True)</span></code>.</p>
+</div>
+<p>These markers do not emit a &#8220;default&#8221; clause when the table is created,
+however they do set the same internal flags as a static <code class="docutils literal"><span class="pre">server_default</span></code>
+clause, providing hints to higher-level tools that a &#8220;post-fetch&#8221; of these
+rows should be performed after an insert or update.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>It&#8217;s generally not appropriate to use <a class="reference internal" href="#sqlalchemy.schema.FetchedValue" title="sqlalchemy.schema.FetchedValue"><code class="xref py py-class docutils literal"><span class="pre">FetchedValue</span></code></a> in
+conjunction with a primary key column, particularly when using the
+ORM or any other scenario where the <a class="reference internal" href="connections.html#sqlalchemy.engine.ResultProxy.inserted_primary_key" title="sqlalchemy.engine.ResultProxy.inserted_primary_key"><code class="xref py py-attr docutils literal"><span class="pre">ResultProxy.inserted_primary_key</span></code></a>
+attribute is required.  This is becaue the &#8220;post-fetch&#8221; operation requires
+that the primary key value already be available, so that the
+row can be selected on its primary key.</p>
+<p>For a server-generated primary key value, all databases provide special
+accessors or other techniques in order to acquire the &#8220;last inserted
+primary key&#8221; column of a table.  These mechanisms aren&#8217;t affected by the presence
+of <a class="reference internal" href="#sqlalchemy.schema.FetchedValue" title="sqlalchemy.schema.FetchedValue"><code class="xref py py-class docutils literal"><span class="pre">FetchedValue</span></code></a>.  For special situations where triggers are
+used to generate primary key values, and the database in use does not
+support the <code class="docutils literal"><span class="pre">RETURNING</span></code> clause, it may be necessary to forego the usage
+of the trigger and instead apply the SQL expression or function as a
+&#8220;pre execute&#8221; expression:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">t</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s">&#39;test&#39;</span><span class="p">,</span> <span class="n">meta</span><span class="p">,</span>
+        <span class="n">Column</span><span class="p">(</span><span class="s">&#39;abc&#39;</span><span class="p">,</span> <span class="n">MyType</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">func</span><span class="o">.</span><span class="n">generate_new_value</span><span class="p">(),</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="p">)</span></pre></div>
+</div>
+<p class="last">Where above, when <a class="reference internal" href="metadata.html#sqlalchemy.schema.Table.insert" title="sqlalchemy.schema.Table.insert"><code class="xref py py-meth docutils literal"><span class="pre">Table.insert()</span></code></a> is used,
+the <code class="docutils literal"><span class="pre">func.generate_new_value()</span></code> expression will be pre-executed
+in the context of a scalar <code class="docutils literal"><span class="pre">SELECT</span></code> statement, and the new value will
+be applied to the subsequent <code class="docutils literal"><span class="pre">INSERT</span></code>, while at the same time being
+made available to the <a class="reference internal" href="connections.html#sqlalchemy.engine.ResultProxy.inserted_primary_key" title="sqlalchemy.engine.ResultProxy.inserted_primary_key"><code class="xref py py-attr docutils literal"><span class="pre">ResultProxy.inserted_primary_key</span></code></a>
+attribute.</p>
+</div>
+</div>
+<div class="section" id="defining-sequences">
+<h2>Defining Sequences<a class="headerlink" href="#defining-sequences" title="Permalink to this headline">¶</a></h2>
+<p>SQLAlchemy represents database sequences using the
+<a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> object, which is considered to be a
+special case of &#8220;column default&#8221;. It only has an effect on databases which
+have explicit support for sequences, which currently includes Postgresql,
+Oracle, and Firebird. The <a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> object is
+otherwise ignored.</p>
+<p>The <a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> may be placed on any column as a
+&#8220;default&#8221; generator to be used during INSERT operations, and can also be
+configured to fire off during UPDATE operations if desired. It is most
+commonly used in conjunction with a single integer primary key column:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s">&quot;cartitems&quot;</span><span class="p">,</span> <span class="n">meta</span><span class="p">,</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&quot;cart_id&quot;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">(</span><span class="s">&#39;cart_id_seq&#39;</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&quot;description&quot;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">40</span><span class="p">)),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&quot;createdate&quot;</span><span class="p">,</span> <span class="n">DateTime</span><span class="p">())</span>
+<span class="p">)</span></pre></div>
+</div>
+<p>Where above, the table &#8220;cartitems&#8221; is associated with a sequence named
+&#8220;cart_id_seq&#8221;. When INSERT statements take place for &#8220;cartitems&#8221;, and no value
+is passed for the &#8220;cart_id&#8221; column, the &#8220;cart_id_seq&#8221; sequence will be used to
+generate a value.</p>
+<p>When the <a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> is associated with a table,
+CREATE and DROP statements issued for that table will also issue CREATE/DROP
+for the sequence object as well, thus &#8220;bundling&#8221; the sequence object with its
+parent table.</p>
+<p>The <a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> object also implements special
+functionality to accommodate Postgresql&#8217;s SERIAL datatype. The SERIAL type in
+PG automatically generates a sequence that is used implicitly during inserts.
+This means that if a <a class="reference internal" href="metadata.html#sqlalchemy.schema.Table" title="sqlalchemy.schema.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object defines a
+<a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> on its primary key column so that it
+works with Oracle and Firebird, the <a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> would
+get in the way of the &#8220;implicit&#8221; sequence that PG would normally use. For this
+use case, add the flag <code class="docutils literal"><span class="pre">optional=True</span></code> to the
+<a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> object - this indicates that the
+<a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> should only be used if the database
+provides no other option for generating primary key identifiers.</p>
+<p>The <a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> object also has the ability to be
+executed standalone like a SQL expression, which has the effect of calling its
+&#8220;next value&#8221; function:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">seq</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">(</span><span class="s">&#39;some_sequence&#39;</span><span class="p">)</span>
+<span class="n">nextid</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span></pre></div>
+</div>
+<div class="section" id="associating-a-sequence-as-the-server-side-default">
+<h3>Associating a Sequence as the Server Side Default<a class="headerlink" href="#associating-a-sequence-as-the-server-side-default" title="Permalink to this headline">¶</a></h3>
+<p>When we associate a <a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> with a <a class="reference internal" href="metadata.html#sqlalchemy.schema.Column" title="sqlalchemy.schema.Column"><code class="xref py py-class docutils literal"><span class="pre">Column</span></code></a> as above,
+this association is an <strong>in-Python only</strong> association.    The CREATE TABLE
+that would be generated for our <a class="reference internal" href="metadata.html#sqlalchemy.schema.Table" title="sqlalchemy.schema.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> would not refer to this
+sequence.  If we want the sequence to be used as a server-side default,
+meaning it takes place even if we emit INSERT commands to the table from
+the SQL commandline, we can use the <a class="reference internal" href="metadata.html#sqlalchemy.schema.Column.params.server_default" title="sqlalchemy.schema.Column"><code class="xref py py-paramref docutils literal"><span class="pre">Column.server_default</span></code></a>
+parameter in conjunction with the value-generation function of the
+sequence, available from the <a class="reference internal" href="#sqlalchemy.schema.Sequence.next_value" title="sqlalchemy.schema.Sequence.next_value"><code class="xref py py-meth docutils literal"><span class="pre">Sequence.next_value()</span></code></a> method:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cart_id_seq</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">(</span><span class="s">&#39;cart_id_seq&#39;</span><span class="p">)</span>
+<span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s">&quot;cartitems&quot;</span><span class="p">,</span> <span class="n">meta</span><span class="p">,</span>
+    <span class="n">Column</span><span class="p">(</span>
+        <span class="s">&quot;cart_id&quot;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">cart_id_seq</span><span class="p">,</span>
+        <span class="n">server_default</span><span class="o">=</span><span class="n">cart_id_seq</span><span class="o">.</span><span class="n">next_value</span><span class="p">(),</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&quot;description&quot;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">40</span><span class="p">)),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&quot;createdate&quot;</span><span class="p">,</span> <span class="n">DateTime</span><span class="p">())</span>
+<span class="p">)</span></pre></div>
+</div>
+<p>The above metadata will generate a CREATE TABLE statement on Postgresql as:</p>
+<div class="highlight-python"><div class="highlight"><pre>CREATE TABLE cartitems (
+    cart_id INTEGER DEFAULT nextval(&#39;cart_id_seq&#39;) NOT NULL,
+    description VARCHAR(40),
+    createdate TIMESTAMP WITHOUT TIME ZONE,
+    PRIMARY KEY (cart_id)
+)</pre></div>
+</div>
+<p>We place the <a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> also as a Python-side default above, that
+is, it is mentioned twice in the <a class="reference internal" href="metadata.html#sqlalchemy.schema.Column" title="sqlalchemy.schema.Column"><code class="xref py py-class docutils literal"><span class="pre">Column</span></code></a> definition.   Depending
+on the backend in use, this may not be strictly necessary, for example
+on the Postgresql backend the Core will use <code class="docutils literal"><span class="pre">RETURNING</span></code> to access the
+newly generated primary key value in any case.   However, for the best
+compatibility, <a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> was originally intended to be a Python-side
+directive first and foremost so it&#8217;s probably a good idea to specify it
+in this way as well.</p>
+</div>
+</div>
+<div class="section" id="default-objects-api">
+<h2>Default Objects API<a class="headerlink" href="#default-objects-api" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="sqlalchemy.schema.ColumnDefault">
+<em class="property">class </em><code class="descclassname">sqlalchemy.schema.</code><code class="descname">ColumnDefault</code><span class="sig-paren">(</span><em>arg</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.schema.ColumnDefault" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#sqlalchemy.schema.DefaultGenerator" title="sqlalchemy.schema.DefaultGenerator"><code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.schema.DefaultGenerator</span></code></a></p>
+<p>A plain default value on a column.</p>
+<p>This could correspond to a constant, a callable function,
+or a SQL clause.</p>
+<p><a class="reference internal" href="#sqlalchemy.schema.ColumnDefault" title="sqlalchemy.schema.ColumnDefault"><code class="xref py py-class docutils literal"><span class="pre">ColumnDefault</span></code></a> is generated automatically
+whenever the <code class="docutils literal"><span class="pre">default</span></code>, <code class="docutils literal"><span class="pre">onupdate</span></code> arguments of
+<a class="reference internal" href="metadata.html#sqlalchemy.schema.Column" title="sqlalchemy.schema.Column"><code class="xref py py-class docutils literal"><span class="pre">Column</span></code></a> are used.  A <a class="reference internal" href="#sqlalchemy.schema.ColumnDefault" title="sqlalchemy.schema.ColumnDefault"><code class="xref py py-class docutils literal"><span class="pre">ColumnDefault</span></code></a>
+can be passed positionally as well.</p>
+<p>For example, the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Column</span><span class="p">(</span><span class="s">&#39;foo&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span></pre></div>
+</div>
+<p>Is equivalent to:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Column</span><span class="p">(</span><span class="s">&#39;foo&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">ColumnDefault</span><span class="p">(</span><span class="mi">50</span><span class="p">))</span></pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="sqlalchemy.schema.DefaultClause">
+<em class="property">class </em><code class="descclassname">sqlalchemy.schema.</code><code class="descname">DefaultClause</code><span class="sig-paren">(</span><em>arg</em>, <em>for_update=False</em>, <em>_reflected=False</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.schema.DefaultClause" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#sqlalchemy.schema.FetchedValue" title="sqlalchemy.schema.FetchedValue"><code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.schema.FetchedValue</span></code></a></p>
+<p>A DDL-specified DEFAULT column value.</p>
+<p><a class="reference internal" href="#sqlalchemy.schema.DefaultClause" title="sqlalchemy.schema.DefaultClause"><code class="xref py py-class docutils literal"><span class="pre">DefaultClause</span></code></a> is a <a class="reference internal" href="#sqlalchemy.schema.FetchedValue" title="sqlalchemy.schema.FetchedValue"><code class="xref py py-class docutils literal"><span class="pre">FetchedValue</span></code></a>
+that also generates a &#8220;DEFAULT&#8221; clause when
+&#8220;CREATE TABLE&#8221; is emitted.</p>
+<p><a class="reference internal" href="#sqlalchemy.schema.DefaultClause" title="sqlalchemy.schema.DefaultClause"><code class="xref py py-class docutils literal"><span class="pre">DefaultClause</span></code></a> is generated automatically
+whenever the <code class="docutils literal"><span class="pre">server_default</span></code>, <code class="docutils literal"><span class="pre">server_onupdate</span></code> arguments of
+<a class="reference internal" href="metadata.html#sqlalchemy.schema.Column" title="sqlalchemy.schema.Column"><code class="xref py py-class docutils literal"><span class="pre">Column</span></code></a> are used.  A <a class="reference internal" href="#sqlalchemy.schema.DefaultClause" title="sqlalchemy.schema.DefaultClause"><code class="xref py py-class docutils literal"><span class="pre">DefaultClause</span></code></a>
+can be passed positionally as well.</p>
+<p>For example, the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Column</span><span class="p">(</span><span class="s">&#39;foo&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">server_default</span><span class="o">=</span><span class="s">&quot;50&quot;</span><span class="p">)</span></pre></div>
+</div>
+<p>Is equivalent to:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Column</span><span class="p">(</span><span class="s">&#39;foo&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">DefaultClause</span><span class="p">(</span><span class="s">&quot;50&quot;</span><span class="p">))</span></pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="sqlalchemy.schema.DefaultGenerator">
+<em class="property">class </em><code class="descclassname">sqlalchemy.schema.</code><code class="descname">DefaultGenerator</code><span class="sig-paren">(</span><em>for_update=False</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.schema.DefaultGenerator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.schema._NotAColumnExpr</span></code>, <a class="reference internal" href="metadata.html#sqlalchemy.schema.SchemaItem" title="sqlalchemy.schema.SchemaItem"><code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.schema.SchemaItem</span></code></a></p>
+<p>Base class for column <em>default</em> values.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="sqlalchemy.schema.FetchedValue">
+<em class="property">class </em><code class="descclassname">sqlalchemy.schema.</code><code class="descname">FetchedValue</code><span class="sig-paren">(</span><em>for_update=False</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.schema.FetchedValue" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.schema._NotAColumnExpr</span></code>, <code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.sql.expression.SchemaEventTarget</span></code></p>
+<p>A marker for a transparent database-side default.</p>
+<p>Use <a class="reference internal" href="#sqlalchemy.schema.FetchedValue" title="sqlalchemy.schema.FetchedValue"><code class="xref py py-class docutils literal"><span class="pre">FetchedValue</span></code></a> when the database is configured
+to provide some automatic default for a column.</p>
+<p>E.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Column</span><span class="p">(</span><span class="s">&#39;foo&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">FetchedValue</span><span class="p">())</span></pre></div>
+</div>
+<p>Would indicate that some trigger or default generator
+will create a new value for the <code class="docutils literal"><span class="pre">foo</span></code> column during an
+INSERT.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#triggered-columns"><span>Triggered Columns</span></a></p>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="sqlalchemy.schema.PassiveDefault">
+<em class="property">class </em><code class="descclassname">sqlalchemy.schema.</code><code class="descname">PassiveDefault</code><span class="sig-paren">(</span><em>*arg</em>, <em>**kw</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.schema.PassiveDefault" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#sqlalchemy.schema.DefaultClause" title="sqlalchemy.schema.DefaultClause"><code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.schema.DefaultClause</span></code></a></p>
+<p>A DDL-specified DEFAULT column value.</p>
+<div class="deprecated">
+<p><span class="versionmodified">Deprecated since version 0.6: </span><a class="reference internal" href="#sqlalchemy.schema.PassiveDefault" title="sqlalchemy.schema.PassiveDefault"><code class="xref py py-class docutils literal"><span class="pre">PassiveDefault</span></code></a> is deprecated.
+Use <a class="reference internal" href="#sqlalchemy.schema.DefaultClause" title="sqlalchemy.schema.DefaultClause"><code class="xref py py-class docutils literal"><span class="pre">DefaultClause</span></code></a>.</p>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="sqlalchemy.schema.Sequence">
+<em class="property">class </em><code class="descclassname">sqlalchemy.schema.</code><code class="descname">Sequence</code><span class="sig-paren">(</span><em>name</em>, <em>start=None</em>, <em>increment=None</em>, <em>minvalue=None</em>, <em>maxvalue=None</em>, <em>nominvalue=None</em>, <em>nomaxvalue=None</em>, <em>cycle=None</em>, <em>schema=None</em>, <em>optional=False</em>, <em>quote=None</em>, <em>metadata=None</em>, <em>quote_schema=None</em>, <em>for_update=False</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.schema.Sequence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#sqlalchemy.schema.DefaultGenerator" title="sqlalchemy.schema.DefaultGenerator"><code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.schema.DefaultGenerator</span></code></a></p>
+<p>Represents a named database sequence.</p>
+<p>The <a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> object represents the name and configurational
+parameters of a database sequence.   It also represents
+a construct that can be &#8220;executed&#8221; by a SQLAlchemy <a class="reference internal" href="connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a>
+or <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a>, rendering the appropriate &#8220;next value&#8221; function
+for the target database and returning a result.</p>
+<p>The <a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> is typically associated with a primary key column:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">some_table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span>
+    <span class="s">&#39;some_table&#39;</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">(</span><span class="s">&#39;some_table_seq&#39;</span><span class="p">),</span>
+    <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="p">)</span></pre></div>
+</div>
+<p>When CREATE TABLE is emitted for the above <a class="reference internal" href="metadata.html#sqlalchemy.schema.Table" title="sqlalchemy.schema.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a>, if the
+target platform supports sequences, a CREATE SEQUENCE statement will
+be emitted as well.   For platforms that don&#8217;t support sequences,
+the <a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> construct is ignored.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p><a class="reference internal" href="ddl.html#sqlalchemy.schema.CreateSequence" title="sqlalchemy.schema.CreateSequence"><code class="xref py py-class docutils literal"><span class="pre">CreateSequence</span></code></a></p>
+<p class="last"><a class="reference internal" href="ddl.html#sqlalchemy.schema.DropSequence" title="sqlalchemy.schema.DropSequence"><code class="xref py py-class docutils literal"><span class="pre">DropSequence</span></code></a></p>
+</div>
+<dl class="method">
+<dt id="sqlalchemy.schema.Sequence.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>name</em>, <em>start=None</em>, <em>increment=None</em>, <em>minvalue=None</em>, <em>maxvalue=None</em>, <em>nominvalue=None</em>, <em>nomaxvalue=None</em>, <em>cycle=None</em>, <em>schema=None</em>, <em>optional=False</em>, <em>quote=None</em>, <em>metadata=None</em>, <em>quote_schema=None</em>, <em>for_update=False</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.schema.Sequence.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a <a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.schema.Sequence.params.name"></span><strong>name</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.schema.Sequence.params.name">¶</a> &#8211; The name of the sequence.</li>
+<li><span class="target" id="sqlalchemy.schema.Sequence.params.start"></span><strong>start</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.schema.Sequence.params.start">¶</a> &#8211; the starting index of the sequence.  This value is
+used when the CREATE SEQUENCE command is emitted to the database
+as the value of the &#8220;START WITH&#8221; clause.   If <code class="docutils literal"><span class="pre">None</span></code>, the
+clause is omitted, which on most platforms indicates a starting
+value of 1.</li>
+<li><span class="target" id="sqlalchemy.schema.Sequence.params.increment"></span><strong>increment</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.schema.Sequence.params.increment">¶</a> &#8211; the increment value of the sequence.  This
+value is used when the CREATE SEQUENCE command is emitted to
+the database as the value of the &#8220;INCREMENT BY&#8221; clause.  If <code class="docutils literal"><span class="pre">None</span></code>,
+the clause is omitted, which on most platforms indicates an
+increment of 1.</li>
+<li><span class="target" id="sqlalchemy.schema.Sequence.params.minvalue"></span><strong>minvalue</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.schema.Sequence.params.minvalue">¶</a> &#8211; <p>the minimum value of the sequence.  This
+value is used when the CREATE SEQUENCE command is emitted to
+the database as the value of the &#8220;MINVALUE&#8221; clause.  If <code class="docutils literal"><span class="pre">None</span></code>,
+the clause is omitted, which on most platforms indicates a
+minvalue of 1 and -2^63-1 for ascending and descending sequences,
+respectively.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 1.0.7.</span></p>
+</div>
+</li>
+<li><span class="target" id="sqlalchemy.schema.Sequence.params.maxvalue"></span><strong>maxvalue</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.schema.Sequence.params.maxvalue">¶</a> &#8211; <p>the maximum value of the sequence.  This
+value is used when the CREATE SEQUENCE command is emitted to
+the database as the value of the &#8220;MAXVALUE&#8221; clause.  If <code class="docutils literal"><span class="pre">None</span></code>,
+the clause is omitted, which on most platforms indicates a
+maxvalue of 2^63-1 and -1 for ascending and descending sequences,
+respectively.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 1.0.7.</span></p>
+</div>
+</li>
+<li><span class="target" id="sqlalchemy.schema.Sequence.params.nominvalue"></span><strong>nominvalue</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.schema.Sequence.params.nominvalue">¶</a> &#8211; <p>no minimum value of the sequence.  This
+value is used when the CREATE SEQUENCE command is emitted to
+the database as the value of the &#8220;NO MINVALUE&#8221; clause.  If <code class="docutils literal"><span class="pre">None</span></code>,
+the clause is omitted, which on most platforms indicates a
+minvalue of 1 and -2^63-1 for ascending and descending sequences,
+respectively.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 1.0.7.</span></p>
+</div>
+</li>
+<li><span class="target" id="sqlalchemy.schema.Sequence.params.nomaxvalue"></span><strong>nomaxvalue</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.schema.Sequence.params.nomaxvalue">¶</a> &#8211; <p>no maximum value of the sequence.  This
+value is used when the CREATE SEQUENCE command is emitted to
+the database as the value of the &#8220;NO MAXVALUE&#8221; clause.  If <code class="docutils literal"><span class="pre">None</span></code>,
+the clause is omitted, which on most platforms indicates a
+maxvalue of 2^63-1 and -1 for ascending and descending sequences,
+respectively.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 1.0.7.</span></p>
+</div>
+</li>
+<li><span class="target" id="sqlalchemy.schema.Sequence.params.cycle"></span><strong>cycle</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.schema.Sequence.params.cycle">¶</a> &#8211; <p>allows the sequence to wrap around when the maxvalue
+or minvalue has been reached by an ascending or descending sequence
+respectively.  This value is used when the CREATE SEQUENCE command
+is emitted to the database as the &#8220;CYCLE&#8221; clause.  If the limit is
+reached, the next number generated will be the minvalue or maxvalue,
+respectively.  If cycle=False (the default) any calls to nextval
+after the sequence has reached its maximum value will return an
+error.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 1.0.7.</span></p>
+</div>
+</li>
+<li><span class="target" id="sqlalchemy.schema.Sequence.params.schema"></span><strong>schema</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.schema.Sequence.params.schema">¶</a> &#8211; Optional schema name for the sequence, if located
+in a schema other than the default.</li>
+<li><span class="target" id="sqlalchemy.schema.Sequence.params.optional"></span><strong>optional</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.schema.Sequence.params.optional">¶</a> &#8211; boolean value, when <code class="docutils literal"><span class="pre">True</span></code>, indicates that this
+<a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> object only needs to be explicitly generated
+on backends that don&#8217;t provide another way to generate primary
+key identifiers.  Currently, it essentially means, &#8220;don&#8217;t create
+this sequence on the Postgresql backend, where the SERIAL keyword
+creates a sequence for us automatically&#8221;.</li>
+<li><span class="target" id="sqlalchemy.schema.Sequence.params.quote"></span><strong>quote</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.schema.Sequence.params.quote">¶</a> &#8211; boolean value, when <code class="docutils literal"><span class="pre">True</span></code> or <code class="docutils literal"><span class="pre">False</span></code>, explicitly
+forces quoting of the schema name on or off.  When left at its
+default of <code class="docutils literal"><span class="pre">None</span></code>, normal quoting rules based on casing and
+reserved words take place.</li>
+<li><span class="target" id="sqlalchemy.schema.Sequence.params.quote_schema"></span><strong>quote_schema</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.schema.Sequence.params.quote_schema">¶</a> &#8211; set the quoting preferences for the <code class="docutils literal"><span class="pre">schema</span></code>
+name.</li>
+<li><span class="target" id="sqlalchemy.schema.Sequence.params.metadata"></span><strong>metadata</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.schema.Sequence.params.metadata">¶</a> &#8211; <p>optional <a class="reference internal" href="metadata.html#sqlalchemy.schema.MetaData" title="sqlalchemy.schema.MetaData"><code class="xref py py-class docutils literal"><span class="pre">MetaData</span></code></a> object which will be
+associated with this <a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a>.  A <a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a>
+that is associated with a <a class="reference internal" href="metadata.html#sqlalchemy.schema.MetaData" title="sqlalchemy.schema.MetaData"><code class="xref py py-class docutils literal"><span class="pre">MetaData</span></code></a> gains access to the
+<code class="docutils literal"><span class="pre">bind</span></code> of that <a class="reference internal" href="metadata.html#sqlalchemy.schema.MetaData" title="sqlalchemy.schema.MetaData"><code class="xref py py-class docutils literal"><span class="pre">MetaData</span></code></a>, meaning the
+<a class="reference internal" href="#sqlalchemy.schema.Sequence.create" title="sqlalchemy.schema.Sequence.create"><code class="xref py py-meth docutils literal"><span class="pre">Sequence.create()</span></code></a> and <a class="reference internal" href="#sqlalchemy.schema.Sequence.drop" title="sqlalchemy.schema.Sequence.drop"><code class="xref py py-meth docutils literal"><span class="pre">Sequence.drop()</span></code></a> methods will
+make usage of that engine automatically.</p>
+<div class="versionchanged">
+<p><span class="versionmodified">Changed in version 0.7: </span>Additionally, the appropriate CREATE SEQUENCE/
+DROP SEQUENCE DDL commands will be emitted corresponding to this
+<a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> when <a class="reference internal" href="metadata.html#sqlalchemy.schema.MetaData.create_all" title="sqlalchemy.schema.MetaData.create_all"><code class="xref py py-meth docutils literal"><span class="pre">MetaData.create_all()</span></code></a> and
+<a class="reference internal" href="metadata.html#sqlalchemy.schema.MetaData.drop_all" title="sqlalchemy.schema.MetaData.drop_all"><code class="xref py py-meth docutils literal"><span class="pre">MetaData.drop_all()</span></code></a> are invoked.</p>
+</div>
+<p>Note that when a <a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> is applied to a <a class="reference internal" href="metadata.html#sqlalchemy.schema.Column" title="sqlalchemy.schema.Column"><code class="xref py py-class docutils literal"><span class="pre">Column</span></code></a>,
+the <a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> is automatically associated with the
+<a class="reference internal" href="metadata.html#sqlalchemy.schema.MetaData" title="sqlalchemy.schema.MetaData"><code class="xref py py-class docutils literal"><span class="pre">MetaData</span></code></a> object of that column&#8217;s parent <a class="reference internal" href="metadata.html#sqlalchemy.schema.Table" title="sqlalchemy.schema.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a>,
+when that association is made.   The <a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> will then
+be subject to automatic CREATE SEQUENCE/DROP SEQUENCE corresponding
+to when the <a class="reference internal" href="metadata.html#sqlalchemy.schema.Table" title="sqlalchemy.schema.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> object itself is created or dropped,
+rather than that of the <a class="reference internal" href="metadata.html#sqlalchemy.schema.MetaData" title="sqlalchemy.schema.MetaData"><code class="xref py py-class docutils literal"><span class="pre">MetaData</span></code></a> object overall.</p>
+</li>
+<li><span class="target" id="sqlalchemy.schema.Sequence.params.for_update"></span><strong>for_update</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.schema.Sequence.params.for_update">¶</a> &#8211; Indicates this <a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a>, when associated
+with a <a class="reference internal" href="metadata.html#sqlalchemy.schema.Column" title="sqlalchemy.schema.Column"><code class="xref py py-class docutils literal"><span class="pre">Column</span></code></a>, should be invoked for UPDATE statements
+on that column&#8217;s table, rather than for INSERT statements, when
+no value is otherwise present for that column in the statement.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.schema.Sequence.create">
+<code class="descname">create</code><span class="sig-paren">(</span><em>bind=None</em>, <em>checkfirst=True</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.schema.Sequence.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates this sequence in the database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.schema.Sequence.drop">
+<code class="descname">drop</code><span class="sig-paren">(</span><em>bind=None</em>, <em>checkfirst=True</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.schema.Sequence.drop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Drops this sequence from the database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.schema.Sequence.next_value">
+<code class="descname">next_value</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.schema.Sequence.next_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a <a class="reference internal" href="functions.html#sqlalchemy.sql.functions.next_value" title="sqlalchemy.sql.functions.next_value"><code class="xref py py-class docutils literal"><span class="pre">next_value</span></code></a> function element
+which will render the appropriate increment function
+for this <a class="reference internal" href="#sqlalchemy.schema.Sequence" title="sqlalchemy.schema.Sequence"><code class="xref py py-class docutils literal"><span class="pre">Sequence</span></code></a> within any SQL expression.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+    </div>
+
+</div>
+
+<div id="docs-bottom-navigation" class="docs-navigation-links">
+        Previous:
+        <a href="reflection.html" title="previous chapter">Reflecting Database Objects</a>
+        Next:
+        <a href="constraints.html" title="next chapter">Defining Constraints and Indexes</a>
+
+    <div id="docs-copyright">
+        &copy; <a href="../copyright.html">Copyright</a> 2007-2015, the SQLAlchemy authors and contributors.
+        Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.3.1.
+    </div>
+</div>
+
+</div>
+
+
+        
+        
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+          URL_ROOT:    '../',
+          VERSION:     '1.0.8',
+          COLLAPSE_MODINDEX: false,
+          FILE_SUFFIX: '.html'
+      };
+    </script>
+
+    <!-- begin iterate through sphinx environment script_files -->
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+    <!-- end iterate through sphinx environment script_files -->
+
+    <script type="text/javascript" src="../_static/detectmobile.js"></script>
+    <script type="text/javascript" src="../_static/init.js"></script>
+
+
+    </body>
+</html>
+
+

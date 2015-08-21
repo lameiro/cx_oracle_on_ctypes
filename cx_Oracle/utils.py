@@ -3,8 +3,13 @@ import ctypes
 import oci
 import operator
 
+
 def python3_or_better():
     return sys.version_info.major >= 3
+
+
+def python2():
+    return sys.version_info.major == 2
 
 if python3_or_better():
     def cxString_from_ascii(a_str):

@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        
+        <title>
+            
+    
+    examples.dogpile_caching.fixture_data
+ &mdash;
+    SQLAlchemy 1.0 Documentation
+
+        </title>
+
+        
+            <!-- begin iterate through SQLA + sphinx environment css_files -->
+                <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+                <link rel="stylesheet" href="../../../_static/changelog.css" type="text/css" />
+                <link rel="stylesheet" href="../../../_static/sphinx_paramlinks.css" type="text/css" />
+                <link rel="stylesheet" href="../../../_static/docs.css" type="text/css" />
+            <!-- end iterate through SQLA + sphinx environment css_files -->
+        
+
+        
+
+    
+
+    <!-- begin layout.mako headers -->
+
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+        <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="top" title="SQLAlchemy 1.0 Documentation" href="../../../index.html" />
+        <link rel="up" title="Module code" href="../../index.html" />
+    <!-- end layout.mako headers -->
+
+
+    </head>
+    <body>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="docs-container">
+
+
+
+
+
+<div id="docs-top-navigation-container" class="body-background">
+<div id="docs-header">
+    <div id="docs-version-header">
+        Release: <span class="version-num">1.0.8</span> | Release Date: July 22, 2015
+    </div>
+
+    <h1>SQLAlchemy 1.0 Documentation</h1>
+
+</div>
+</div>
+
+<div id="docs-body-container">
+
+    <div id="fixed-sidebar" class="">
+
+        <div id="index-nav">
+            <form class="search" action="../../../search.html" method="get">
+              <input type="text" name="q" size="12" /> <input type="submit" value="Search" />
+              <input type="hidden" name="check_keywords" value="yes" />
+              <input type="hidden" name="area" value="default" />
+            </form>
+
+            <p>
+            <a href="../../../contents.html">Contents</a> |
+            <a href="../../../genindex.html">Index</a>
+            </p>
+
+        </div>
+
+
+    </div>
+
+    
+
+    <div id="docs-body" class="" >
+        
+<h1>Source code for examples.dogpile_caching.fixture_data</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;fixture_data.py</span>
+
+<span class="sd">Installs some sample data.   Here we have a handful of postal codes for a few US/</span>
+<span class="sd">Canadian cities.   Then, 100 Person records are installed, each with a</span>
+<span class="sd">randomly selected postal code.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">.environment</span> <span class="kn">import</span> <span class="n">Session</span><span class="p">,</span> <span class="n">Base</span>
+<span class="kn">from</span> <span class="nn">.model</span> <span class="kn">import</span> <span class="n">City</span><span class="p">,</span> <span class="n">Country</span><span class="p">,</span> <span class="n">PostalCode</span><span class="p">,</span> <span class="n">Person</span><span class="p">,</span> <span class="n">Address</span>
+<span class="kn">import</span> <span class="nn">random</span>
+
+<span class="k">def</span> <span class="nf">install</span><span class="p">():</span>
+    <span class="n">Base</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="n">Session</span><span class="p">()</span><span class="o">.</span><span class="n">bind</span><span class="p">)</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s">&#39;Chicago&#39;</span><span class="p">,</span> <span class="s">&#39;United States&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;60601&#39;</span><span class="p">,</span> <span class="s">&#39;60602&#39;</span><span class="p">,</span> <span class="s">&#39;60603&#39;</span><span class="p">,</span> <span class="s">&#39;60604&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s">&#39;Montreal&#39;</span><span class="p">,</span> <span class="s">&#39;Canada&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;H2S 3K9&#39;</span><span class="p">,</span> <span class="s">&#39;H2B 1V4&#39;</span><span class="p">,</span> <span class="s">&#39;H7G 2T8&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s">&#39;Edmonton&#39;</span><span class="p">,</span> <span class="s">&#39;Canada&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;T5J 1R9&#39;</span><span class="p">,</span> <span class="s">&#39;T5J 1Z4&#39;</span><span class="p">,</span> <span class="s">&#39;T5H 1P6&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s">&#39;New York&#39;</span><span class="p">,</span> <span class="s">&#39;United States&#39;</span><span class="p">,</span>
+                        <span class="p">(</span><span class="s">&#39;10001&#39;</span><span class="p">,</span> <span class="s">&#39;10002&#39;</span><span class="p">,</span> <span class="s">&#39;10003&#39;</span><span class="p">,</span> <span class="s">&#39;10004&#39;</span><span class="p">,</span> <span class="s">&#39;10005&#39;</span><span class="p">,</span> <span class="s">&#39;10006&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s">&#39;San Francisco&#39;</span><span class="p">,</span> <span class="s">&#39;United States&#39;</span><span class="p">,</span>
+                        <span class="p">(</span><span class="s">&#39;94102&#39;</span><span class="p">,</span> <span class="s">&#39;94103&#39;</span><span class="p">,</span> <span class="s">&#39;94104&#39;</span><span class="p">,</span> <span class="s">&#39;94105&#39;</span><span class="p">,</span> <span class="s">&#39;94107&#39;</span><span class="p">,</span> <span class="s">&#39;94108&#39;</span><span class="p">))</span>
+    <span class="p">]</span>
+
+    <span class="n">countries</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">all_post_codes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">city</span><span class="p">,</span> <span class="n">country</span><span class="p">,</span> <span class="n">postcodes</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">country</span> <span class="o">=</span> <span class="n">countries</span><span class="p">[</span><span class="n">country</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">countries</span><span class="p">[</span><span class="n">country</span><span class="p">]</span> <span class="o">=</span> <span class="n">country</span> <span class="o">=</span> <span class="n">Country</span><span class="p">(</span><span class="n">country</span><span class="p">)</span>
+
+        <span class="n">city</span> <span class="o">=</span> <span class="n">City</span><span class="p">(</span><span class="n">city</span><span class="p">,</span> <span class="n">country</span><span class="p">)</span>
+        <span class="n">pc</span> <span class="o">=</span> <span class="p">[</span><span class="n">PostalCode</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">city</span><span class="p">)</span> <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">postcodes</span><span class="p">]</span>
+        <span class="n">Session</span><span class="o">.</span><span class="n">add_all</span><span class="p">(</span><span class="n">pc</span><span class="p">)</span>
+        <span class="n">all_post_codes</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">pc</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">51</span><span class="p">):</span>
+        <span class="n">person</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span>
+                    <span class="s">&quot;person </span><span class="si">%.2d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span>
+                    <span class="n">Address</span><span class="p">(</span>
+                        <span class="n">street</span><span class="o">=</span><span class="s">&quot;street </span><span class="si">%.2d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span>
+                        <span class="n">postal_code</span><span class="o">=</span><span class="n">all_post_codes</span><span class="p">[</span>
+                                <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_post_codes</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+        <span class="n">Session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">person</span><span class="p">)</span>
+
+    <span class="n">Session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+    <span class="c"># start the demo fresh</span>
+    <span class="n">Session</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span></pre></div>
+    </div>
+
+</div>
+
+<div id="docs-bottom-navigation" class="docs-navigation-links">
+
+    <div id="docs-copyright">
+        &copy; <a href="../../../copyright.html">Copyright</a> 2007-2015, the SQLAlchemy authors and contributors.
+        Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.3.1.
+    </div>
+</div>
+
+</div>
+
+
+        
+        
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+          URL_ROOT:    '../../../',
+          VERSION:     '1.0.8',
+          COLLAPSE_MODINDEX: false,
+          FILE_SUFFIX: '.html'
+      };
+    </script>
+
+    <!-- begin iterate through sphinx environment script_files -->
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <!-- end iterate through sphinx environment script_files -->
+
+    <script type="text/javascript" src="../../../_static/detectmobile.js"></script>
+    <script type="text/javascript" src="../../../_static/init.js"></script>
+
+
+    </body>
+</html>
+
+

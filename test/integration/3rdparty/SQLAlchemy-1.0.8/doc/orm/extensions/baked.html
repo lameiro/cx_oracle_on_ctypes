@@ -1,0 +1,661 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        
+        <title>
+            
+    
+    Baked Queries
+ &mdash;
+    SQLAlchemy 1.0 Documentation
+
+        </title>
+
+        
+            <!-- begin iterate through SQLA + sphinx environment css_files -->
+                <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+                <link rel="stylesheet" href="../../_static/changelog.css" type="text/css" />
+                <link rel="stylesheet" href="../../_static/sphinx_paramlinks.css" type="text/css" />
+                <link rel="stylesheet" href="../../_static/docs.css" type="text/css" />
+            <!-- end iterate through SQLA + sphinx environment css_files -->
+        
+
+        
+
+    
+
+    <!-- begin layout.mako headers -->
+
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+        <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="SQLAlchemy 1.0 Documentation" href="../../index.html" />
+        <link rel="up" title="ORM Extensions" href="index.html" />
+        <link rel="next" title="Declarative" href="declarative/index.html" />
+        <link rel="prev" title="Automap" href="automap.html" />
+    <!-- end layout.mako headers -->
+
+
+    </head>
+    <body>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="docs-container">
+
+
+
+
+
+<div id="docs-top-navigation-container" class="body-background">
+<div id="docs-header">
+    <div id="docs-version-header">
+        Release: <span class="version-num">1.0.8</span> | Release Date: July 22, 2015
+    </div>
+
+    <h1>SQLAlchemy 1.0 Documentation</h1>
+
+</div>
+</div>
+
+<div id="docs-body-container">
+
+    <div id="fixed-sidebar" class="withsidebar">
+
+
+        <div id="docs-sidebar-popout">
+            <h3><a href="../../index.html">SQLAlchemy 1.0 Documentation</a></h3>
+
+            <p id="sidebar-topnav">
+                <a href="../../contents.html">Contents</a> |
+                <a href="../../genindex.html">Index</a>
+            </p>
+
+            <div id="sidebar-search">
+                <form class="search" action="../../search.html" method="get">
+                  <input type="text" name="q" size="12" /> <input type="submit" value="Search" />
+                  <input type="hidden" name="check_keywords" value="yes" />
+                  <input type="hidden" name="area" value="default" />
+                </form>
+            </div>
+
+        </div>
+
+        <div id="docs-sidebar">
+
+        
+        <h3>
+            <a href="../index.html" title="SQLAlchemy ORM">SQLAlchemy ORM</a>
+        </h3>
+
+        <ul>
+<li><span class="link-container first"><a class="reference external" href="../tutorial.html">Object Relational Tutorial</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="../mapper_config.html">Mapper Configuration</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="../relationships.html">Relationship Configuration</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="../loading_objects.html">Loading Objects</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="../session.html">Using the Session</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="../extending.html">Events and Internals</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="index.html">ORM Extensions</a></span><ul>
+<li><span class="link-container first"><a class="reference external" href="associationproxy.html">Association Proxy</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="automap.html">Automap</a></span></li>
+<li class="selected"><span class="link-container first"><strong>Baked Queries</strong><a class="paramlink headerlink reference internal" href="#">¶</a></span><ul>
+<li><span class="link-container first"><a class="reference external" href="#synopsis">Synopsis</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#performance">Performance</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#rationale">Rationale</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#lazy-loading-integration">Lazy Loading Integration</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#api-documentation">API Documentation</a></span></li>
+</ul>
+</li>
+<li><span class="link-container first"><a class="reference external" href="declarative/index.html">Declarative</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="mutable.html">Mutation Tracking</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="orderinglist.html">Ordering List</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="horizontal_shard.html">Horizontal Sharding</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="hybrid.html">Hybrid Attributes</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="instrumentation.html">Alternate Class Instrumentation</a></span></li>
+</ul>
+</li>
+<li><span class="link-container first"><a class="reference external" href="../examples.html">ORM Examples</a></span></li>
+</ul>
+
+
+
+        </div>
+
+    </div>
+
+    
+
+    <div id="docs-body" class="withsidebar" >
+        
+<div class="section" id="module-sqlalchemy.ext.baked">
+<span id="baked-queries"></span><span id="baked-toplevel"></span><h1>Baked Queries<a class="headerlink" href="#module-sqlalchemy.ext.baked" title="Permalink to this headline">¶</a></h1>
+<p><code class="docutils literal"><span class="pre">baked</span></code> provides an alternative creational pattern for
+<a class="reference internal" href="../query.html#sqlalchemy.orm.query.Query" title="sqlalchemy.orm.query.Query"><code class="xref py py-class docutils literal"><span class="pre">Query</span></code></a> objects, which allows for caching of the object&#8217;s
+construction and string-compilation steps.  This means that for a
+particular <a class="reference internal" href="../query.html#sqlalchemy.orm.query.Query" title="sqlalchemy.orm.query.Query"><code class="xref py py-class docutils literal"><span class="pre">Query</span></code></a> building scenario that is used more than
+once, all of the Python function invocation involved in building the query
+from its initial construction up through generating a SQL string will only
+occur <strong>once</strong>, rather than for each time that query is built up and executed.</p>
+<p>The rationale for this system is to greatly reduce Python interpreter
+overhead for everything that occurs <strong>before the SQL is emitted</strong>.
+The caching of the &#8220;baked&#8221; system does <strong>not</strong> in any way reduce SQL calls or
+cache the <strong>return results</strong> from the database.  A technique that demonstates
+the caching of the SQL calls and result sets themselves is available in
+<a class="reference internal" href="../examples.html#examples-caching"><span>Dogpile Caching</span></a>.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 1.0.0.</span></p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The <a class="reference internal" href="#module-sqlalchemy.ext.baked" title="sqlalchemy.ext.baked"><code class="xref py py-mod docutils literal"><span class="pre">sqlalchemy.ext.baked</span></code></a> extension should be considered
+<strong>experimental</strong> as of 1.0.0.  It provides a dramatically different system
+of producing queries which has yet to be proven at scale.</p>
+</div>
+<div class="section" id="synopsis">
+<h2>Synopsis<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
+<p>Usage of the baked system starts by producing a so-called &#8220;bakery&#8221;, which
+represents storage for a particular series of query objects:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy.ext</span> <span class="kn">import</span> <span class="n">baked</span>
+
+<span class="n">bakery</span> <span class="o">=</span> <span class="n">baked</span><span class="o">.</span><span class="n">bakery</span><span class="p">()</span></pre></div>
+</div>
+<p>The above &#8220;bakery&#8221; will store cached data in an LRU cache that defaults
+to 200 elements, noting that an ORM query will typically contain one entry
+for the ORM query as invoked, as well as one entry per database dialect for
+the SQL string.</p>
+<p>The bakery allows us to build up a <a class="reference internal" href="../query.html#sqlalchemy.orm.query.Query" title="sqlalchemy.orm.query.Query"><code class="xref py py-class docutils literal"><span class="pre">Query</span></code></a> object by specifying
+its construction as a series of Python callables, which are typically lambdas.
+For succinct usage, it overrides the <code class="docutils literal"><span class="pre">+=</span></code> operator so that a typical
+query build-up looks like the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">bindparam</span>
+
+<span class="k">def</span> <span class="nf">search_for_user</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+    <span class="n">baked_query</span> <span class="o">=</span> <span class="n">bakery</span><span class="p">(</span><span class="k">lambda</span> <span class="n">session</span><span class="p">:</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">User</span><span class="p">))</span>
+    <span class="n">baked_query</span> <span class="o">+=</span> <span class="k">lambda</span> <span class="n">q</span><span class="p">:</span> <span class="n">q</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">User</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">bindparam</span><span class="p">(</span><span class="s">&#39;username&#39;</span><span class="p">))</span>
+
+    <span class="n">baked_query</span> <span class="o">+=</span> <span class="k">lambda</span> <span class="n">q</span><span class="p">:</span> <span class="n">q</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">User</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">email</span><span class="p">:</span>
+        <span class="n">baked_query</span> <span class="o">+=</span> <span class="k">lambda</span> <span class="n">q</span><span class="p">:</span> <span class="n">q</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">User</span><span class="o">.</span><span class="n">email</span> <span class="o">==</span> <span class="n">bindparam</span><span class="p">(</span><span class="s">&#39;email&#39;</span><span class="p">))</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">baked_query</span><span class="p">(</span><span class="n">session</span><span class="p">)</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="n">email</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">result</span></pre></div>
+</div>
+<p>Following are some observations about the above code:</p>
+<ol class="arabic simple">
+<li>The <code class="docutils literal"><span class="pre">baked_query</span></code> object is an instance of <a class="reference internal" href="#sqlalchemy.ext.baked.BakedQuery" title="sqlalchemy.ext.baked.BakedQuery"><code class="xref py py-class docutils literal"><span class="pre">BakedQuery</span></code></a>.  This
+object is essentially the &#8220;builder&#8221; for a real orm <a class="reference internal" href="../query.html#sqlalchemy.orm.query.Query" title="sqlalchemy.orm.query.Query"><code class="xref py py-class docutils literal"><span class="pre">Query</span></code></a>
+object, but it is not itself the <em>actual</em> <a class="reference internal" href="../query.html#sqlalchemy.orm.query.Query" title="sqlalchemy.orm.query.Query"><code class="xref py py-class docutils literal"><span class="pre">Query</span></code></a>
+object.</li>
+<li>The actual <a class="reference internal" href="../query.html#sqlalchemy.orm.query.Query" title="sqlalchemy.orm.query.Query"><code class="xref py py-class docutils literal"><span class="pre">Query</span></code></a> object is not built at all, until the
+very end of the function when <a class="reference internal" href="#sqlalchemy.ext.baked.Result.all" title="sqlalchemy.ext.baked.Result.all"><code class="xref py py-meth docutils literal"><span class="pre">Result.all()</span></code></a> is called.</li>
+<li>The steps that are added to the <code class="docutils literal"><span class="pre">baked_query</span></code> object are all expressed
+as Python functions,  typically lambdas.  The first lambda given
+to the <a class="reference internal" href="#sqlalchemy.ext.baked.bakery" title="sqlalchemy.ext.baked.bakery"><code class="xref py py-func docutils literal"><span class="pre">bakery()</span></code></a> function receives a <a class="reference internal" href="../session_api.html#sqlalchemy.orm.session.Session" title="sqlalchemy.orm.session.Session"><code class="xref py py-class docutils literal"><span class="pre">Session</span></code></a> as its
+argument.  The remaining lambdas each receive a <a class="reference internal" href="../query.html#sqlalchemy.orm.query.Query" title="sqlalchemy.orm.query.Query"><code class="xref py py-class docutils literal"><span class="pre">Query</span></code></a>
+as their argument.</li>
+<li>In the above code, even though our application may call upon
+<code class="docutils literal"><span class="pre">search_for_user()</span></code> many times, and even though within each invocation
+we build up an entirely new <a class="reference internal" href="#sqlalchemy.ext.baked.BakedQuery" title="sqlalchemy.ext.baked.BakedQuery"><code class="xref py py-class docutils literal"><span class="pre">BakedQuery</span></code></a> object,
+<em>all of the lambdas are only called once</em>.   Each lambda is <strong>never</strong> called
+a second time for as long as this query is cached in the bakery.</li>
+<li>The caching is achieved by storing references to the <strong>lambda objects
+themselves</strong> in order to formulate a cache key; that is, the fact that the
+Python interpreter assigns an in-Python identity to these functions is
+what determines how to identify the query on successive runs. For
+those invocations of <code class="docutils literal"><span class="pre">search_for_user()</span></code> where the <code class="docutils literal"><span class="pre">email</span></code> parameter
+is specified, the callable <code class="docutils literal"><span class="pre">lambda</span> <span class="pre">q:</span> <span class="pre">q.filter(User.email</span> <span class="pre">==</span> <span class="pre">bindparam('email'))</span></code>
+will be part of the cache key that&#8217;s retrieved; when <code class="docutils literal"><span class="pre">email</span></code> is
+<code class="docutils literal"><span class="pre">None</span></code>, this callable is not part of the cache key.</li>
+<li>Because the lambdas are all called only once, it is essential that no
+variables which may change across calls are referenced <strong>within</strong> the
+lambdas; instead, assuming these are values to be bound into the
+SQL string, we use <a class="reference internal" href="../../core/sqlelement.html#sqlalchemy.sql.expression.bindparam" title="sqlalchemy.sql.expression.bindparam"><code class="xref py py-func docutils literal"><span class="pre">bindparam()</span></code></a> to construct named parameters,
+where we apply their actual values later using <a class="reference internal" href="#sqlalchemy.ext.baked.Result.params" title="sqlalchemy.ext.baked.Result.params"><code class="xref py py-meth docutils literal"><span class="pre">Result.params()</span></code></a>.</li>
+</ol>
+</div>
+<div class="section" id="performance">
+<h2>Performance<a class="headerlink" href="#performance" title="Permalink to this headline">¶</a></h2>
+<p>The baked query probably looks a little odd, a little bit awkward and
+a little bit verbose.   However, the savings in
+Python performance for a query which is invoked lots of times in an
+application are very dramatic.   The example suite <code class="docutils literal"><span class="pre">short_selects</span></code>
+demonstrated in <a class="reference internal" href="../examples.html#examples-performance"><span>Performance</span></a> illustrates a comparison
+of queries which each return only one row, such as the following regular
+query:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">id_</span> <span class="ow">in</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Customer</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Customer</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">id_</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span></pre></div>
+</div>
+<p>compared to the equivalent &#8220;baked&#8221; query:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">bakery</span> <span class="o">=</span> <span class="n">baked</span><span class="o">.</span><span class="n">bakery</span><span class="p">()</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">Session</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">id_</span> <span class="ow">in</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="n">bakery</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Customer</span><span class="p">))</span>
+    <span class="n">q</span> <span class="o">+=</span> <span class="k">lambda</span> <span class="n">q</span><span class="p">:</span> <span class="n">q</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Customer</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">bindparam</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">))</span>
+    <span class="n">q</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">id_</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span></pre></div>
+</div>
+<p>The difference in Python function call count for an iteration of 10000
+calls to each block are:</p>
+<div class="highlight-python"><div class="highlight"><pre>test_baked_query : test a baked query of the full entity.
+                   (10000 iterations); total fn calls 1951294
+
+test_orm_query :   test a straight ORM query of the full entity.
+                   (10000 iterations); total fn calls 7900535</pre></div>
+</div>
+<p>In terms of number of seconds on a powerful laptop, this comes out as:</p>
+<div class="highlight-python"><div class="highlight"><pre>test_baked_query : test a baked query of the full entity.
+                   (10000 iterations); total time 2.174126 sec
+
+test_orm_query :   test a straight ORM query of the full entity.
+                   (10000 iterations); total time 7.958516 sec</pre></div>
+</div>
+<p>Note that this test very intentionally features queries that only return one row.
+For queries that return many rows, the performance advantage of the baked query will have
+less and less of an impact, proportional to the time spent fetching rows.
+It is critical to keep in mind that the <strong>baked query feature only applies to
+building the query itself, not the fetching of results</strong>.  Using the
+baked feature is by no means a guarantee to a much faster application; it is
+only a potentially useful feature for those applications that have been measured
+as being impacted by this particular form of overhead.</p>
+<div class="topic">
+<p class="topic-title first">Measure twice, cut once</p>
+<p>For background on how to profile a SQLAlchemy application, please see
+the section <a class="reference internal" href="../../faq/performance.html#faq-performance"><span>Performance</span></a>.  It is essential that performance
+measurement techniques are used when attempting to improve the performance
+of an application.</p>
+</div>
+</div>
+<div class="section" id="rationale">
+<h2>Rationale<a class="headerlink" href="#rationale" title="Permalink to this headline">¶</a></h2>
+<p>The &#8220;lambda&#8221; approach above is a superset of what would be a more
+traditional &#8220;parameterized&#8221; approach.   Suppose we wished to build
+a simple system where we build a <a class="reference internal" href="../query.html#sqlalchemy.orm.query.Query" title="sqlalchemy.orm.query.Query"><code class="xref py py-class docutils literal"><span class="pre">Query</span></code></a> just once, then
+store it in a dictionary for re-use.   This is possible right now by
+just building up the query, and removing its <a class="reference internal" href="../session_api.html#sqlalchemy.orm.session.Session" title="sqlalchemy.orm.session.Session"><code class="xref py py-class docutils literal"><span class="pre">Session</span></code></a> by calling
+<code class="docutils literal"><span class="pre">my_cached_query</span> <span class="pre">=</span> <span class="pre">query.with_session(None)</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">my_simple_cache</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">def</span> <span class="nf">lookup</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">id_argument</span><span class="p">):</span>
+    <span class="k">if</span> <span class="s">&quot;my_key&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">my_simple_cache</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">bindparam</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">))</span>
+        <span class="n">my_simple_cache</span><span class="p">[</span><span class="s">&quot;my_key&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">with_session</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="n">my_simple_cache</span><span class="p">[</span><span class="s">&quot;my_key&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">with_session</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">query</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">id_argument</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></pre></div>
+</div>
+<p>The above approach gets us a very minimal performance benefit.
+By re-using a <a class="reference internal" href="../query.html#sqlalchemy.orm.query.Query" title="sqlalchemy.orm.query.Query"><code class="xref py py-class docutils literal"><span class="pre">Query</span></code></a>, we save on the Python work within
+the <code class="docutils literal"><span class="pre">session.query(Model)</span></code> constructor as well as calling upon
+<code class="docutils literal"><span class="pre">filter(Model.id</span> <span class="pre">==</span> <span class="pre">bindparam('id'))</span></code>, which will skip for us the building
+up of the Core expression as well as sending it to <a class="reference internal" href="../query.html#sqlalchemy.orm.query.Query.filter" title="sqlalchemy.orm.query.Query.filter"><code class="xref py py-meth docutils literal"><span class="pre">Query.filter()</span></code></a>.
+However, the approach still regenerates the full <a class="reference internal" href="../../core/selectable.html#sqlalchemy.sql.expression.Select" title="sqlalchemy.sql.expression.Select"><code class="xref py py-class docutils literal"><span class="pre">Select</span></code></a>
+object every time when <a class="reference internal" href="../query.html#sqlalchemy.orm.query.Query.all" title="sqlalchemy.orm.query.Query.all"><code class="xref py py-meth docutils literal"><span class="pre">Query.all()</span></code></a> is called and additionally this
+brand new <a class="reference internal" href="../../core/selectable.html#sqlalchemy.sql.expression.Select" title="sqlalchemy.sql.expression.Select"><code class="xref py py-class docutils literal"><span class="pre">Select</span></code></a> is sent off to the string compilation step every
+time, which for a simple case like the above is probably about 70% of the
+overhead.</p>
+<p>To reduce the additional overhead, we need some more specialized logic,
+some way to memoize the construction of the select object and the
+construction of the SQL.  There is an example of this on the wiki
+in the section <a class="reference external" href="https://bitbucket.org/zzzeek/sqlalchemy/wiki/UsageRecipes/BakedQuery">BakedQuery</a>,
+a precursor to this feature, however in that system, we aren&#8217;t caching
+the <em>construction</em> of the query.  In order to remove all the overhead,
+we need to cache both the construction of the query as well as the SQL
+compilation.  Let&#8217;s assume we adapted the recipe in this way
+and made ourselves a method <code class="docutils literal"><span class="pre">.bake()</span></code> that pre-compiles the SQL for the
+query, producing a new object that can be invoked with minimal overhead.
+Our example becomes:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">my_simple_cache</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">def</span> <span class="nf">lookup</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">id_argument</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="s">&quot;my_key&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">my_simple_cache</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">bindparam</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">))</span>
+        <span class="n">my_simple_cache</span><span class="p">[</span><span class="s">&quot;my_key&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">with_session</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span><span class="o">.</span><span class="n">bake</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="n">my_simple_cache</span><span class="p">[</span><span class="s">&quot;my_key&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">with_session</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">query</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">id_argument</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></pre></div>
+</div>
+<p>Above, we&#8217;ve fixed the performance situation, but we still have this
+string cache key to deal with.</p>
+<p>We can use the &#8220;bakery&#8221; approach to re-frame the above in a way that
+looks less unusual than the &#8220;building up lambdas&#8221; approach, and more like
+a simple improvement upon the simple &#8220;reuse a query&#8221; approach:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">bakery</span> <span class="o">=</span> <span class="n">baked</span><span class="o">.</span><span class="n">bakery</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">lookup</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">id_argument</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">create_model_query</span><span class="p">(</span><span class="n">session</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">bindparam</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">))</span>
+
+    <span class="n">parameterized_query</span> <span class="o">=</span> <span class="n">bakery</span><span class="o">.</span><span class="n">bake</span><span class="p">(</span><span class="n">create_model_query</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">parameterized_query</span><span class="p">(</span><span class="n">session</span><span class="p">)</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">id_argument</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></pre></div>
+</div>
+<p>Above, we use the &#8220;baked&#8221; system in a manner that is
+very similar to the simplistic &#8220;cache a query&#8221; system.  However, it
+uses two fewer lines of code, does not need to manufacture a cache key of
+&#8220;my_key&#8221;, and also includes the same feature as our custom &#8220;bake&#8221; function
+that caches 100% of the Python invocation work from the
+constructor of the query, to the filter call, to the production
+of the <a class="reference internal" href="../../core/selectable.html#sqlalchemy.sql.expression.Select" title="sqlalchemy.sql.expression.Select"><code class="xref py py-class docutils literal"><span class="pre">Select</span></code></a> object, to the string compilation step.</p>
+<p>From the above, if we ask ourselves, &#8220;what if lookup needs to make conditional decisions
+as to the structure of the query?&#8221;, this is where hopefully it becomes apparent
+why &#8220;baked&#8221; is the way it is.   Instead of a parameterized query building
+off from exactly one function (which is how we thought baked might work
+originally), we can build it from <em>any number</em> of functions.  Consider
+our naive example, if we needed to have an additional clause in our
+query on a conditional basis:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">my_simple_cache</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">def</span> <span class="nf">lookup</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">id_argument</span><span class="p">,</span> <span class="n">include_frobnizzle</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">include_frobnizzle</span><span class="p">:</span>
+        <span class="n">cache_key</span> <span class="o">=</span> <span class="s">&quot;my_key_with_frobnizzle&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cache_key</span> <span class="o">=</span> <span class="s">&quot;my_key_without_frobnizzle&quot;</span>
+
+    <span class="k">if</span> <span class="n">cache_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">my_simple_cache</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">bindparam</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">include_frobnizzle</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">frobnizzle</span> <span class="o">==</span> <span class="bp">True</span><span class="p">)</span>
+
+        <span class="n">my_simple_cache</span><span class="p">[</span><span class="n">cache_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">with_session</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span><span class="o">.</span><span class="n">bake</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="n">my_simple_cache</span><span class="p">[</span><span class="n">cache_key</span><span class="p">]</span><span class="o">.</span><span class="n">with_session</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">query</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">id_argument</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></pre></div>
+</div>
+<p>Our &#8220;simple&#8221; parameterized system must now be tasked with generating
+cache keys which take into account whether or not the &#8220;include_frobnizzle&#8221;
+flag was passed, as the presence of this flag means that the generated
+SQL would be entirely different.   It should be apparent that as the
+complexity of query building goes up, the task of caching these queries
+becomes burdensome very quickly.   We can convert the above example
+into a direct use of &#8220;bakery&#8221; as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">bakery</span> <span class="o">=</span> <span class="n">baked</span><span class="o">.</span><span class="n">bakery</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">lookup</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">id_argument</span><span class="p">,</span> <span class="n">include_frobnizzle</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">create_model_query</span><span class="p">(</span><span class="n">session</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">bindparam</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">))</span>
+
+    <span class="n">parameterized_query</span> <span class="o">=</span> <span class="n">bakery</span><span class="o">.</span><span class="n">bake</span><span class="p">(</span><span class="n">create_model_query</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">include_frobnizzle</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">include_frobnizzle_in_query</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">query</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">frobnizzle</span> <span class="o">==</span> <span class="bp">True</span><span class="p">)</span>
+
+        <span class="n">parameterized_query</span> <span class="o">=</span> <span class="n">parameterized_query</span><span class="o">.</span><span class="n">with_criteria</span><span class="p">(</span>
+            <span class="n">include_frobnizzle_in_query</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parameterized_query</span><span class="p">(</span><span class="n">session</span><span class="p">)</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">id_argument</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></pre></div>
+</div>
+<p>Above, we again cache not just the query object but all the work it needs
+to do in order to generate SQL.  We also no longer need to deal with
+making sure we generate a cache key that accurately takes into account
+all of the structural modifications we&#8217;ve made; this is now handled
+automatically and without the chance of mistakes.</p>
+<p>This code sample is a few lines shorter than the naive example, removes
+the need to deal with cache keys, and has the vast performance benefits
+of the full so-called &#8220;baked&#8221; feature.  But
+still a little verbose!  Hence we take methods like <a class="reference internal" href="#sqlalchemy.ext.baked.BakedQuery.add_criteria" title="sqlalchemy.ext.baked.BakedQuery.add_criteria"><code class="xref py py-meth docutils literal"><span class="pre">BakedQuery.add_criteria()</span></code></a>
+and <a class="reference internal" href="#sqlalchemy.ext.baked.BakedQuery.with_criteria" title="sqlalchemy.ext.baked.BakedQuery.with_criteria"><code class="xref py py-meth docutils literal"><span class="pre">BakedQuery.with_criteria()</span></code></a> and shorten them into operators, and
+encourage (though certainly not require!) using simple lambdas, only as a
+means to reduce verbosity:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">bakery</span> <span class="o">=</span> <span class="n">baked</span><span class="o">.</span><span class="n">bakery</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">lookup</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">id_argument</span><span class="p">,</span> <span class="n">include_frobnizzle</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="n">parameterized_query</span> <span class="o">=</span> <span class="n">bakery</span><span class="o">.</span><span class="n">bake</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">bindparam</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">))</span>
+      <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">include_frobnizzle</span><span class="p">:</span>
+        <span class="n">parameterized_query</span> <span class="o">+=</span> <span class="k">lambda</span> <span class="n">q</span><span class="p">:</span> <span class="n">q</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Model</span><span class="o">.</span><span class="n">frobnizzle</span> <span class="o">==</span> <span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parameterized_query</span><span class="p">(</span><span class="n">session</span><span class="p">)</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">id_argument</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></pre></div>
+</div>
+<p>Where above, the approach is simpler to implement and much more similar
+in code flow to what a non-cached querying function would look like,
+hence making code easier to port.</p>
+<p>The above description is essentially a summary of the design process used
+to arrive at the current &#8220;baked&#8221; approach.   Starting from the
+&#8220;normal&#8221; approaches, the additional issues of cache key construction and
+management,  removal of all redundant Python execution, and queries built up
+with conditionals needed to be addressed, leading to the final approach.</p>
+</div>
+<div class="section" id="lazy-loading-integration">
+<h2>Lazy Loading Integration<a class="headerlink" href="#lazy-loading-integration" title="Permalink to this headline">¶</a></h2>
+<p>The baked query can be integrated with SQLAlchemy&#8217;s lazy loader feature
+transparently.   A future release of SQLAlchemy may enable this by default,
+as its use within lazy loading is completely transparent.    For now,
+to enable baked lazyloading for all lazyloaders systemwide, call upon
+the <a class="reference internal" href="#sqlalchemy.ext.baked.bake_lazy_loaders" title="sqlalchemy.ext.baked.bake_lazy_loaders"><code class="xref py py-func docutils literal"><span class="pre">bake_lazy_loaders()</span></code></a> function.   This will impact all relationships
+that use the <code class="docutils literal"><span class="pre">lazy='select'</span></code> strategy as well as all use of the <a class="reference internal" href="../loading_relationships.html#sqlalchemy.orm.lazyload" title="sqlalchemy.orm.lazyload"><code class="xref py py-func docutils literal"><span class="pre">lazyload()</span></code></a>
+per-query strategy.</p>
+<p>&#8220;Baked&#8221; lazy loading may be enabled on a per-<a class="reference internal" href="../relationship_api.html#sqlalchemy.orm.relationship" title="sqlalchemy.orm.relationship"><code class="xref py py-func docutils literal"><span class="pre">relationship()</span></code></a> basis
+using the <code class="docutils literal"><span class="pre">baked_select</span></code> loader strategy:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyClass</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="c"># ...</span>
+
+    <span class="n">widgets</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s">&quot;Widget&quot;</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="s">&quot;baked_select&quot;</span><span class="p">)</span></pre></div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">baked_select</span></code> strategy is available once any part of the application
+has imported the <code class="docutils literal"><span class="pre">sqlalchemy.ext.baked</span></code> module.   The &#8220;bakery&#8221; used by
+this feature is local to the mapper for <code class="docutils literal"><span class="pre">MyClass</span></code>.</p>
+<p>For per-query use, the <a class="reference internal" href="#sqlalchemy.ext.baked.baked_lazyload" title="sqlalchemy.ext.baked.baked_lazyload"><code class="xref py py-func docutils literal"><span class="pre">baked_lazyload()</span></code></a> strategy may be used,
+which works like any other loader option.</p>
+</div>
+<div class="section" id="api-documentation">
+<h2>API Documentation<a class="headerlink" href="#api-documentation" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="sqlalchemy.ext.baked.bakery">
+<code class="descclassname">sqlalchemy.ext.baked.</code><code class="descname">bakery</code><span class="sig-paren">(</span><em>cls</em>, <em>size=200</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.baked.bakery" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a new bakery.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="sqlalchemy.ext.baked.BakedQuery">
+<em class="property">class </em><code class="descclassname">sqlalchemy.ext.baked.</code><code class="descname">BakedQuery</code><span class="sig-paren">(</span><em>bakery</em>, <em>initial_fn</em>, <em>args=()</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.baked.BakedQuery" title="Permalink to this definition">¶</a></dt>
+<dd><p>A builder object for <a class="reference internal" href="../query.html#sqlalchemy.orm.query.Query" title="sqlalchemy.orm.query.Query"><code class="xref py py-class docutils literal"><span class="pre">query.Query</span></code></a> objects.</p>
+<dl class="method">
+<dt id="sqlalchemy.ext.baked.BakedQuery.add_criteria">
+<code class="descname">add_criteria</code><span class="sig-paren">(</span><em>fn</em>, <em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.baked.BakedQuery.add_criteria" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a criteria function to this <a class="reference internal" href="#sqlalchemy.ext.baked.BakedQuery" title="sqlalchemy.ext.baked.BakedQuery"><code class="xref py py-class docutils literal"><span class="pre">BakedQuery</span></code></a>.</p>
+<p>This is equivalent to using the <code class="docutils literal"><span class="pre">+=</span></code> operator to
+modify a <a class="reference internal" href="#sqlalchemy.ext.baked.BakedQuery" title="sqlalchemy.ext.baked.BakedQuery"><code class="xref py py-class docutils literal"><span class="pre">BakedQuery</span></code></a> in-place.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="sqlalchemy.ext.baked.BakedQuery.bakery">
+<em class="property">classmethod </em><code class="descname">bakery</code><span class="sig-paren">(</span><em>size=200</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.baked.BakedQuery.bakery" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a new bakery.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.ext.baked.BakedQuery.for_session">
+<code class="descname">for_session</code><span class="sig-paren">(</span><em>session</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.baked.BakedQuery.for_session" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a <a class="reference internal" href="#sqlalchemy.ext.baked.Result" title="sqlalchemy.ext.baked.Result"><code class="xref py py-class docutils literal"><span class="pre">Result</span></code></a> object for this <a class="reference internal" href="#sqlalchemy.ext.baked.BakedQuery" title="sqlalchemy.ext.baked.BakedQuery"><code class="xref py py-class docutils literal"><span class="pre">BakedQuery</span></code></a>.</p>
+<p>This is equivalent to calling the <a class="reference internal" href="#sqlalchemy.ext.baked.BakedQuery" title="sqlalchemy.ext.baked.BakedQuery"><code class="xref py py-class docutils literal"><span class="pre">BakedQuery</span></code></a> as a
+Python callable, e.g. <code class="docutils literal"><span class="pre">result</span> <span class="pre">=</span> <span class="pre">my_baked_query(session)</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.ext.baked.BakedQuery.spoil">
+<code class="descname">spoil</code><span class="sig-paren">(</span><em>full=False</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.baked.BakedQuery.spoil" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cancel any query caching that will occur on this BakedQuery object.</p>
+<p>The BakedQuery can continue to be used normally, however additional
+creational functions will not be cached; they will be called
+on every invocation.</p>
+<p>This is to support the case where a particular step in constructing
+a baked query disqualifies the query from being cacheable, such
+as a variant that relies upon some uncacheable value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><span class="target" id="sqlalchemy.ext.baked.BakedQuery.spoil.params.full"></span><strong>full</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.ext.baked.BakedQuery.spoil.params.full">¶</a> &#8211; if False, only functions added to this
+<a class="reference internal" href="#sqlalchemy.ext.baked.BakedQuery" title="sqlalchemy.ext.baked.BakedQuery"><code class="xref py py-class docutils literal"><span class="pre">BakedQuery</span></code></a> object subsequent to the spoil step will be
+non-cached; the state of the <a class="reference internal" href="#sqlalchemy.ext.baked.BakedQuery" title="sqlalchemy.ext.baked.BakedQuery"><code class="xref py py-class docutils literal"><span class="pre">BakedQuery</span></code></a> up until
+this point will be pulled from the cache.   If True, then the
+entire <a class="reference internal" href="../query.html#sqlalchemy.orm.query.Query" title="sqlalchemy.orm.query.Query"><code class="xref py py-class docutils literal"><span class="pre">Query</span></code></a> object is built from scratch each
+time, with all creational functions being called on each
+invocation.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.ext.baked.BakedQuery.with_criteria">
+<code class="descname">with_criteria</code><span class="sig-paren">(</span><em>fn</em>, <em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.baked.BakedQuery.with_criteria" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a criteria function to a <a class="reference internal" href="#sqlalchemy.ext.baked.BakedQuery" title="sqlalchemy.ext.baked.BakedQuery"><code class="xref py py-class docutils literal"><span class="pre">BakedQuery</span></code></a> cloned from this one.</p>
+<p>This is equivalent to using the <code class="docutils literal"><span class="pre">+</span></code> operator to
+produce a new <a class="reference internal" href="#sqlalchemy.ext.baked.BakedQuery" title="sqlalchemy.ext.baked.BakedQuery"><code class="xref py py-class docutils literal"><span class="pre">BakedQuery</span></code></a> with modifications.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="sqlalchemy.ext.baked.Result">
+<em class="property">class </em><code class="descclassname">sqlalchemy.ext.baked.</code><code class="descname">Result</code><span class="sig-paren">(</span><em>bq</em>, <em>session</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.baked.Result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invokes a <a class="reference internal" href="#sqlalchemy.ext.baked.BakedQuery" title="sqlalchemy.ext.baked.BakedQuery"><code class="xref py py-class docutils literal"><span class="pre">BakedQuery</span></code></a> against a <a class="reference internal" href="../session_api.html#sqlalchemy.orm.session.Session" title="sqlalchemy.orm.session.Session"><code class="xref py py-class docutils literal"><span class="pre">Session</span></code></a>.</p>
+<p>The <a class="reference internal" href="#sqlalchemy.ext.baked.Result" title="sqlalchemy.ext.baked.Result"><code class="xref py py-class docutils literal"><span class="pre">Result</span></code></a> object is where the actual <a class="reference internal" href="../query.html#sqlalchemy.orm.query.Query" title="sqlalchemy.orm.query.Query"><code class="xref py py-class docutils literal"><span class="pre">query.Query</span></code></a>
+object gets created, or retrieved from the cache,
+against a target <a class="reference internal" href="../session_api.html#sqlalchemy.orm.session.Session" title="sqlalchemy.orm.session.Session"><code class="xref py py-class docutils literal"><span class="pre">Session</span></code></a>, and is then invoked for results.</p>
+<dl class="method">
+<dt id="sqlalchemy.ext.baked.Result.all">
+<code class="descname">all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.baked.Result.all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all rows.</p>
+<p>Equivalent to <a class="reference internal" href="../query.html#sqlalchemy.orm.query.Query.all" title="sqlalchemy.orm.query.Query.all"><code class="xref py py-meth docutils literal"><span class="pre">Query.all()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.ext.baked.Result.first">
+<code class="descname">first</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.baked.Result.first" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the first row.</p>
+<p>Equivalent to <a class="reference internal" href="../query.html#sqlalchemy.orm.query.Query.first" title="sqlalchemy.orm.query.Query.first"><code class="xref py py-meth docutils literal"><span class="pre">Query.first()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.ext.baked.Result.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>ident</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.baked.Result.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve an object based on identity.</p>
+<p>Equivalent to <a class="reference internal" href="../query.html#sqlalchemy.orm.query.Query.get" title="sqlalchemy.orm.query.Query.get"><code class="xref py py-meth docutils literal"><span class="pre">Query.get()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.ext.baked.Result.one">
+<code class="descname">one</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.baked.Result.one" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return exactly one result or raise an exception.</p>
+<p>Equivalent to <a class="reference internal" href="../query.html#sqlalchemy.orm.query.Query.one" title="sqlalchemy.orm.query.Query.one"><code class="xref py py-meth docutils literal"><span class="pre">Query.one()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.ext.baked.Result.params">
+<code class="descname">params</code><span class="sig-paren">(</span><em>*args</em>, <em>**kw</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.baked.Result.params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specify parameters to be replaced into the string SQL statement.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="sqlalchemy.ext.baked.bake_lazy_loaders">
+<code class="descclassname">sqlalchemy.ext.baked.</code><code class="descname">bake_lazy_loaders</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.baked.bake_lazy_loaders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable the use of baked queries for all lazyloaders systemwide.</p>
+<p>This operation should be safe for all lazy loaders, and will reduce
+Python overhead for these operations.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="sqlalchemy.ext.baked.unbake_lazy_loaders">
+<code class="descclassname">sqlalchemy.ext.baked.</code><code class="descname">unbake_lazy_loaders</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.baked.unbake_lazy_loaders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable the use of baked queries for all lazyloaders systemwide.</p>
+<p>This operation reverts the changes produced by <a class="reference internal" href="#sqlalchemy.ext.baked.bake_lazy_loaders" title="sqlalchemy.ext.baked.bake_lazy_loaders"><code class="xref py py-func docutils literal"><span class="pre">bake_lazy_loaders()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="sqlalchemy.ext.baked.baked_lazyload">
+<code class="descclassname">sqlalchemy.ext.baked.</code><code class="descname">baked_lazyload</code><span class="sig-paren">(</span><em>*keys</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.baked.baked_lazyload" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicate that the given attribute should be loaded using &#8220;lazy&#8221;
+loading with a &#8220;baked&#8221; query used in the load.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="sqlalchemy.ext.baked.baked_lazyload_all">
+<code class="descclassname">sqlalchemy.ext.baked.</code><code class="descname">baked_lazyload_all</code><span class="sig-paren">(</span><em>*keys</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.baked.baked_lazyload_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce a standalone &#8220;all&#8221; option for <code class="xref py py-func docutils literal"><span class="pre">orm.baked_lazyload()</span></code>.</p>
+<div class="deprecated">
+<p><span class="versionmodified">Deprecated since version 0.9.0: </span>The &#8220;_all()&#8221; style is replaced by method chaining, e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">MyClass</span><span class="p">)</span><span class="o">.</span><span class="n">options</span><span class="p">(</span>
+    <span class="n">baked_lazyload</span><span class="p">(</span><span class="s">&quot;someattribute&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">baked_lazyload</span><span class="p">(</span><span class="s">&quot;anotherattribute&quot;</span><span class="p">)</span>
+<span class="p">)</span></pre></div>
+</div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+    </div>
+
+</div>
+
+<div id="docs-bottom-navigation" class="docs-navigation-links">
+        Previous:
+        <a href="automap.html" title="previous chapter">Automap</a>
+        Next:
+        <a href="declarative/index.html" title="next chapter">Declarative</a>
+
+    <div id="docs-copyright">
+        &copy; <a href="../../copyright.html">Copyright</a> 2007-2015, the SQLAlchemy authors and contributors.
+        Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.3.1.
+    </div>
+</div>
+
+</div>
+
+
+        
+        
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+          URL_ROOT:    '../../',
+          VERSION:     '1.0.8',
+          COLLAPSE_MODINDEX: false,
+          FILE_SUFFIX: '.html'
+      };
+    </script>
+
+    <!-- begin iterate through sphinx environment script_files -->
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <!-- end iterate through sphinx environment script_files -->
+
+    <script type="text/javascript" src="../../_static/detectmobile.js"></script>
+    <script type="text/javascript" src="../../_static/init.js"></script>
+
+
+    </body>
+</html>
+
+

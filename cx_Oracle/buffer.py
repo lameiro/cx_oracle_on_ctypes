@@ -1,13 +1,13 @@
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Buffer.c
 #   Defines buffer structure and routines for populating it. These are used
 # to translate Python objects into the buffers needed for Oracle, including
 # Unicode or buffer objects.
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 import ctypes
 from custom_exceptions import CXORA_TYPE_ERROR
-from utils import bytes
+from utils import bytes, python2
 import oci
 
 class cxBuffer(object):
@@ -25,7 +25,7 @@ class cxBuffer(object):
         """Copy the contents of the buffer."""
 
         result = cxBuffer(
-            copy_from_buf.ptr, # shares the ptr!
+            copy_from_buf.ptr,  # shares the ptr!
             copy_from_buf.size,
             copy_from_buf.num_characters,
             copy_from_buf.obj
@@ -39,11 +39,13 @@ class cxBuffer(object):
         
         if obj is None:
             return cxBuffer.new_null()
-        
+
         if isinstance(obj, unicode):
             as_bytes = obj.encode(encoding)
         elif isinstance(obj, bytes):
             as_bytes = obj
+        elif python2() and isinstance(obj, buffer):  # this is not cxBuffer, but the Python2 buffer
+            as_bytes = str(obj) # PyObject_AsReadBuffer in cx_Oracle. TODO: maybe this will reallocate memory?
         else:
             raise TypeError(CXORA_TYPE_ERROR)
         

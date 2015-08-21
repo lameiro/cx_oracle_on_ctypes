@@ -1,0 +1,420 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        
+        <title>
+            
+    
+    examples.sharding.attribute_shard
+ &mdash;
+    SQLAlchemy 1.0 Documentation
+
+        </title>
+
+        
+            <!-- begin iterate through SQLA + sphinx environment css_files -->
+                <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+                <link rel="stylesheet" href="../../../_static/changelog.css" type="text/css" />
+                <link rel="stylesheet" href="../../../_static/sphinx_paramlinks.css" type="text/css" />
+                <link rel="stylesheet" href="../../../_static/docs.css" type="text/css" />
+            <!-- end iterate through SQLA + sphinx environment css_files -->
+        
+
+        
+
+    
+
+    <!-- begin layout.mako headers -->
+
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+        <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="top" title="SQLAlchemy 1.0 Documentation" href="../../../index.html" />
+        <link rel="up" title="Module code" href="../../index.html" />
+    <!-- end layout.mako headers -->
+
+
+    </head>
+    <body>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="docs-container">
+
+
+
+
+
+<div id="docs-top-navigation-container" class="body-background">
+<div id="docs-header">
+    <div id="docs-version-header">
+        Release: <span class="version-num">1.0.8</span> | Release Date: July 22, 2015
+    </div>
+
+    <h1>SQLAlchemy 1.0 Documentation</h1>
+
+</div>
+</div>
+
+<div id="docs-body-container">
+
+    <div id="fixed-sidebar" class="">
+
+        <div id="index-nav">
+            <form class="search" action="../../../search.html" method="get">
+              <input type="text" name="q" size="12" /> <input type="submit" value="Search" />
+              <input type="hidden" name="check_keywords" value="yes" />
+              <input type="hidden" name="area" value="default" />
+            </form>
+
+            <p>
+            <a href="../../../contents.html">Contents</a> |
+            <a href="../../../genindex.html">Index</a>
+            </p>
+
+        </div>
+
+
+    </div>
+
+    
+
+    <div id="docs-body" class="" >
+        
+<h1>Source code for examples.sharding.attribute_shard</h1><div class="highlight"><pre>
+<span class="c"># step 1. imports</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="p">(</span><span class="n">create_engine</span><span class="p">,</span> <span class="n">MetaData</span><span class="p">,</span> <span class="n">Table</span><span class="p">,</span> <span class="n">Column</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span>
+    <span class="n">String</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">DateTime</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">sessionmaker</span><span class="p">,</span> <span class="n">mapper</span><span class="p">,</span> <span class="n">relationship</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.ext.horizontal_shard</span> <span class="kn">import</span> <span class="n">ShardedSession</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.sql</span> <span class="kn">import</span> <span class="n">operators</span><span class="p">,</span> <span class="n">visitors</span>
+
+<span class="kn">import</span> <span class="nn">datetime</span>
+
+<span class="c"># step 2. databases.</span>
+<span class="c"># db1 is used for id generation. The &quot;pool_threadlocal&quot;</span>
+<span class="c"># causes the id_generator() to use the same connection as that</span>
+<span class="c"># of an ongoing transaction within db1.</span>
+<span class="n">echo</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="n">db1</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="s">&#39;sqlite://&#39;</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="n">echo</span><span class="p">,</span> <span class="n">pool_threadlocal</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">db2</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="s">&#39;sqlite://&#39;</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="n">echo</span><span class="p">)</span>
+<span class="n">db3</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="s">&#39;sqlite://&#39;</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="n">echo</span><span class="p">)</span>
+<span class="n">db4</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="s">&#39;sqlite://&#39;</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="n">echo</span><span class="p">)</span>
+
+
+<span class="c"># step 3. create session function.  this binds the shard ids</span>
+<span class="c"># to databases within a ShardedSession and returns it.</span>
+<span class="n">create_session</span> <span class="o">=</span> <span class="n">sessionmaker</span><span class="p">(</span><span class="n">class_</span><span class="o">=</span><span class="n">ShardedSession</span><span class="p">)</span>
+
+<span class="n">create_session</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">shards</span><span class="o">=</span><span class="p">{</span>
+    <span class="s">&#39;north_america&#39;</span><span class="p">:</span><span class="n">db1</span><span class="p">,</span>
+    <span class="s">&#39;asia&#39;</span><span class="p">:</span><span class="n">db2</span><span class="p">,</span>
+    <span class="s">&#39;europe&#39;</span><span class="p">:</span><span class="n">db3</span><span class="p">,</span>
+    <span class="s">&#39;south_america&#39;</span><span class="p">:</span><span class="n">db4</span>
+<span class="p">})</span>
+
+
+<span class="c"># step 4.  table setup.</span>
+<span class="n">meta</span> <span class="o">=</span> <span class="n">MetaData</span><span class="p">()</span>
+
+<span class="c"># we need a way to create identifiers which are unique across all</span>
+<span class="c"># databases.  one easy way would be to just use a composite primary key, where one</span>
+<span class="c"># value is the shard id.  but here, we&#39;ll show something more &quot;generic&quot;, an</span>
+<span class="c"># id generation function.  we&#39;ll use a simplistic &quot;id table&quot; stored in database</span>
+<span class="c"># #1.  Any other method will do just as well; UUID, hilo, application-specific, etc.</span>
+
+<span class="n">ids</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s">&#39;ids&#39;</span><span class="p">,</span> <span class="n">meta</span><span class="p">,</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;nextid&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="bp">False</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">id_generator</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+    <span class="c"># in reality, might want to use a separate transaction for this.</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">db1</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+    <span class="n">nextid</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">ids</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">for_update</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span><span class="o">.</span><span class="n">scalar</span><span class="p">()</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">ids</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="p">{</span><span class="n">ids</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">nextid</span> <span class="p">:</span> <span class="n">ids</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">nextid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">}))</span>
+    <span class="k">return</span> <span class="n">nextid</span>
+
+<span class="c"># table setup.  we&#39;ll store a lead table of continents/cities,</span>
+<span class="c"># and a secondary table storing locations.</span>
+<span class="c"># a particular row will be placed in the database whose shard id corresponds to the</span>
+<span class="c"># &#39;continent&#39;.  in this setup, secondary rows in &#39;weather_reports&#39; will</span>
+<span class="c"># be placed in the same DB as that of the parent, but this can be changed</span>
+<span class="c"># if you&#39;re willing to write more complex sharding functions.</span>
+
+<span class="n">weather_locations</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s">&quot;weather_locations&quot;</span><span class="p">,</span> <span class="n">meta</span><span class="p">,</span>
+        <span class="n">Column</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">id_generator</span><span class="p">),</span>
+        <span class="n">Column</span><span class="p">(</span><span class="s">&#39;continent&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">30</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+        <span class="n">Column</span><span class="p">(</span><span class="s">&#39;city&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">50</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="p">)</span>
+
+<span class="n">weather_reports</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s">&quot;weather_reports&quot;</span><span class="p">,</span> <span class="n">meta</span><span class="p">,</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;location_id&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;weather_locations.id&#39;</span><span class="p">)),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;temperature&#39;</span><span class="p">,</span> <span class="n">Float</span><span class="p">),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;report_time&#39;</span><span class="p">,</span> <span class="n">DateTime</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="c"># create tables</span>
+<span class="k">for</span> <span class="n">db</span> <span class="ow">in</span> <span class="p">(</span><span class="n">db1</span><span class="p">,</span> <span class="n">db2</span><span class="p">,</span> <span class="n">db3</span><span class="p">,</span> <span class="n">db4</span><span class="p">):</span>
+    <span class="n">meta</span><span class="o">.</span><span class="n">drop_all</span><span class="p">(</span><span class="n">db</span><span class="p">)</span>
+    <span class="n">meta</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="n">db</span><span class="p">)</span>
+
+<span class="c"># establish initial &quot;id&quot; in db1</span>
+<span class="n">db1</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">ids</span><span class="o">.</span><span class="n">insert</span><span class="p">(),</span> <span class="n">nextid</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+
+<span class="c"># step 5. define sharding functions.</span>
+
+<span class="c"># we&#39;ll use a straight mapping of a particular set of &quot;country&quot;</span>
+<span class="c"># attributes to shard id.</span>
+<span class="n">shard_lookup</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;North America&#39;</span><span class="p">:</span><span class="s">&#39;north_america&#39;</span><span class="p">,</span>
+    <span class="s">&#39;Asia&#39;</span><span class="p">:</span><span class="s">&#39;asia&#39;</span><span class="p">,</span>
+    <span class="s">&#39;Europe&#39;</span><span class="p">:</span><span class="s">&#39;europe&#39;</span><span class="p">,</span>
+    <span class="s">&#39;South America&#39;</span><span class="p">:</span><span class="s">&#39;south_america&#39;</span>
+<span class="p">}</span>
+
+<span class="k">def</span> <span class="nf">shard_chooser</span><span class="p">(</span><span class="n">mapper</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">clause</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;shard chooser.</span>
+
+<span class="sd">    looks at the given instance and returns a shard id</span>
+<span class="sd">    note that we need to define conditions for</span>
+<span class="sd">    the WeatherLocation class, as well as our secondary Report class which will</span>
+<span class="sd">    point back to its WeatherLocation via its &#39;location&#39; attribute.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">WeatherLocation</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">shard_lookup</span><span class="p">[</span><span class="n">instance</span><span class="o">.</span><span class="n">continent</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">shard_chooser</span><span class="p">(</span><span class="n">mapper</span><span class="p">,</span> <span class="n">instance</span><span class="o">.</span><span class="n">location</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">id_chooser</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">ident</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;id chooser.</span>
+
+<span class="sd">    given a primary key, returns a list of shards</span>
+<span class="sd">    to search.  here, we don&#39;t have any particular information from a</span>
+<span class="sd">    pk so we just return all shard ids. often, you&#39;d want to do some</span>
+<span class="sd">    kind of round-robin strategy here so that requests are evenly</span>
+<span class="sd">    distributed among DBs.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="s">&#39;north_america&#39;</span><span class="p">,</span> <span class="s">&#39;asia&#39;</span><span class="p">,</span> <span class="s">&#39;europe&#39;</span><span class="p">,</span> <span class="s">&#39;south_america&#39;</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">query_chooser</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;query chooser.</span>
+
+<span class="sd">    this also returns a list of shard ids, which can</span>
+<span class="sd">    just be all of them.  but here we&#39;ll search into the Query in order</span>
+<span class="sd">    to try to narrow down the list of shards to query.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ids</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c"># we&#39;ll grab continent names as we find them</span>
+    <span class="c"># and convert to shard ids</span>
+    <span class="k">for</span> <span class="n">column</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">_get_query_comparisons</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+        <span class="c"># &quot;shares_lineage()&quot; returns True if both columns refer to the same</span>
+        <span class="c"># statement column, adjusting for any annotations present.</span>
+        <span class="c"># (an annotation is an internal clone of a Column object</span>
+        <span class="c"># and occur when using ORM-mapped attributes like</span>
+        <span class="c"># &quot;WeatherLocation.continent&quot;). A simpler comparison, though less accurate,</span>
+        <span class="c"># would be &quot;column.key == &#39;continent&#39;&quot;.</span>
+        <span class="k">if</span> <span class="n">column</span><span class="o">.</span><span class="n">shares_lineage</span><span class="p">(</span><span class="n">weather_locations</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">continent</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">operator</span> <span class="o">==</span> <span class="n">operators</span><span class="o">.</span><span class="n">eq</span><span class="p">:</span>
+                <span class="n">ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">shard_lookup</span><span class="p">[</span><span class="n">value</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">operator</span> <span class="o">==</span> <span class="n">operators</span><span class="o">.</span><span class="n">in_op</span><span class="p">:</span>
+                <span class="n">ids</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">shard_lookup</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s">&#39;north_america&#39;</span><span class="p">,</span> <span class="s">&#39;asia&#39;</span><span class="p">,</span> <span class="s">&#39;europe&#39;</span><span class="p">,</span> <span class="s">&#39;south_america&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ids</span>
+
+<span class="k">def</span> <span class="nf">_get_query_comparisons</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Search an orm.Query object for binary expressions.</span>
+
+<span class="sd">    Returns expressions which match a Column against one or more</span>
+<span class="sd">    literal values as a list of tuples of the form</span>
+<span class="sd">    (column, operator, values).   &quot;values&quot; is a single value</span>
+<span class="sd">    or tuple of values depending on the operator.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">binds</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">clauses</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">comparisons</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">visit_bindparam</span><span class="p">(</span><span class="n">bind</span><span class="p">):</span>
+        <span class="c"># visit a bind parameter.</span>
+
+        <span class="c"># check in _params for it first</span>
+        <span class="k">if</span> <span class="n">bind</span><span class="o">.</span><span class="n">key</span> <span class="ow">in</span> <span class="n">query</span><span class="o">.</span><span class="n">_params</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">_params</span><span class="p">[</span><span class="n">bind</span><span class="o">.</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">bind</span><span class="o">.</span><span class="n">callable</span><span class="p">:</span>
+            <span class="c"># some ORM functions (lazy loading)</span>
+            <span class="c"># place the bind&#39;s value as a</span>
+            <span class="c"># callable for deferred evaluation.</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">bind</span><span class="o">.</span><span class="n">callable</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># just use .value</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">bind</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="n">binds</span><span class="p">[</span><span class="n">bind</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">visit_column</span><span class="p">(</span><span class="n">column</span><span class="p">):</span>
+        <span class="n">clauses</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">column</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">visit_binary</span><span class="p">(</span><span class="n">binary</span><span class="p">):</span>
+        <span class="c"># special handling for &quot;col IN (params)&quot;</span>
+        <span class="k">if</span> <span class="n">binary</span><span class="o">.</span><span class="n">left</span> <span class="ow">in</span> <span class="n">clauses</span> <span class="ow">and</span> \
+                <span class="n">binary</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="n">operators</span><span class="o">.</span><span class="n">in_op</span> <span class="ow">and</span> \
+                <span class="nb">hasattr</span><span class="p">(</span><span class="n">binary</span><span class="o">.</span><span class="n">right</span><span class="p">,</span> <span class="s">&#39;clauses&#39;</span><span class="p">):</span>
+            <span class="n">comparisons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">binary</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="n">binary</span><span class="o">.</span><span class="n">operator</span><span class="p">,</span>
+                    <span class="nb">tuple</span><span class="p">(</span><span class="n">binds</span><span class="p">[</span><span class="n">bind</span><span class="p">]</span> <span class="k">for</span> <span class="n">bind</span> <span class="ow">in</span> <span class="n">binary</span><span class="o">.</span><span class="n">right</span><span class="o">.</span><span class="n">clauses</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">binary</span><span class="o">.</span><span class="n">left</span> <span class="ow">in</span> <span class="n">clauses</span> <span class="ow">and</span> <span class="n">binary</span><span class="o">.</span><span class="n">right</span> <span class="ow">in</span> <span class="n">binds</span><span class="p">:</span>
+            <span class="n">comparisons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">binary</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="n">binary</span><span class="o">.</span><span class="n">operator</span><span class="p">,</span><span class="n">binds</span><span class="p">[</span><span class="n">binary</span><span class="o">.</span><span class="n">right</span><span class="p">])</span>
+            <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">binary</span><span class="o">.</span><span class="n">left</span> <span class="ow">in</span> <span class="n">binds</span> <span class="ow">and</span> <span class="n">binary</span><span class="o">.</span><span class="n">right</span> <span class="ow">in</span> <span class="n">clauses</span><span class="p">:</span>
+            <span class="n">comparisons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">binary</span><span class="o">.</span><span class="n">right</span><span class="p">,</span> <span class="n">binary</span><span class="o">.</span><span class="n">operator</span><span class="p">,</span><span class="n">binds</span><span class="p">[</span><span class="n">binary</span><span class="o">.</span><span class="n">left</span><span class="p">])</span>
+            <span class="p">)</span>
+
+    <span class="c"># here we will traverse through the query&#39;s criterion, searching</span>
+    <span class="c"># for SQL constructs.  We will place simple column comparisons</span>
+    <span class="c"># into a list.</span>
+    <span class="k">if</span> <span class="n">query</span><span class="o">.</span><span class="n">_criterion</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">visitors</span><span class="o">.</span><span class="n">traverse_depthfirst</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">_criterion</span><span class="p">,</span> <span class="p">{},</span>
+                    <span class="p">{</span><span class="s">&#39;bindparam&#39;</span><span class="p">:</span><span class="n">visit_bindparam</span><span class="p">,</span>
+                        <span class="s">&#39;binary&#39;</span><span class="p">:</span><span class="n">visit_binary</span><span class="p">,</span>
+                        <span class="s">&#39;column&#39;</span><span class="p">:</span><span class="n">visit_column</span>
+                    <span class="p">}</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">comparisons</span>
+
+<span class="c"># further configure create_session to use these functions</span>
+<span class="n">create_session</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
+                    <span class="n">shard_chooser</span><span class="o">=</span><span class="n">shard_chooser</span><span class="p">,</span>
+                    <span class="n">id_chooser</span><span class="o">=</span><span class="n">id_chooser</span><span class="p">,</span>
+                    <span class="n">query_chooser</span><span class="o">=</span><span class="n">query_chooser</span>
+                    <span class="p">)</span>
+
+<span class="c"># step 6.  mapped classes.</span>
+<span class="k">class</span> <span class="nc">WeatherLocation</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">continent</span><span class="p">,</span> <span class="n">city</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">continent</span> <span class="o">=</span> <span class="n">continent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">city</span> <span class="o">=</span> <span class="n">city</span>
+
+<span class="k">class</span> <span class="nc">Report</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">temperature</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span> <span class="o">=</span> <span class="n">temperature</span>
+
+<span class="c"># step 7.  mappers</span>
+<span class="n">mapper</span><span class="p">(</span><span class="n">WeatherLocation</span><span class="p">,</span> <span class="n">weather_locations</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">{</span>
+    <span class="s">&#39;reports&#39;</span><span class="p">:</span><span class="n">relationship</span><span class="p">(</span><span class="n">Report</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="s">&#39;location&#39;</span><span class="p">)</span>
+<span class="p">})</span>
+
+<span class="n">mapper</span><span class="p">(</span><span class="n">Report</span><span class="p">,</span> <span class="n">weather_reports</span><span class="p">)</span>
+
+<span class="c"># step 8 (optional), events.  The &quot;shard_id&quot; is placed</span>
+<span class="c"># in the QueryContext where it can be intercepted and associated</span>
+<span class="c"># with objects, if needed.</span>
+
+<span class="k">def</span> <span class="nf">add_shard_id</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+    <span class="n">instance</span><span class="o">.</span><span class="n">shard_id</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s">&quot;shard_id&quot;</span><span class="p">]</span>
+
+<span class="n">event</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="n">WeatherLocation</span><span class="p">,</span> <span class="s">&quot;load&quot;</span><span class="p">,</span> <span class="n">add_shard_id</span><span class="p">)</span>
+<span class="n">event</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="n">Report</span><span class="p">,</span> <span class="s">&quot;load&quot;</span><span class="p">,</span> <span class="n">add_shard_id</span><span class="p">)</span>
+
+<span class="c"># save and load objects!</span>
+
+<span class="n">tokyo</span> <span class="o">=</span> <span class="n">WeatherLocation</span><span class="p">(</span><span class="s">&#39;Asia&#39;</span><span class="p">,</span> <span class="s">&#39;Tokyo&#39;</span><span class="p">)</span>
+<span class="n">newyork</span> <span class="o">=</span> <span class="n">WeatherLocation</span><span class="p">(</span><span class="s">&#39;North America&#39;</span><span class="p">,</span> <span class="s">&#39;New York&#39;</span><span class="p">)</span>
+<span class="n">toronto</span> <span class="o">=</span> <span class="n">WeatherLocation</span><span class="p">(</span><span class="s">&#39;North America&#39;</span><span class="p">,</span> <span class="s">&#39;Toronto&#39;</span><span class="p">)</span>
+<span class="n">london</span> <span class="o">=</span> <span class="n">WeatherLocation</span><span class="p">(</span><span class="s">&#39;Europe&#39;</span><span class="p">,</span> <span class="s">&#39;London&#39;</span><span class="p">)</span>
+<span class="n">dublin</span> <span class="o">=</span> <span class="n">WeatherLocation</span><span class="p">(</span><span class="s">&#39;Europe&#39;</span><span class="p">,</span> <span class="s">&#39;Dublin&#39;</span><span class="p">)</span>
+<span class="n">brasilia</span> <span class="o">=</span> <span class="n">WeatherLocation</span><span class="p">(</span><span class="s">&#39;South America&#39;</span><span class="p">,</span> <span class="s">&#39;Brasila&#39;</span><span class="p">)</span>
+<span class="n">quito</span> <span class="o">=</span> <span class="n">WeatherLocation</span><span class="p">(</span><span class="s">&#39;South America&#39;</span><span class="p">,</span> <span class="s">&#39;Quito&#39;</span><span class="p">)</span>
+
+<span class="n">tokyo</span><span class="o">.</span><span class="n">reports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Report</span><span class="p">(</span><span class="mf">80.0</span><span class="p">))</span>
+<span class="n">newyork</span><span class="o">.</span><span class="n">reports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Report</span><span class="p">(</span><span class="mi">75</span><span class="p">))</span>
+<span class="n">quito</span><span class="o">.</span><span class="n">reports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Report</span><span class="p">(</span><span class="mi">85</span><span class="p">))</span>
+
+<span class="n">sess</span> <span class="o">=</span> <span class="n">create_session</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="n">tokyo</span><span class="p">,</span> <span class="n">newyork</span><span class="p">,</span> <span class="n">toronto</span><span class="p">,</span> <span class="n">london</span><span class="p">,</span> <span class="n">dublin</span><span class="p">,</span> <span class="n">brasilia</span><span class="p">,</span> <span class="n">quito</span><span class="p">]:</span>
+    <span class="n">sess</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="n">sess</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+<span class="n">tokyo_id</span> <span class="o">=</span> <span class="n">tokyo</span><span class="o">.</span><span class="n">id</span>
+
+<span class="n">sess</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">WeatherLocation</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tokyo_id</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">t</span><span class="o">.</span><span class="n">city</span> <span class="o">==</span> <span class="n">tokyo</span><span class="o">.</span><span class="n">city</span>
+<span class="k">assert</span> <span class="n">t</span><span class="o">.</span><span class="n">reports</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">temperature</span> <span class="o">==</span> <span class="mf">80.0</span>
+
+<span class="n">north_american_cities</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">WeatherLocation</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">WeatherLocation</span><span class="o">.</span><span class="n">continent</span> <span class="o">==</span> <span class="s">&#39;North America&#39;</span><span class="p">)</span>
+<span class="k">assert</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">city</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">north_american_cities</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s">&#39;New York&#39;</span><span class="p">,</span> <span class="s">&#39;Toronto&#39;</span><span class="p">]</span>
+
+<span class="n">asia_and_europe</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">WeatherLocation</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">WeatherLocation</span><span class="o">.</span><span class="n">continent</span><span class="o">.</span><span class="n">in_</span><span class="p">([</span><span class="s">&#39;Europe&#39;</span><span class="p">,</span> <span class="s">&#39;Asia&#39;</span><span class="p">]))</span>
+<span class="k">assert</span> <span class="nb">set</span><span class="p">([</span><span class="n">c</span><span class="o">.</span><span class="n">city</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">asia_and_europe</span><span class="p">])</span> <span class="o">==</span> <span class="nb">set</span><span class="p">([</span><span class="s">&#39;Tokyo&#39;</span><span class="p">,</span> <span class="s">&#39;London&#39;</span><span class="p">,</span> <span class="s">&#39;Dublin&#39;</span><span class="p">])</span></pre></div>
+    </div>
+
+</div>
+
+<div id="docs-bottom-navigation" class="docs-navigation-links">
+
+    <div id="docs-copyright">
+        &copy; <a href="../../../copyright.html">Copyright</a> 2007-2015, the SQLAlchemy authors and contributors.
+        Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.3.1.
+    </div>
+</div>
+
+</div>
+
+
+        
+        
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+          URL_ROOT:    '../../../',
+          VERSION:     '1.0.8',
+          COLLAPSE_MODINDEX: false,
+          FILE_SUFFIX: '.html'
+      };
+    </script>
+
+    <!-- begin iterate through sphinx environment script_files -->
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <!-- end iterate through sphinx environment script_files -->
+
+    <script type="text/javascript" src="../../../_static/detectmobile.js"></script>
+    <script type="text/javascript" src="../../../_static/init.js"></script>
+
+
+    </body>
+</html>
+
+

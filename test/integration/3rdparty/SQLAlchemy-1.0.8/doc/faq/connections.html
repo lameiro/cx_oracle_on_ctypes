@@ -1,0 +1,317 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        
+        <title>
+            
+    
+    Connections / Engines
+ &mdash;
+    SQLAlchemy 1.0 Documentation
+
+        </title>
+
+        
+            <!-- begin iterate through SQLA + sphinx environment css_files -->
+                <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+                <link rel="stylesheet" href="../_static/changelog.css" type="text/css" />
+                <link rel="stylesheet" href="../_static/sphinx_paramlinks.css" type="text/css" />
+                <link rel="stylesheet" href="../_static/docs.css" type="text/css" />
+            <!-- end iterate through SQLA + sphinx environment css_files -->
+        
+
+        
+
+    
+
+    <!-- begin layout.mako headers -->
+
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+        <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="top" title="SQLAlchemy 1.0 Documentation" href="../index.html" />
+        <link rel="up" title="Frequently Asked Questions" href="index.html" />
+        <link rel="next" title="MetaData / Schema" href="metadata_schema.html" />
+        <link rel="prev" title="Frequently Asked Questions" href="index.html" />
+    <!-- end layout.mako headers -->
+
+
+    </head>
+    <body>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="docs-container">
+
+
+
+
+
+<div id="docs-top-navigation-container" class="body-background">
+<div id="docs-header">
+    <div id="docs-version-header">
+        Release: <span class="version-num">1.0.8</span> | Release Date: July 22, 2015
+    </div>
+
+    <h1>SQLAlchemy 1.0 Documentation</h1>
+
+</div>
+</div>
+
+<div id="docs-body-container">
+
+    <div id="fixed-sidebar" class="withsidebar">
+
+
+        <div id="docs-sidebar-popout">
+            <h3><a href="../index.html">SQLAlchemy 1.0 Documentation</a></h3>
+
+            <p id="sidebar-topnav">
+                <a href="../contents.html">Contents</a> |
+                <a href="../genindex.html">Index</a>
+            </p>
+
+            <div id="sidebar-search">
+                <form class="search" action="../search.html" method="get">
+                  <input type="text" name="q" size="12" /> <input type="submit" value="Search" />
+                  <input type="hidden" name="check_keywords" value="yes" />
+                  <input type="hidden" name="area" value="default" />
+                </form>
+            </div>
+
+        </div>
+
+        <div id="docs-sidebar">
+
+        
+        <h3>
+            <a href="index.html" title="Frequently Asked Questions">Frequently Asked Questions</a>
+        </h3>
+
+        <ul>
+<li class="selected"><span class="link-container first"><strong>Connections / Engines</strong><a class="paramlink headerlink reference internal" href="#">¶</a></span><ul>
+<li><span class="link-container first"><a class="reference external" href="#how-do-i-configure-logging">How do I configure logging?</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#how-do-i-pool-database-connections-are-my-connections-pooled">How do I pool database connections?   Are my connections pooled?</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#how-do-i-pass-custom-connect-arguments-to-my-database-api">How do I pass custom connect arguments to my database API?</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#mysql-server-has-gone-away">&#8220;MySQL Server has gone away&#8221;</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#why-does-sqlalchemy-issue-so-many-rollbacks">Why does SQLAlchemy issue so many ROLLBACKs?</a></span><ul>
+<li><span class="link-container first"><a class="reference external" href="#i-m-on-myisam-how-do-i-turn-it-off">I&#8217;m on MyISAM - how do I turn it off?</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#i-m-on-sql-server-how-do-i-turn-those-rollbacks-into-commits">I&#8217;m on SQL Server - how do I turn those ROLLBACKs into COMMITs?</a></span></li>
+</ul>
+</li>
+<li><span class="link-container first"><a class="reference external" href="#i-am-using-multiple-connections-with-a-sqlite-database-typically-to-test-transaction-operation-and-my-test-program-is-not-working">I am using multiple connections with a SQLite database (typically to test transaction operation), and my test program is not working!</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#how-do-i-get-at-the-raw-dbapi-connection-when-using-an-engine">How do I get at the raw DBAPI connection when using an Engine?</a></span></li>
+</ul>
+</li>
+<li><span class="link-container first"><a class="reference external" href="metadata_schema.html">MetaData / Schema</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="sqlexpressions.html">SQL Expressions</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="ormconfiguration.html">ORM Configuration</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="performance.html">Performance</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="sessions.html">Sessions / Queries</a></span></li>
+</ul>
+
+
+
+        </div>
+
+    </div>
+
+    
+
+    <div id="docs-body" class="withsidebar" >
+        
+<div class="section" id="connections-engines">
+<h1>Connections / Engines<a class="headerlink" href="#connections-engines" title="Permalink to this headline">¶</a></h1>
+<div class="contents faq local topic" id="contents">
+<ul class="simple">
+<li><a class="reference internal" href="#how-do-i-configure-logging" id="id1">How do I configure logging?</a></li>
+<li><a class="reference internal" href="#how-do-i-pool-database-connections-are-my-connections-pooled" id="id2">How do I pool database connections?   Are my connections pooled?</a></li>
+<li><a class="reference internal" href="#how-do-i-pass-custom-connect-arguments-to-my-database-api" id="id3">How do I pass custom connect arguments to my database API?</a></li>
+<li><a class="reference internal" href="#mysql-server-has-gone-away" id="id4">&#8220;MySQL Server has gone away&#8221;</a></li>
+<li><a class="reference internal" href="#why-does-sqlalchemy-issue-so-many-rollbacks" id="id5">Why does SQLAlchemy issue so many ROLLBACKs?</a><ul>
+<li><a class="reference internal" href="#i-m-on-myisam-how-do-i-turn-it-off" id="id6">I&#8217;m on MyISAM - how do I turn it off?</a></li>
+<li><a class="reference internal" href="#i-m-on-sql-server-how-do-i-turn-those-rollbacks-into-commits" id="id7">I&#8217;m on SQL Server - how do I turn those ROLLBACKs into COMMITs?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#i-am-using-multiple-connections-with-a-sqlite-database-typically-to-test-transaction-operation-and-my-test-program-is-not-working" id="id8">I am using multiple connections with a SQLite database (typically to test transaction operation), and my test program is not working!</a></li>
+<li><a class="reference internal" href="#how-do-i-get-at-the-raw-dbapi-connection-when-using-an-engine" id="id9">How do I get at the raw DBAPI connection when using an Engine?</a></li>
+</ul>
+</div>
+<div class="section" id="how-do-i-configure-logging">
+<h2>How do I configure logging?<a class="headerlink" href="#how-do-i-configure-logging" title="Permalink to this headline">¶</a></h2>
+<p>See <a class="reference internal" href="../core/engines.html#dbengine-logging"><span>Configuring Logging</span></a>.</p>
+</div>
+<div class="section" id="how-do-i-pool-database-connections-are-my-connections-pooled">
+<h2>How do I pool database connections?   Are my connections pooled?<a class="headerlink" href="#how-do-i-pool-database-connections-are-my-connections-pooled" title="Permalink to this headline">¶</a></h2>
+<p>SQLAlchemy performs application-level connection pooling automatically
+in most cases.  With the exception of SQLite, a <a class="reference internal" href="../core/connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a> object
+refers to a <a class="reference internal" href="../core/pooling.html#sqlalchemy.pool.QueuePool" title="sqlalchemy.pool.QueuePool"><code class="xref py py-class docutils literal"><span class="pre">QueuePool</span></code></a> as a source of connectivity.</p>
+<p>For more detail, see <a class="reference internal" href="../core/engines.html"><span>Engine Configuration</span></a> and <a class="reference internal" href="../core/pooling.html"><span>Connection Pooling</span></a>.</p>
+</div>
+<div class="section" id="how-do-i-pass-custom-connect-arguments-to-my-database-api">
+<h2>How do I pass custom connect arguments to my database API?<a class="headerlink" href="#how-do-i-pass-custom-connect-arguments-to-my-database-api" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="../core/engines.html#sqlalchemy.create_engine" title="sqlalchemy.create_engine"><code class="xref py py-func docutils literal"><span class="pre">create_engine()</span></code></a> call accepts additional arguments either
+directly via the <code class="docutils literal"><span class="pre">connect_args</span></code> keyword argument:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">e</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="s">&quot;mysql://scott:tiger@localhost/test&quot;</span><span class="p">,</span>
+                    <span class="n">connect_args</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;encoding&quot;</span><span class="p">:</span> <span class="s">&quot;utf8&quot;</span><span class="p">})</span></pre></div>
+</div>
+<p>Or for basic string and integer arguments, they can usually be specified
+in the query string of the URL:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">e</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="s">&quot;mysql://scott:tiger@localhost/test?encoding=utf8&quot;</span><span class="p">)</span></pre></div>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="../core/engines.html#custom-dbapi-args"><span>Custom DBAPI connect() arguments</span></a></p>
+</div>
+</div>
+<div class="section" id="mysql-server-has-gone-away">
+<h2>&#8220;MySQL Server has gone away&#8221;<a class="headerlink" href="#mysql-server-has-gone-away" title="Permalink to this headline">¶</a></h2>
+<p>There are two major causes for this error:</p>
+<p>1. The MySQL client closes connections which have been idle for a set period
+of time, defaulting to eight hours.   This can be avoided by using the <code class="docutils literal"><span class="pre">pool_recycle</span></code>
+setting with <a class="reference internal" href="../core/engines.html#sqlalchemy.create_engine" title="sqlalchemy.create_engine"><code class="xref py py-func docutils literal"><span class="pre">create_engine()</span></code></a>, described at <a class="reference internal" href="../dialects/mysql.html#mysql-connection-timeouts"><span>Connection Timeouts</span></a>.</p>
+<p>2. Usage of the MySQLdb <a class="reference internal" href="../glossary.html#term-dbapi"><span class="xref std std-term">DBAPI</span></a>, or a similar DBAPI, in a non-threadsafe manner, or in an otherwise
+inappropriate way.   The MySQLdb connection object is not threadsafe - this expands
+out to any SQLAlchemy system that links to a single connection, which includes the ORM
+<a class="reference internal" href="../orm/session_api.html#sqlalchemy.orm.session.Session" title="sqlalchemy.orm.session.Session"><code class="xref py py-class docutils literal"><span class="pre">Session</span></code></a>.  For background
+on how <a class="reference internal" href="../orm/session_api.html#sqlalchemy.orm.session.Session" title="sqlalchemy.orm.session.Session"><code class="xref py py-class docutils literal"><span class="pre">Session</span></code></a> should be used in a multithreaded environment,
+see <a class="reference internal" href="../orm/session_basics.html#session-faq-threadsafe"><span>Is the session thread-safe?</span></a>.</p>
+</div>
+<div class="section" id="why-does-sqlalchemy-issue-so-many-rollbacks">
+<h2>Why does SQLAlchemy issue so many ROLLBACKs?<a class="headerlink" href="#why-does-sqlalchemy-issue-so-many-rollbacks" title="Permalink to this headline">¶</a></h2>
+<p>SQLAlchemy currently assumes DBAPI connections are in &#8220;non-autocommit&#8221; mode -
+this is the default behavior of the Python database API, meaning it
+must be assumed that a transaction is always in progress. The
+connection pool issues <code class="docutils literal"><span class="pre">connection.rollback()</span></code> when a connection is returned.
+This is so that any transactional resources remaining on the connection are
+released. On a database like Postgresql or MSSQL where table resources are
+aggressively locked, this is critical so that rows and tables don&#8217;t remain
+locked within connections that are no longer in use. An application can
+otherwise hang. It&#8217;s not just for locks, however, and is equally critical on
+any database that has any kind of transaction isolation, including MySQL with
+InnoDB. Any connection that is still inside an old transaction will return
+stale data, if that data was already queried on that connection within
+isolation. For background on why you might see stale data even on MySQL, see
+<a class="reference external" href="http://dev.mysql.com/doc/refman/5.1/en/innodb-transaction-model.html">http://dev.mysql.com/doc/refman/5.1/en/innodb-transaction-model.html</a></p>
+<div class="section" id="i-m-on-myisam-how-do-i-turn-it-off">
+<h3>I&#8217;m on MyISAM - how do I turn it off?<a class="headerlink" href="#i-m-on-myisam-how-do-i-turn-it-off" title="Permalink to this headline">¶</a></h3>
+<p>The behavior of the connection pool&#8217;s connection return behavior can be
+configured using <code class="docutils literal"><span class="pre">reset_on_return</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">create_engine</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.pool</span> <span class="kn">import</span> <span class="n">QueuePool</span>
+
+<span class="n">engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="s">&#39;mysql://scott:tiger@localhost/myisam_database&#39;</span><span class="p">,</span> <span class="n">pool</span><span class="o">=</span><span class="n">QueuePool</span><span class="p">(</span><span class="n">reset_on_return</span><span class="o">=</span><span class="bp">False</span><span class="p">))</span></pre></div>
+</div>
+</div>
+<div class="section" id="i-m-on-sql-server-how-do-i-turn-those-rollbacks-into-commits">
+<h3>I&#8217;m on SQL Server - how do I turn those ROLLBACKs into COMMITs?<a class="headerlink" href="#i-m-on-sql-server-how-do-i-turn-those-rollbacks-into-commits" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal"><span class="pre">reset_on_return</span></code> accepts the values <code class="docutils literal"><span class="pre">commit</span></code>, <code class="docutils literal"><span class="pre">rollback</span></code> in addition
+to <code class="docutils literal"><span class="pre">True</span></code>, <code class="docutils literal"><span class="pre">False</span></code>, and <code class="docutils literal"><span class="pre">None</span></code>.   Setting to <code class="docutils literal"><span class="pre">commit</span></code> will cause
+a COMMIT as any connection is returned to the pool:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="s">&#39;mssql://scott:tiger@mydsn&#39;</span><span class="p">,</span> <span class="n">pool</span><span class="o">=</span><span class="n">QueuePool</span><span class="p">(</span><span class="n">reset_on_return</span><span class="o">=</span><span class="s">&#39;commit&#39;</span><span class="p">))</span></pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="i-am-using-multiple-connections-with-a-sqlite-database-typically-to-test-transaction-operation-and-my-test-program-is-not-working">
+<h2>I am using multiple connections with a SQLite database (typically to test transaction operation), and my test program is not working!<a class="headerlink" href="#i-am-using-multiple-connections-with-a-sqlite-database-typically-to-test-transaction-operation-and-my-test-program-is-not-working" title="Permalink to this headline">¶</a></h2>
+<p>If using a SQLite <code class="docutils literal"><span class="pre">:memory:</span></code> database, or a version of SQLAlchemy prior
+to version 0.7, the default connection pool is the <a class="reference internal" href="../core/pooling.html#sqlalchemy.pool.SingletonThreadPool" title="sqlalchemy.pool.SingletonThreadPool"><code class="xref py py-class docutils literal"><span class="pre">SingletonThreadPool</span></code></a>,
+which maintains exactly one SQLite connection per thread.  So two
+connections in use in the same thread will actually be the same SQLite
+connection.   Make sure you&#8217;re not using a :memory: database and
+use <a class="reference internal" href="../core/pooling.html#sqlalchemy.pool.NullPool" title="sqlalchemy.pool.NullPool"><code class="xref py py-class docutils literal"><span class="pre">NullPool</span></code></a>, which is the default for non-memory databases in
+current SQLAlchemy versions.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="../dialects/sqlite.html#pysqlite-threading-pooling"><span>Threading/Pooling Behavior</span></a> - info on PySQLite&#8217;s behavior.</p>
+</div>
+</div>
+<div class="section" id="how-do-i-get-at-the-raw-dbapi-connection-when-using-an-engine">
+<h2>How do I get at the raw DBAPI connection when using an Engine?<a class="headerlink" href="#how-do-i-get-at-the-raw-dbapi-connection-when-using-an-engine" title="Permalink to this headline">¶</a></h2>
+<p>With a regular SA engine-level Connection, you can get at a pool-proxied
+version of the DBAPI connection via the <a class="reference internal" href="../core/connections.html#sqlalchemy.engine.Connection.connection" title="sqlalchemy.engine.Connection.connection"><code class="xref py py-attr docutils literal"><span class="pre">Connection.connection</span></code></a> attribute on
+<a class="reference internal" href="../core/connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a>, and for the really-real DBAPI connection you can call the
+<code class="xref py py-attr docutils literal"><span class="pre">ConnectionFairy.connection</span></code> attribute on that - but there should never be any need to access
+the non-pool-proxied DBAPI connection, as all methods are proxied through:</p>
+<div class="highlight-python"><div class="highlight"><pre>engine = create_engine(...)
+conn = engine.connect()
+conn.connection.&lt;do DBAPI things&gt;
+cursor = conn.connection.cursor(&lt;DBAPI specific arguments..&gt;)</pre></div>
+</div>
+<p>You must ensure that you revert any isolation level settings or other
+operation-specific settings on the connection back to normal before returning
+it to the pool.</p>
+<p>As an alternative to reverting settings, you can call the <a class="reference internal" href="../core/connections.html#sqlalchemy.engine.Connection.detach" title="sqlalchemy.engine.Connection.detach"><code class="xref py py-meth docutils literal"><span class="pre">Connection.detach()</span></code></a> method on
+either <a class="reference internal" href="../core/connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> or the proxied connection, which will de-associate
+the connection from the pool such that it will be closed and discarded
+when <a class="reference internal" href="../core/connections.html#sqlalchemy.engine.Connection.close" title="sqlalchemy.engine.Connection.close"><code class="xref py py-meth docutils literal"><span class="pre">Connection.close()</span></code></a> is called:</p>
+<div class="highlight-python"><div class="highlight"><pre>conn = engine.connect()
+conn.detach()  # detaches the DBAPI connection from the connection pool
+conn.connection.&lt;go nuts&gt;
+conn.close()  # connection is closed for real, the pool replaces it with a new connection</pre></div>
+</div>
+</div>
+</div>
+
+    </div>
+
+</div>
+
+<div id="docs-bottom-navigation" class="docs-navigation-links">
+        Previous:
+        <a href="index.html" title="previous chapter">Frequently Asked Questions</a>
+        Next:
+        <a href="metadata_schema.html" title="next chapter">MetaData / Schema</a>
+
+    <div id="docs-copyright">
+        &copy; <a href="../copyright.html">Copyright</a> 2007-2015, the SQLAlchemy authors and contributors.
+        Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.3.1.
+    </div>
+</div>
+
+</div>
+
+
+        
+        
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+          URL_ROOT:    '../',
+          VERSION:     '1.0.8',
+          COLLAPSE_MODINDEX: false,
+          FILE_SUFFIX: '.html'
+      };
+    </script>
+
+    <!-- begin iterate through sphinx environment script_files -->
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+    <!-- end iterate through sphinx environment script_files -->
+
+    <script type="text/javascript" src="../_static/detectmobile.js"></script>
+    <script type="text/javascript" src="../_static/init.js"></script>
+
+
+    </body>
+</html>
+
+

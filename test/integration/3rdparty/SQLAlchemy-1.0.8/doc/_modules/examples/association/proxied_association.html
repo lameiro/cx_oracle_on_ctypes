@@ -1,0 +1,247 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        
+        <title>
+            
+    
+    examples.association.proxied_association
+ &mdash;
+    SQLAlchemy 1.0 Documentation
+
+        </title>
+
+        
+            <!-- begin iterate through SQLA + sphinx environment css_files -->
+                <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+                <link rel="stylesheet" href="../../../_static/changelog.css" type="text/css" />
+                <link rel="stylesheet" href="../../../_static/sphinx_paramlinks.css" type="text/css" />
+                <link rel="stylesheet" href="../../../_static/docs.css" type="text/css" />
+            <!-- end iterate through SQLA + sphinx environment css_files -->
+        
+
+        
+
+    
+
+    <!-- begin layout.mako headers -->
+
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+        <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="top" title="SQLAlchemy 1.0 Documentation" href="../../../index.html" />
+        <link rel="up" title="Module code" href="../../index.html" />
+    <!-- end layout.mako headers -->
+
+
+    </head>
+    <body>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="docs-container">
+
+
+
+
+
+<div id="docs-top-navigation-container" class="body-background">
+<div id="docs-header">
+    <div id="docs-version-header">
+        Release: <span class="version-num">1.0.8</span> | Release Date: July 22, 2015
+    </div>
+
+    <h1>SQLAlchemy 1.0 Documentation</h1>
+
+</div>
+</div>
+
+<div id="docs-body-container">
+
+    <div id="fixed-sidebar" class="">
+
+        <div id="index-nav">
+            <form class="search" action="../../../search.html" method="get">
+              <input type="text" name="q" size="12" /> <input type="submit" value="Search" />
+              <input type="hidden" name="check_keywords" value="yes" />
+              <input type="hidden" name="area" value="default" />
+            </form>
+
+            <p>
+            <a href="../../../contents.html">Contents</a> |
+            <a href="../../../genindex.html">Index</a>
+            </p>
+
+        </div>
+
+
+    </div>
+
+    
+
+    <div id="docs-body" class="" >
+        
+<h1>Source code for examples.association.proxied_association</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;proxied_association.py</span>
+
+<span class="sd">same example as basic_association, adding in</span>
+<span class="sd">usage of :mod:`sqlalchemy.ext.associationproxy` to make explicit references</span>
+<span class="sd">to ``OrderItem`` optional.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="p">(</span><span class="n">create_engine</span><span class="p">,</span> <span class="n">MetaData</span><span class="p">,</span> <span class="n">Table</span><span class="p">,</span> <span class="n">Column</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span>
+    <span class="n">String</span><span class="p">,</span> <span class="n">DateTime</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">,</span> <span class="n">and_</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">mapper</span><span class="p">,</span> <span class="n">relationship</span><span class="p">,</span> <span class="n">Session</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.ext.declarative</span> <span class="kn">import</span> <span class="n">declarative_base</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.ext.associationproxy</span> <span class="kn">import</span> <span class="n">association_proxy</span>
+
+<span class="n">Base</span> <span class="o">=</span> <span class="n">declarative_base</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">Order</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;order&#39;</span>
+
+    <span class="n">order_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">customer_name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">30</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">order_date</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">DateTime</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>
+    <span class="n">order_items</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s">&quot;OrderItem&quot;</span><span class="p">,</span> <span class="n">cascade</span><span class="o">=</span><span class="s">&quot;all, delete-orphan&quot;</span><span class="p">,</span>
+                            <span class="n">backref</span><span class="o">=</span><span class="s">&#39;order&#39;</span><span class="p">)</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="n">association_proxy</span><span class="p">(</span><span class="s">&quot;order_items&quot;</span><span class="p">,</span> <span class="s">&quot;item&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">customer_name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">customer_name</span> <span class="o">=</span> <span class="n">customer_name</span>
+
+<span class="k">class</span> <span class="nc">Item</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;item&#39;</span>
+    <span class="n">item_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">30</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">price</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Float</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">price</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">price</span> <span class="o">=</span> <span class="n">price</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;Item(</span><span class="si">%r</span><span class="s">, </span><span class="si">%r</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">price</span>
+                <span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">OrderItem</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;orderitem&#39;</span>
+    <span class="n">order_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;order.order_id&#39;</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">item_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;item.item_id&#39;</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">price</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Float</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">price</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item</span> <span class="o">=</span> <span class="n">item</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">price</span> <span class="o">=</span> <span class="n">price</span> <span class="ow">or</span> <span class="n">item</span><span class="o">.</span><span class="n">price</span>
+    <span class="n">item</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="n">Item</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="s">&#39;joined&#39;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="s">&#39;sqlite://&#39;</span><span class="p">)</span>
+    <span class="n">Base</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+
+    <span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+
+    <span class="c"># create catalog</span>
+    <span class="n">tshirt</span><span class="p">,</span> <span class="n">mug</span><span class="p">,</span> <span class="n">hat</span><span class="p">,</span> <span class="n">crowbar</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">Item</span><span class="p">(</span><span class="s">&#39;SA T-Shirt&#39;</span><span class="p">,</span> <span class="mf">10.99</span><span class="p">),</span>
+        <span class="n">Item</span><span class="p">(</span><span class="s">&#39;SA Mug&#39;</span><span class="p">,</span> <span class="mf">6.50</span><span class="p">),</span>
+        <span class="n">Item</span><span class="p">(</span><span class="s">&#39;SA Hat&#39;</span><span class="p">,</span> <span class="mf">8.99</span><span class="p">),</span>
+        <span class="n">Item</span><span class="p">(</span><span class="s">&#39;MySQL Crowbar&#39;</span><span class="p">,</span> <span class="mf">16.99</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">session</span><span class="o">.</span><span class="n">add_all</span><span class="p">([</span><span class="n">tshirt</span><span class="p">,</span> <span class="n">mug</span><span class="p">,</span> <span class="n">hat</span><span class="p">,</span> <span class="n">crowbar</span><span class="p">])</span>
+    <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+    <span class="c"># create an order</span>
+    <span class="n">order</span> <span class="o">=</span> <span class="n">Order</span><span class="p">(</span><span class="s">&#39;john smith&#39;</span><span class="p">)</span>
+
+    <span class="c"># add items via the association proxy.</span>
+    <span class="c"># the OrderItem is created automatically.</span>
+    <span class="n">order</span><span class="o">.</span><span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mug</span><span class="p">)</span>
+    <span class="n">order</span><span class="o">.</span><span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hat</span><span class="p">)</span>
+
+    <span class="c"># add an OrderItem explicitly.</span>
+    <span class="n">order</span><span class="o">.</span><span class="n">order_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">OrderItem</span><span class="p">(</span><span class="n">crowbar</span><span class="p">,</span> <span class="mf">10.99</span><span class="p">))</span>
+
+    <span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+    <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+    <span class="c"># query the order, print items</span>
+    <span class="n">order</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Order</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">customer_name</span><span class="o">=</span><span class="s">&#39;john smith&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+
+    <span class="c"># print items based on the OrderItem collection directly</span>
+    <span class="k">print</span><span class="p">([(</span><span class="n">assoc</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">description</span><span class="p">,</span> <span class="n">assoc</span><span class="o">.</span><span class="n">price</span><span class="p">,</span> <span class="n">assoc</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">price</span><span class="p">)</span>
+           <span class="k">for</span> <span class="n">assoc</span> <span class="ow">in</span> <span class="n">order</span><span class="o">.</span><span class="n">order_items</span><span class="p">])</span>
+
+    <span class="c"># print items based on the &quot;proxied&quot; items collection</span>
+    <span class="k">print</span><span class="p">([(</span><span class="n">item</span><span class="o">.</span><span class="n">description</span><span class="p">,</span> <span class="n">item</span><span class="o">.</span><span class="n">price</span><span class="p">)</span>
+           <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">order</span><span class="o">.</span><span class="n">items</span><span class="p">])</span>
+
+    <span class="c"># print customers who bought &#39;MySQL Crowbar&#39; on sale</span>
+    <span class="n">orders</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Order</span><span class="p">)</span><span class="o">.</span>\
+                    <span class="n">join</span><span class="p">(</span><span class="s">&#39;order_items&#39;</span><span class="p">,</span> <span class="s">&#39;item&#39;</span><span class="p">)</span><span class="o">.</span>\
+                    <span class="nb">filter</span><span class="p">(</span><span class="n">Item</span><span class="o">.</span><span class="n">description</span> <span class="o">==</span> <span class="s">&#39;MySQL Crowbar&#39;</span><span class="p">)</span><span class="o">.</span>\
+                    <span class="nb">filter</span><span class="p">(</span><span class="n">Item</span><span class="o">.</span><span class="n">price</span> <span class="o">&gt;</span> <span class="n">OrderItem</span><span class="o">.</span><span class="n">price</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">([</span><span class="n">o</span><span class="o">.</span><span class="n">customer_name</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">orders</span><span class="p">])</span></pre></div>
+    </div>
+
+</div>
+
+<div id="docs-bottom-navigation" class="docs-navigation-links">
+
+    <div id="docs-copyright">
+        &copy; <a href="../../../copyright.html">Copyright</a> 2007-2015, the SQLAlchemy authors and contributors.
+        Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.3.1.
+    </div>
+</div>
+
+</div>
+
+
+        
+        
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+          URL_ROOT:    '../../../',
+          VERSION:     '1.0.8',
+          COLLAPSE_MODINDEX: false,
+          FILE_SUFFIX: '.html'
+      };
+    </script>
+
+    <!-- begin iterate through sphinx environment script_files -->
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <!-- end iterate through sphinx environment script_files -->
+
+    <script type="text/javascript" src="../../../_static/detectmobile.js"></script>
+    <script type="text/javascript" src="../../../_static/init.js"></script>
+
+
+    </body>
+</html>
+
+

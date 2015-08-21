@@ -1,0 +1,244 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        
+        <title>
+            
+    
+    examples.inheritance.single
+ &mdash;
+    SQLAlchemy 1.0 Documentation
+
+        </title>
+
+        
+            <!-- begin iterate through SQLA + sphinx environment css_files -->
+                <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+                <link rel="stylesheet" href="../../../_static/changelog.css" type="text/css" />
+                <link rel="stylesheet" href="../../../_static/sphinx_paramlinks.css" type="text/css" />
+                <link rel="stylesheet" href="../../../_static/docs.css" type="text/css" />
+            <!-- end iterate through SQLA + sphinx environment css_files -->
+        
+
+        
+
+    
+
+    <!-- begin layout.mako headers -->
+
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+        <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="top" title="SQLAlchemy 1.0 Documentation" href="../../../index.html" />
+        <link rel="up" title="Module code" href="../../index.html" />
+    <!-- end layout.mako headers -->
+
+
+    </head>
+    <body>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="docs-container">
+
+
+
+
+
+<div id="docs-top-navigation-container" class="body-background">
+<div id="docs-header">
+    <div id="docs-version-header">
+        Release: <span class="version-num">1.0.8</span> | Release Date: July 22, 2015
+    </div>
+
+    <h1>SQLAlchemy 1.0 Documentation</h1>
+
+</div>
+</div>
+
+<div id="docs-body-container">
+
+    <div id="fixed-sidebar" class="">
+
+        <div id="index-nav">
+            <form class="search" action="../../../search.html" method="get">
+              <input type="text" name="q" size="12" /> <input type="submit" value="Search" />
+              <input type="hidden" name="check_keywords" value="yes" />
+              <input type="hidden" name="area" value="default" />
+            </form>
+
+            <p>
+            <a href="../../../contents.html">Contents</a> |
+            <a href="../../../genindex.html">Index</a>
+            </p>
+
+        </div>
+
+
+    </div>
+
+    
+
+    <div id="docs-body" class="" >
+        
+<h1>Source code for examples.inheritance.single</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;Single-table inheritance example.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">MetaData</span><span class="p">,</span> <span class="n">Table</span><span class="p">,</span> <span class="n">Column</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> \
+    <span class="n">ForeignKey</span><span class="p">,</span> <span class="n">create_engine</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">mapper</span><span class="p">,</span> <span class="n">relationship</span><span class="p">,</span> <span class="n">sessionmaker</span>
+
+<span class="n">metadata</span> <span class="o">=</span> <span class="n">MetaData</span><span class="p">()</span>
+
+<span class="c"># a table to store companies</span>
+<span class="n">companies</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s">&#39;companies&#39;</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span>
+   <span class="n">Column</span><span class="p">(</span><span class="s">&#39;company_id&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+   <span class="n">Column</span><span class="p">(</span><span class="s">&#39;name&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">50</span><span class="p">)))</span>
+
+<span class="n">employees_table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s">&#39;employees&#39;</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;employee_id&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;company_id&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;companies.company_id&#39;</span><span class="p">)),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;name&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">50</span><span class="p">)),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;type&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">20</span><span class="p">)),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;status&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">20</span><span class="p">)),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;engineer_name&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">50</span><span class="p">)),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;primary_language&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">50</span><span class="p">)),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;manager_name&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">50</span><span class="p">))</span>
+<span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Person</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Ordinary person </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+<span class="k">class</span> <span class="nc">Engineer</span><span class="p">(</span><span class="n">Person</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Engineer </span><span class="si">%s</span><span class="s">, status </span><span class="si">%s</span><span class="s">, engineer_name </span><span class="si">%s</span><span class="s">, &quot;</span>\
+                    <span class="s">&quot;primary_language </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> \
+                        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">engineer_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary_language</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Manager</span><span class="p">(</span><span class="n">Person</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Manager </span><span class="si">%s</span><span class="s">, status </span><span class="si">%s</span><span class="s">, manager_name </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> \
+                    <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager_name</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Company</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Company </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+
+<span class="n">person_mapper</span> <span class="o">=</span> <span class="n">mapper</span><span class="p">(</span><span class="n">Person</span><span class="p">,</span> <span class="n">employees_table</span><span class="p">,</span>
+                       <span class="n">polymorphic_on</span><span class="o">=</span><span class="n">employees_table</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+                       <span class="n">polymorphic_identity</span><span class="o">=</span><span class="s">&#39;person&#39;</span><span class="p">)</span>
+<span class="n">manager_mapper</span> <span class="o">=</span> <span class="n">mapper</span><span class="p">(</span><span class="n">Manager</span><span class="p">,</span> <span class="n">inherits</span><span class="o">=</span><span class="n">person_mapper</span><span class="p">,</span>
+                        <span class="n">polymorphic_identity</span><span class="o">=</span><span class="s">&#39;manager&#39;</span><span class="p">)</span>
+<span class="n">engineer_mapper</span> <span class="o">=</span> <span class="n">mapper</span><span class="p">(</span><span class="n">Engineer</span><span class="p">,</span> <span class="n">inherits</span><span class="o">=</span><span class="n">person_mapper</span><span class="p">,</span>
+                         <span class="n">polymorphic_identity</span><span class="o">=</span><span class="s">&#39;engineer&#39;</span><span class="p">)</span>
+
+<span class="n">mapper</span><span class="p">(</span><span class="n">Company</span><span class="p">,</span> <span class="n">companies</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">{</span>
+    <span class="s">&#39;employees&#39;</span><span class="p">:</span> <span class="n">relationship</span><span class="p">(</span><span class="n">Person</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="s">&#39;company&#39;</span><span class="p">)</span>
+<span class="p">})</span>
+
+
+<span class="n">engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="s">&#39;sqlite:///&#39;</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="n">metadata</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+
+<span class="n">session</span> <span class="o">=</span> <span class="n">sessionmaker</span><span class="p">(</span><span class="n">engine</span><span class="p">)()</span>
+
+<span class="n">c</span> <span class="o">=</span> <span class="n">Company</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;company1&#39;</span><span class="p">)</span>
+<span class="n">c</span><span class="o">.</span><span class="n">employees</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Manager</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;pointy haired boss&#39;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s">&#39;AAB&#39;</span><span class="p">,</span>
+                   <span class="n">manager_name</span><span class="o">=</span><span class="s">&#39;manager1&#39;</span><span class="p">))</span>
+<span class="n">c</span><span class="o">.</span><span class="n">employees</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Engineer</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;dilbert&#39;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s">&#39;BBA&#39;</span><span class="p">,</span>
+                   <span class="n">engineer_name</span><span class="o">=</span><span class="s">&#39;engineer1&#39;</span><span class="p">,</span> <span class="n">primary_language</span><span class="o">=</span><span class="s">&#39;java&#39;</span><span class="p">))</span>
+<span class="n">c</span><span class="o">.</span><span class="n">employees</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;joesmith&#39;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s">&#39;HHH&#39;</span><span class="p">))</span>
+<span class="n">c</span><span class="o">.</span><span class="n">employees</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Engineer</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;wally&#39;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s">&#39;CGG&#39;</span><span class="p">,</span>
+                   <span class="n">engineer_name</span><span class="o">=</span><span class="s">&#39;engineer2&#39;</span><span class="p">,</span> <span class="n">primary_language</span><span class="o">=</span><span class="s">&#39;python&#39;</span>
+                   <span class="p">))</span>
+<span class="n">c</span><span class="o">.</span><span class="n">employees</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Manager</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;jsmith&#39;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s">&#39;ABA&#39;</span><span class="p">,</span>
+                   <span class="n">manager_name</span><span class="o">=</span><span class="s">&#39;manager2&#39;</span><span class="p">))</span>
+<span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+<span class="n">c</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Company</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">employees</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">company</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+
+<span class="n">dilbert</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Person</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;dilbert&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+<span class="n">dilbert2</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Engineer</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;dilbert&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">dilbert</span> <span class="ow">is</span> <span class="n">dilbert2</span>
+
+<span class="n">dilbert</span><span class="o">.</span><span class="n">engineer_name</span> <span class="o">=</span> <span class="s">&#39;hes dibert!&#39;</span>
+
+<span class="n">session</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="n">session</span><span class="o">.</span><span class="n">expunge_all</span><span class="p">()</span>
+
+<span class="n">c</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Company</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">employees</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+<span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span></pre></div>
+    </div>
+
+</div>
+
+<div id="docs-bottom-navigation" class="docs-navigation-links">
+
+    <div id="docs-copyright">
+        &copy; <a href="../../../copyright.html">Copyright</a> 2007-2015, the SQLAlchemy authors and contributors.
+        Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.3.1.
+    </div>
+</div>
+
+</div>
+
+
+        
+        
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+          URL_ROOT:    '../../../',
+          VERSION:     '1.0.8',
+          COLLAPSE_MODINDEX: false,
+          FILE_SUFFIX: '.html'
+      };
+    </script>
+
+    <!-- begin iterate through sphinx environment script_files -->
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <!-- end iterate through sphinx environment script_files -->
+
+    <script type="text/javascript" src="../../../_static/detectmobile.js"></script>
+    <script type="text/javascript" src="../../../_static/init.js"></script>
+
+
+    </body>
+</html>
+
+

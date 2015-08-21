@@ -1,0 +1,2004 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        
+        <title>
+            
+    
+    Core Events
+ &mdash;
+    SQLAlchemy 1.0 Documentation
+
+        </title>
+
+        
+            <!-- begin iterate through SQLA + sphinx environment css_files -->
+                <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+                <link rel="stylesheet" href="../_static/changelog.css" type="text/css" />
+                <link rel="stylesheet" href="../_static/sphinx_paramlinks.css" type="text/css" />
+                <link rel="stylesheet" href="../_static/docs.css" type="text/css" />
+            <!-- end iterate through SQLA + sphinx environment css_files -->
+        
+
+        
+
+    
+
+    <!-- begin layout.mako headers -->
+
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+        <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="top" title="SQLAlchemy 1.0 Documentation" href="../index.html" />
+        <link rel="up" title="Engine and Connection Use" href="engines_connections.html" />
+        <link rel="next" title="Core API Basics" href="api_basics.html" />
+        <link rel="prev" title="Connection Pooling" href="pooling.html" />
+    <!-- end layout.mako headers -->
+
+
+    </head>
+    <body>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="docs-container">
+
+
+
+
+
+<div id="docs-top-navigation-container" class="body-background">
+<div id="docs-header">
+    <div id="docs-version-header">
+        Release: <span class="version-num">1.0.8</span> | Release Date: July 22, 2015
+    </div>
+
+    <h1>SQLAlchemy 1.0 Documentation</h1>
+
+</div>
+</div>
+
+<div id="docs-body-container">
+
+    <div id="fixed-sidebar" class="withsidebar">
+
+
+        <div id="docs-sidebar-popout">
+            <h3><a href="../index.html">SQLAlchemy 1.0 Documentation</a></h3>
+
+            <p id="sidebar-topnav">
+                <a href="../contents.html">Contents</a> |
+                <a href="../genindex.html">Index</a>
+            </p>
+
+            <div id="sidebar-search">
+                <form class="search" action="../search.html" method="get">
+                  <input type="text" name="q" size="12" /> <input type="submit" value="Search" />
+                  <input type="hidden" name="check_keywords" value="yes" />
+                  <input type="hidden" name="area" value="default" />
+                </form>
+            </div>
+
+        </div>
+
+        <div id="docs-sidebar">
+
+        
+        <h3>
+            <a href="index.html" title="SQLAlchemy Core">SQLAlchemy Core</a>
+        </h3>
+
+        <ul>
+<li><span class="link-container first"><a class="reference external" href="tutorial.html">SQL Expression Language Tutorial</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="expression_api.html">SQL Statements and Expressions API</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="schema.html">Schema Definition Language</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="types.html">Column and Data Types</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="engines_connections.html">Engine and Connection Use</a></span><ul>
+<li><span class="link-container first"><a class="reference external" href="engines.html">Engine Configuration</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="connections.html">Working with Engines and Connections</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="pooling.html">Connection Pooling</a></span></li>
+<li class="selected"><span class="link-container first"><strong>Core Events</strong><a class="paramlink headerlink reference internal" href="#">¶</a></span><ul>
+<li><span class="link-container first"><a class="reference external" href="#connection-pool-events">Connection Pool Events</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#sql-execution-and-connection-events">SQL Execution and Connection Events</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#schema-events">Schema Events</a></span></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><span class="link-container first"><a class="reference external" href="api_basics.html">Core API Basics</a></span></li>
+</ul>
+
+
+
+        </div>
+
+    </div>
+
+    
+
+    <div id="docs-body" class="withsidebar" >
+        
+<div class="section" id="core-events">
+<span id="core-event-toplevel"></span><h1>Core Events<a class="headerlink" href="#core-events" title="Permalink to this headline">¶</a></h1>
+<p>This section describes the event interfaces provided in
+SQLAlchemy Core.
+For an introduction to the event listening API, see <a class="reference internal" href="event.html"><span>Events</span></a>.
+ORM events are described in <a class="reference internal" href="../orm/events.html"><span>ORM Events</span></a>.</p>
+<dl class="class">
+<dt id="sqlalchemy.event.base.Events">
+<em class="property">class </em><code class="descclassname">sqlalchemy.event.base.</code><code class="descname">Events</code><a class="headerlink" href="#sqlalchemy.event.base.Events" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define event listening functions for a particular target type.</p>
+</dd></dl>
+
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.7: </span>The event system supersedes the previous system of &#8220;extension&#8221;, &#8220;listener&#8221;,
+and &#8220;proxy&#8221; classes.</p>
+</div>
+<div class="section" id="connection-pool-events">
+<h2>Connection Pool Events<a class="headerlink" href="#connection-pool-events" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="sqlalchemy.events.PoolEvents">
+<em class="property">class </em><code class="descclassname">sqlalchemy.events.</code><code class="descname">PoolEvents</code><a class="headerlink" href="#sqlalchemy.events.PoolEvents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#sqlalchemy.event.base.Events" title="sqlalchemy.event.base.Events"><code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.event.base.Events</span></code></a></p>
+<p>Available events for <a class="reference internal" href="pooling.html#sqlalchemy.pool.Pool" title="sqlalchemy.pool.Pool"><code class="xref py py-class docutils literal"><span class="pre">Pool</span></code></a>.</p>
+<p>The methods here define the name of an event as well
+as the names of members that are passed to listener
+functions.</p>
+<p>e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="k">def</span> <span class="nf">my_on_checkout</span><span class="p">(</span><span class="n">dbapi_conn</span><span class="p">,</span> <span class="n">connection_rec</span><span class="p">,</span> <span class="n">connection_proxy</span><span class="p">):</span>
+    <span class="s">&quot;handle an on checkout event&quot;</span>
+
+<span class="n">event</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="n">Pool</span><span class="p">,</span> <span class="s">&#39;checkout&#39;</span><span class="p">,</span> <span class="n">my_on_checkout</span><span class="p">)</span></pre></div>
+</div>
+<p>In addition to accepting the <a class="reference internal" href="pooling.html#sqlalchemy.pool.Pool" title="sqlalchemy.pool.Pool"><code class="xref py py-class docutils literal"><span class="pre">Pool</span></code></a> class and
+<a class="reference internal" href="pooling.html#sqlalchemy.pool.Pool" title="sqlalchemy.pool.Pool"><code class="xref py py-class docutils literal"><span class="pre">Pool</span></code></a> instances, <a class="reference internal" href="#sqlalchemy.events.PoolEvents" title="sqlalchemy.events.PoolEvents"><code class="xref py py-class docutils literal"><span class="pre">PoolEvents</span></code></a> also accepts
+<a class="reference internal" href="connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a> objects and the <a class="reference internal" href="connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a> class as
+targets, which will be resolved to the <code class="docutils literal"><span class="pre">.pool</span></code> attribute of the
+given engine or the <a class="reference internal" href="pooling.html#sqlalchemy.pool.Pool" title="sqlalchemy.pool.Pool"><code class="xref py py-class docutils literal"><span class="pre">Pool</span></code></a> class:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="s">&quot;postgresql://scott:tiger@localhost/test&quot;</span><span class="p">)</span>
+
+<span class="c"># will associate with engine.pool</span>
+<span class="n">event</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="s">&#39;checkout&#39;</span><span class="p">,</span> <span class="n">my_on_checkout</span><span class="p">)</span></pre></div>
+</div>
+<dl class="method">
+<dt id="sqlalchemy.events.PoolEvents.checkin">
+<code class="descname">checkin</code><span class="sig-paren">(</span><em>dbapi_connection</em>, <em>connection_record</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.PoolEvents.checkin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when a connection returns to the pool.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngineOrPool</span><span class="p">,</span> <span class="s">&#39;checkin&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_checkin</span><span class="p">(</span><span class="n">dbapi_connection</span><span class="p">,</span> <span class="n">connection_record</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;checkin&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<p>Note that the connection may be closed, and may be None if the
+connection has been invalidated.  <code class="docutils literal"><span class="pre">checkin</span></code> will not be called
+for detached connections.  (They do not return to the pool.)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.PoolEvents.checkin.params.dbapi_connection"></span><strong>dbapi_connection</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.PoolEvents.checkin.params.dbapi_connection">¶</a> &#8211; a DBAPI connection.</li>
+<li><span class="target" id="sqlalchemy.events.PoolEvents.checkin.params.connection_record"></span><strong>connection_record</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.PoolEvents.checkin.params.connection_record">¶</a> &#8211; the <a class="reference internal" href="pooling.html#sqlalchemy.pool._ConnectionRecord" title="sqlalchemy.pool._ConnectionRecord"><code class="xref py py-class docutils literal"><span class="pre">_ConnectionRecord</span></code></a> managing the
+DBAPI connection.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.PoolEvents.checkout">
+<code class="descname">checkout</code><span class="sig-paren">(</span><em>dbapi_connection</em>, <em>connection_record</em>, <em>connection_proxy</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.PoolEvents.checkout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when a connection is retrieved from the Pool.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngineOrPool</span><span class="p">,</span> <span class="s">&#39;checkout&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_checkout</span><span class="p">(</span><span class="n">dbapi_connection</span><span class="p">,</span> <span class="n">connection_record</span><span class="p">,</span> <span class="n">connection_proxy</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;checkout&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.PoolEvents.checkout.params.dbapi_connection"></span><strong>dbapi_connection</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.PoolEvents.checkout.params.dbapi_connection">¶</a> &#8211; a DBAPI connection.</li>
+<li><span class="target" id="sqlalchemy.events.PoolEvents.checkout.params.connection_record"></span><strong>connection_record</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.PoolEvents.checkout.params.connection_record">¶</a> &#8211; the <a class="reference internal" href="pooling.html#sqlalchemy.pool._ConnectionRecord" title="sqlalchemy.pool._ConnectionRecord"><code class="xref py py-class docutils literal"><span class="pre">_ConnectionRecord</span></code></a> managing the
+DBAPI connection.</li>
+<li><span class="target" id="sqlalchemy.events.PoolEvents.checkout.params.connection_proxy"></span><strong>connection_proxy</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.PoolEvents.checkout.params.connection_proxy">¶</a> &#8211; the <a class="reference internal" href="pooling.html#sqlalchemy.pool._ConnectionFairy" title="sqlalchemy.pool._ConnectionFairy"><code class="xref py py-class docutils literal"><span class="pre">_ConnectionFairy</span></code></a> object which
+will proxy the public interface of the DBAPI connection for the
+lifespan of the checkout.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>If you raise a <a class="reference internal" href="exceptions.html#sqlalchemy.exc.DisconnectionError" title="sqlalchemy.exc.DisconnectionError"><code class="xref py py-class docutils literal"><span class="pre">DisconnectionError</span></code></a>, the current
+connection will be disposed and a fresh connection retrieved.
+Processing of all checkout listeners will abort and restart
+using the new connection.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.engine_connect" title="sqlalchemy.events.ConnectionEvents.engine_connect"><code class="xref py py-meth docutils literal"><span class="pre">ConnectionEvents.engine_connect()</span></code></a> - a similar event
+which occurs upon creation of a new <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a>.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.PoolEvents.connect">
+<code class="descname">connect</code><span class="sig-paren">(</span><em>dbapi_connection</em>, <em>connection_record</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.PoolEvents.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called at the moment a particular DBAPI connection is first
+created for a given <a class="reference internal" href="pooling.html#sqlalchemy.pool.Pool" title="sqlalchemy.pool.Pool"><code class="xref py py-class docutils literal"><span class="pre">Pool</span></code></a>.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngineOrPool</span><span class="p">,</span> <span class="s">&#39;connect&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_connect</span><span class="p">(</span><span class="n">dbapi_connection</span><span class="p">,</span> <span class="n">connection_record</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;connect&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<p>This event allows one to capture the point directly after which
+the DBAPI module-level <code class="docutils literal"><span class="pre">.connect()</span></code> method has been used in order
+to produce a new DBAPI connection.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.PoolEvents.connect.params.dbapi_connection"></span><strong>dbapi_connection</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.PoolEvents.connect.params.dbapi_connection">¶</a> &#8211; a DBAPI connection.</li>
+<li><span class="target" id="sqlalchemy.events.PoolEvents.connect.params.connection_record"></span><strong>connection_record</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.PoolEvents.connect.params.connection_record">¶</a> &#8211; the <a class="reference internal" href="pooling.html#sqlalchemy.pool._ConnectionRecord" title="sqlalchemy.pool._ConnectionRecord"><code class="xref py py-class docutils literal"><span class="pre">_ConnectionRecord</span></code></a> managing the
+DBAPI connection.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.PoolEvents.first_connect">
+<code class="descname">first_connect</code><span class="sig-paren">(</span><em>dbapi_connection</em>, <em>connection_record</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.PoolEvents.first_connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called exactly once for the first time a DBAPI connection is
+checked out from a particular <a class="reference internal" href="pooling.html#sqlalchemy.pool.Pool" title="sqlalchemy.pool.Pool"><code class="xref py py-class docutils literal"><span class="pre">Pool</span></code></a>.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngineOrPool</span><span class="p">,</span> <span class="s">&#39;first_connect&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_first_connect</span><span class="p">(</span><span class="n">dbapi_connection</span><span class="p">,</span> <span class="n">connection_record</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;first_connect&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<p>The rationale for <a class="reference internal" href="#sqlalchemy.events.PoolEvents.first_connect" title="sqlalchemy.events.PoolEvents.first_connect"><code class="xref py py-meth docutils literal"><span class="pre">PoolEvents.first_connect()</span></code></a> is to determine
+information about a particular series of database connections based
+on the settings used for all connections.  Since a particular
+<a class="reference internal" href="pooling.html#sqlalchemy.pool.Pool" title="sqlalchemy.pool.Pool"><code class="xref py py-class docutils literal"><span class="pre">Pool</span></code></a> refers to a single &#8220;creator&#8221; function (which in terms
+of a <a class="reference internal" href="connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a> refers to the URL and connection options used),
+it is typically valid to make observations about a single connection
+that can be safely assumed to be valid about all subsequent
+connections, such as the database version, the server and client
+encoding settings, collation settings, and many others.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.PoolEvents.first_connect.params.dbapi_connection"></span><strong>dbapi_connection</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.PoolEvents.first_connect.params.dbapi_connection">¶</a> &#8211; a DBAPI connection.</li>
+<li><span class="target" id="sqlalchemy.events.PoolEvents.first_connect.params.connection_record"></span><strong>connection_record</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.PoolEvents.first_connect.params.connection_record">¶</a> &#8211; the <a class="reference internal" href="pooling.html#sqlalchemy.pool._ConnectionRecord" title="sqlalchemy.pool._ConnectionRecord"><code class="xref py py-class docutils literal"><span class="pre">_ConnectionRecord</span></code></a> managing the
+DBAPI connection.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.PoolEvents.invalidate">
+<code class="descname">invalidate</code><span class="sig-paren">(</span><em>dbapi_connection</em>, <em>connection_record</em>, <em>exception</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.PoolEvents.invalidate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when a DBAPI connection is to be &#8220;invalidated&#8221;.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngineOrPool</span><span class="p">,</span> <span class="s">&#39;invalidate&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_invalidate</span><span class="p">(</span><span class="n">dbapi_connection</span><span class="p">,</span> <span class="n">connection_record</span><span class="p">,</span> <span class="n">exception</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;invalidate&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<p>This event is called any time the <a class="reference internal" href="pooling.html#sqlalchemy.pool._ConnectionRecord.invalidate" title="sqlalchemy.pool._ConnectionRecord.invalidate"><code class="xref py py-meth docutils literal"><span class="pre">_ConnectionRecord.invalidate()</span></code></a>
+method is invoked, either from API usage or via &#8220;auto-invalidation&#8221;,
+without the <code class="docutils literal"><span class="pre">soft</span></code> flag.</p>
+<p>The event occurs before a final attempt to call <code class="docutils literal"><span class="pre">.close()</span></code> on the
+connection occurs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.PoolEvents.invalidate.params.dbapi_connection"></span><strong>dbapi_connection</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.PoolEvents.invalidate.params.dbapi_connection">¶</a> &#8211; a DBAPI connection.</li>
+<li><span class="target" id="sqlalchemy.events.PoolEvents.invalidate.params.connection_record"></span><strong>connection_record</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.PoolEvents.invalidate.params.connection_record">¶</a> &#8211; the <a class="reference internal" href="pooling.html#sqlalchemy.pool._ConnectionRecord" title="sqlalchemy.pool._ConnectionRecord"><code class="xref py py-class docutils literal"><span class="pre">_ConnectionRecord</span></code></a> managing the
+DBAPI connection.</li>
+<li><span class="target" id="sqlalchemy.events.PoolEvents.invalidate.params.exception"></span><strong>exception</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.PoolEvents.invalidate.params.exception">¶</a> &#8211; the exception object corresponding to the reason
+for this invalidation, if any.  May be <code class="docutils literal"><span class="pre">None</span></code>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.9.2: </span>Added support for connection invalidation
+listening.</p>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="pooling.html#pool-connection-invalidation"><span>More on Invalidation</span></a></p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.PoolEvents.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><em>dbapi_connection</em>, <em>connection_record</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.PoolEvents.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called before the &#8220;reset&#8221; action occurs for a pooled connection.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngineOrPool</span><span class="p">,</span> <span class="s">&#39;reset&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_reset</span><span class="p">(</span><span class="n">dbapi_connection</span><span class="p">,</span> <span class="n">connection_record</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;reset&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<p>This event represents
+when the <code class="docutils literal"><span class="pre">rollback()</span></code> method is called on the DBAPI connection
+before it is returned to the pool.  The behavior of &#8220;reset&#8221; can
+be controlled, including disabled, using the <code class="docutils literal"><span class="pre">reset_on_return</span></code>
+pool argument.</p>
+<p>The <a class="reference internal" href="#sqlalchemy.events.PoolEvents.reset" title="sqlalchemy.events.PoolEvents.reset"><code class="xref py py-meth docutils literal"><span class="pre">PoolEvents.reset()</span></code></a> event is usually followed by the
+<a class="reference internal" href="#sqlalchemy.events.PoolEvents.checkin" title="sqlalchemy.events.PoolEvents.checkin"><code class="xref py py-meth docutils literal"><span class="pre">PoolEvents.checkin()</span></code></a> event is called, except in those
+cases where the connection is discarded immediately after reset.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.PoolEvents.reset.params.dbapi_connection"></span><strong>dbapi_connection</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.PoolEvents.reset.params.dbapi_connection">¶</a> &#8211; a DBAPI connection.</li>
+<li><span class="target" id="sqlalchemy.events.PoolEvents.reset.params.connection_record"></span><strong>connection_record</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.PoolEvents.reset.params.connection_record">¶</a> &#8211; the <a class="reference internal" href="pooling.html#sqlalchemy.pool._ConnectionRecord" title="sqlalchemy.pool._ConnectionRecord"><code class="xref py py-class docutils literal"><span class="pre">_ConnectionRecord</span></code></a> managing the
+DBAPI connection.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.8.</span></p>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p><a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.rollback" title="sqlalchemy.events.ConnectionEvents.rollback"><code class="xref py py-meth docutils literal"><span class="pre">ConnectionEvents.rollback()</span></code></a></p>
+<p class="last"><a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.commit" title="sqlalchemy.events.ConnectionEvents.commit"><code class="xref py py-meth docutils literal"><span class="pre">ConnectionEvents.commit()</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.PoolEvents.soft_invalidate">
+<code class="descname">soft_invalidate</code><span class="sig-paren">(</span><em>dbapi_connection</em>, <em>connection_record</em>, <em>exception</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.PoolEvents.soft_invalidate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when a DBAPI connection is to be &#8220;soft invalidated&#8221;.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngineOrPool</span><span class="p">,</span> <span class="s">&#39;soft_invalidate&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_soft_invalidate</span><span class="p">(</span><span class="n">dbapi_connection</span><span class="p">,</span> <span class="n">connection_record</span><span class="p">,</span> <span class="n">exception</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;soft_invalidate&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<p>This event is called any time the <a class="reference internal" href="pooling.html#sqlalchemy.pool._ConnectionRecord.invalidate" title="sqlalchemy.pool._ConnectionRecord.invalidate"><code class="xref py py-meth docutils literal"><span class="pre">_ConnectionRecord.invalidate()</span></code></a>
+method is invoked with the <code class="docutils literal"><span class="pre">soft</span></code> flag.</p>
+<p>Soft invalidation refers to when the connection record that tracks
+this connection will force a reconnect after the current connection
+is checked in.   It does not actively close the dbapi_connection
+at the point at which it is called.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 1.0.3.</span></p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="sql-execution-and-connection-events">
+<h2>SQL Execution and Connection Events<a class="headerlink" href="#sql-execution-and-connection-events" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="sqlalchemy.events.ConnectionEvents">
+<em class="property">class </em><code class="descclassname">sqlalchemy.events.</code><code class="descname">ConnectionEvents</code><a class="headerlink" href="#sqlalchemy.events.ConnectionEvents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#sqlalchemy.event.base.Events" title="sqlalchemy.event.base.Events"><code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.event.base.Events</span></code></a></p>
+<p>Available events for <a class="reference internal" href="connections.html#sqlalchemy.engine.Connectable" title="sqlalchemy.engine.Connectable"><code class="xref py py-class docutils literal"><span class="pre">Connectable</span></code></a>, which includes
+<a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> and <a class="reference internal" href="connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a>.</p>
+<p>The methods here define the name of an event as well as the names of
+members that are passed to listener functions.</p>
+<p>An event listener can be associated with any <a class="reference internal" href="connections.html#sqlalchemy.engine.Connectable" title="sqlalchemy.engine.Connectable"><code class="xref py py-class docutils literal"><span class="pre">Connectable</span></code></a>
+class or instance, such as an <a class="reference internal" href="connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a>, e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span><span class="p">,</span> <span class="n">create_engine</span>
+
+<span class="k">def</span> <span class="nf">before_cursor_execute</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">cursor</span><span class="p">,</span> <span class="n">statement</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span>
+                                                <span class="n">executemany</span><span class="p">):</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Received statement: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">statement</span><span class="p">)</span>
+
+<span class="n">engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="s">&#39;postgresql://scott:tiger@localhost/test&#39;</span><span class="p">)</span>
+<span class="n">event</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="s">&quot;before_cursor_execute&quot;</span><span class="p">,</span> <span class="n">before_cursor_execute</span><span class="p">)</span></pre></div>
+</div>
+<p>or with a specific <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+    <span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="s">&#39;before_cursor_execute&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">before_cursor_execute</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">cursor</span><span class="p">,</span> <span class="n">statement</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span>
+                                    <span class="n">context</span><span class="p">,</span> <span class="n">executemany</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Received statement: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">statement</span><span class="p">)</span></pre></div>
+</div>
+<p>When the methods are called with a <cite>statement</cite> parameter, such as in
+<a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.after_cursor_execute" title="sqlalchemy.events.ConnectionEvents.after_cursor_execute"><code class="xref py py-meth docutils literal"><span class="pre">after_cursor_execute()</span></code></a>, <a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.before_cursor_execute" title="sqlalchemy.events.ConnectionEvents.before_cursor_execute"><code class="xref py py-meth docutils literal"><span class="pre">before_cursor_execute()</span></code></a> and
+<a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.dbapi_error" title="sqlalchemy.events.ConnectionEvents.dbapi_error"><code class="xref py py-meth docutils literal"><span class="pre">dbapi_error()</span></code></a>, the statement is the exact SQL string that was
+prepared for transmission to the DBAPI <code class="docutils literal"><span class="pre">cursor</span></code> in the connection&#8217;s
+<a class="reference internal" href="internals.html#sqlalchemy.engine.interfaces.Dialect" title="sqlalchemy.engine.interfaces.Dialect"><code class="xref py py-class docutils literal"><span class="pre">Dialect</span></code></a>.</p>
+<p>The <a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.before_execute" title="sqlalchemy.events.ConnectionEvents.before_execute"><code class="xref py py-meth docutils literal"><span class="pre">before_execute()</span></code></a> and <a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.before_cursor_execute" title="sqlalchemy.events.ConnectionEvents.before_cursor_execute"><code class="xref py py-meth docutils literal"><span class="pre">before_cursor_execute()</span></code></a>
+events can also be established with the <code class="docutils literal"><span class="pre">retval=True</span></code> flag, which
+allows modification of the statement and parameters to be sent
+to the database.  The <a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.before_cursor_execute" title="sqlalchemy.events.ConnectionEvents.before_cursor_execute"><code class="xref py py-meth docutils literal"><span class="pre">before_cursor_execute()</span></code></a> event is
+particularly useful here to add ad-hoc string transformations, such
+as comments, to all executions:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy.engine</span> <span class="kn">import</span> <span class="n">Engine</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">Engine</span><span class="p">,</span> <span class="s">&quot;before_cursor_execute&quot;</span><span class="p">,</span> <span class="n">retval</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">comment_sql_calls</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">cursor</span><span class="p">,</span> <span class="n">statement</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span>
+                                    <span class="n">context</span><span class="p">,</span> <span class="n">executemany</span><span class="p">):</span>
+    <span class="n">statement</span> <span class="o">=</span> <span class="n">statement</span> <span class="o">+</span> <span class="s">&quot; -- some comment&quot;</span>
+    <span class="k">return</span> <span class="n">statement</span><span class="p">,</span> <span class="n">parameters</span></pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><a class="reference internal" href="#sqlalchemy.events.ConnectionEvents" title="sqlalchemy.events.ConnectionEvents"><code class="xref py py-class docutils literal"><span class="pre">ConnectionEvents</span></code></a> can be established on any
+combination of <a class="reference internal" href="connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a>, <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a>, as well
+as instances of each of those classes.  Events across all
+four scopes will fire off for a given instance of
+<a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a>.  However, for performance reasons, the
+<a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object determines at instantiation time
+whether or not its parent <a class="reference internal" href="connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a> has event listeners
+established.   Event listeners added to the <a class="reference internal" href="connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a>
+class or to an instance of <a class="reference internal" href="connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a> <em>after</em> the instantiation
+of a dependent <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> instance will usually
+<em>not</em> be available on that <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> instance.  The newly
+added listeners will instead take effect for <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a>
+instances created subsequent to those event listeners being
+established on the parent <a class="reference internal" href="connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a> class or instance.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><span class="target" id="sqlalchemy.events.ConnectionEvents.params.retval"></span><strong>retval=False</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.params.retval">¶</a> &#8211; Applies to the <a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.before_execute" title="sqlalchemy.events.ConnectionEvents.before_execute"><code class="xref py py-meth docutils literal"><span class="pre">before_execute()</span></code></a> and
+<a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.before_cursor_execute" title="sqlalchemy.events.ConnectionEvents.before_cursor_execute"><code class="xref py py-meth docutils literal"><span class="pre">before_cursor_execute()</span></code></a> events only.  When True, the
+user-defined event function must have a return value, which
+is a tuple of parameters that replace the given statement
+and parameters.  See those methods for a description of
+specific return arguments.</td>
+</tr>
+</tbody>
+</table>
+<div class="versionchanged">
+<p><span class="versionmodified">Changed in version 0.8: </span><a class="reference internal" href="#sqlalchemy.events.ConnectionEvents" title="sqlalchemy.events.ConnectionEvents"><code class="xref py py-class docutils literal"><span class="pre">ConnectionEvents</span></code></a> can now be associated
+with any <a class="reference internal" href="connections.html#sqlalchemy.engine.Connectable" title="sqlalchemy.engine.Connectable"><code class="xref py py-class docutils literal"><span class="pre">Connectable</span></code></a> including <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a>,
+in addition to the existing support for <a class="reference internal" href="connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a>.</p>
+</div>
+<dl class="method">
+<dt id="sqlalchemy.events.ConnectionEvents.after_cursor_execute">
+<code class="descname">after_cursor_execute</code><span class="sig-paren">(</span><em>conn</em>, <em>cursor</em>, <em>statement</em>, <em>parameters</em>, <em>context</em>, <em>executemany</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.ConnectionEvents.after_cursor_execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intercept low-level cursor execute() events after execution.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;after_cursor_execute&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_after_cursor_execute</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">cursor</span><span class="p">,</span> <span class="n">statement</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">executemany</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;after_cursor_execute&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span>
+
+<span class="c"># named argument style (new in 0.9)</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;after_cursor_execute&#39;</span><span class="p">,</span> <span class="n">named</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_after_cursor_execute</span><span class="p">(</span><span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;after_cursor_execute&#39; event&quot;</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">kw</span><span class="p">[</span><span class="s">&#39;conn&#39;</span><span class="p">]</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">kw</span><span class="p">[</span><span class="s">&#39;cursor&#39;</span><span class="p">]</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.after_cursor_execute.params.conn"></span><strong>conn</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.after_cursor_execute.params.conn">¶</a> &#8211; <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.after_cursor_execute.params.cursor"></span><strong>cursor</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.after_cursor_execute.params.cursor">¶</a> &#8211; DBAPI cursor object.  Will have results pending
+if the statement was a SELECT, but these should not be consumed
+as they will be needed by the <a class="reference internal" href="connections.html#sqlalchemy.engine.ResultProxy" title="sqlalchemy.engine.ResultProxy"><code class="xref py py-class docutils literal"><span class="pre">ResultProxy</span></code></a>.</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.after_cursor_execute.params.statement"></span><strong>statement</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.after_cursor_execute.params.statement">¶</a> &#8211; string SQL statement, as passed to the DBAPI</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.after_cursor_execute.params.parameters"></span><strong>parameters</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.after_cursor_execute.params.parameters">¶</a> &#8211; Dictionary, tuple, or list of parameters being
+passed to the <code class="docutils literal"><span class="pre">execute()</span></code> or <code class="docutils literal"><span class="pre">executemany()</span></code> method of the
+DBAPI <code class="docutils literal"><span class="pre">cursor</span></code>.  In some cases may be <code class="docutils literal"><span class="pre">None</span></code>.</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.after_cursor_execute.params.context"></span><strong>context</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.after_cursor_execute.params.context">¶</a> &#8211; <a class="reference internal" href="internals.html#sqlalchemy.engine.interfaces.ExecutionContext" title="sqlalchemy.engine.interfaces.ExecutionContext"><code class="xref py py-class docutils literal"><span class="pre">ExecutionContext</span></code></a> object in use.  May
+be <code class="docutils literal"><span class="pre">None</span></code>.</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.after_cursor_execute.params.executemany"></span><strong>executemany</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.after_cursor_execute.params.executemany">¶</a> &#8211; boolean, if <code class="docutils literal"><span class="pre">True</span></code>, this is an <code class="docutils literal"><span class="pre">executemany()</span></code>
+call, if <code class="docutils literal"><span class="pre">False</span></code>, this is an <code class="docutils literal"><span class="pre">execute()</span></code> call.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.ConnectionEvents.after_execute">
+<code class="descname">after_execute</code><span class="sig-paren">(</span><em>conn</em>, <em>clauseelement</em>, <em>multiparams</em>, <em>params</em>, <em>result</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.ConnectionEvents.after_execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intercept high level execute() events after execute.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;after_execute&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_after_execute</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">clauseelement</span><span class="p">,</span> <span class="n">multiparams</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;after_execute&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span>
+
+<span class="c"># named argument style (new in 0.9)</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;after_execute&#39;</span><span class="p">,</span> <span class="n">named</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_after_execute</span><span class="p">(</span><span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;after_execute&#39; event&quot;</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">kw</span><span class="p">[</span><span class="s">&#39;conn&#39;</span><span class="p">]</span>
+    <span class="n">clauseelement</span> <span class="o">=</span> <span class="n">kw</span><span class="p">[</span><span class="s">&#39;clauseelement&#39;</span><span class="p">]</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.after_execute.params.conn"></span><strong>conn</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.after_execute.params.conn">¶</a> &#8211; <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.after_execute.params.clauseelement"></span><strong>clauseelement</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.after_execute.params.clauseelement">¶</a> &#8211; SQL expression construct, <a class="reference internal" href="internals.html#sqlalchemy.engine.interfaces.Compiled" title="sqlalchemy.engine.interfaces.Compiled"><code class="xref py py-class docutils literal"><span class="pre">Compiled</span></code></a>
+instance, or string statement passed to <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection.execute" title="sqlalchemy.engine.Connection.execute"><code class="xref py py-meth docutils literal"><span class="pre">Connection.execute()</span></code></a>.</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.after_execute.params.multiparams"></span><strong>multiparams</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.after_execute.params.multiparams">¶</a> &#8211; Multiple parameter sets, a list of dictionaries.</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.after_execute.params.params"></span><strong>params</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.after_execute.params.params">¶</a> &#8211; Single parameter set, a single dictionary.</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.after_execute.params.result"></span><strong>result</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.after_execute.params.result">¶</a> &#8211; <a class="reference internal" href="connections.html#sqlalchemy.engine.ResultProxy" title="sqlalchemy.engine.ResultProxy"><code class="xref py py-class docutils literal"><span class="pre">ResultProxy</span></code></a> generated by the execution.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.ConnectionEvents.before_cursor_execute">
+<code class="descname">before_cursor_execute</code><span class="sig-paren">(</span><em>conn</em>, <em>cursor</em>, <em>statement</em>, <em>parameters</em>, <em>context</em>, <em>executemany</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.ConnectionEvents.before_cursor_execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intercept low-level cursor execute() events before execution,
+receiving the string SQL statement and DBAPI-specific parameter list to
+be invoked against a cursor.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;before_cursor_execute&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_before_cursor_execute</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">cursor</span><span class="p">,</span> <span class="n">statement</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">executemany</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;before_cursor_execute&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span>
+
+<span class="c"># named argument style (new in 0.9)</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;before_cursor_execute&#39;</span><span class="p">,</span> <span class="n">named</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_before_cursor_execute</span><span class="p">(</span><span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;before_cursor_execute&#39; event&quot;</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">kw</span><span class="p">[</span><span class="s">&#39;conn&#39;</span><span class="p">]</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">kw</span><span class="p">[</span><span class="s">&#39;cursor&#39;</span><span class="p">]</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<p>This event is a good choice for logging as well as late modifications
+to the SQL string.  It&#8217;s less ideal for parameter modifications except
+for those which are specific to a target backend.</p>
+<p>This event can be optionally established with the <code class="docutils literal"><span class="pre">retval=True</span></code>
+flag.  The <code class="docutils literal"><span class="pre">statement</span></code> and <code class="docutils literal"><span class="pre">parameters</span></code> arguments should be
+returned as a two-tuple in this case:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">Engine</span><span class="p">,</span> <span class="s">&quot;before_cursor_execute&quot;</span><span class="p">,</span> <span class="n">retval</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">before_cursor_execute</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">cursor</span><span class="p">,</span> <span class="n">statement</span><span class="p">,</span>
+                <span class="n">parameters</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">executemany</span><span class="p">):</span>
+    <span class="c"># do something with statement, parameters</span>
+    <span class="k">return</span> <span class="n">statement</span><span class="p">,</span> <span class="n">parameters</span></pre></div>
+</div>
+<p>See the example at <a class="reference internal" href="#sqlalchemy.events.ConnectionEvents" title="sqlalchemy.events.ConnectionEvents"><code class="xref py py-class docutils literal"><span class="pre">ConnectionEvents</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.before_cursor_execute.params.conn"></span><strong>conn</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.before_cursor_execute.params.conn">¶</a> &#8211; <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.before_cursor_execute.params.cursor"></span><strong>cursor</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.before_cursor_execute.params.cursor">¶</a> &#8211; DBAPI cursor object</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.before_cursor_execute.params.statement"></span><strong>statement</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.before_cursor_execute.params.statement">¶</a> &#8211; string SQL statement, as to be passed to the DBAPI</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.before_cursor_execute.params.parameters"></span><strong>parameters</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.before_cursor_execute.params.parameters">¶</a> &#8211; Dictionary, tuple, or list of parameters being
+passed to the <code class="docutils literal"><span class="pre">execute()</span></code> or <code class="docutils literal"><span class="pre">executemany()</span></code> method of the
+DBAPI <code class="docutils literal"><span class="pre">cursor</span></code>.  In some cases may be <code class="docutils literal"><span class="pre">None</span></code>.</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.before_cursor_execute.params.context"></span><strong>context</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.before_cursor_execute.params.context">¶</a> &#8211; <a class="reference internal" href="internals.html#sqlalchemy.engine.interfaces.ExecutionContext" title="sqlalchemy.engine.interfaces.ExecutionContext"><code class="xref py py-class docutils literal"><span class="pre">ExecutionContext</span></code></a> object in use.  May
+be <code class="docutils literal"><span class="pre">None</span></code>.</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.before_cursor_execute.params.executemany"></span><strong>executemany</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.before_cursor_execute.params.executemany">¶</a> &#8211; boolean, if <code class="docutils literal"><span class="pre">True</span></code>, this is an <code class="docutils literal"><span class="pre">executemany()</span></code>
+call, if <code class="docutils literal"><span class="pre">False</span></code>, this is an <code class="docutils literal"><span class="pre">execute()</span></code> call.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>See also:</p>
+<p><a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.before_execute" title="sqlalchemy.events.ConnectionEvents.before_execute"><code class="xref py py-meth docutils literal"><span class="pre">before_execute()</span></code></a></p>
+<p><a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.after_cursor_execute" title="sqlalchemy.events.ConnectionEvents.after_cursor_execute"><code class="xref py py-meth docutils literal"><span class="pre">after_cursor_execute()</span></code></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.ConnectionEvents.before_execute">
+<code class="descname">before_execute</code><span class="sig-paren">(</span><em>conn</em>, <em>clauseelement</em>, <em>multiparams</em>, <em>params</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.ConnectionEvents.before_execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intercept high level execute() events, receiving uncompiled
+SQL constructs and other objects prior to rendering into SQL.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;before_execute&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_before_execute</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">clauseelement</span><span class="p">,</span> <span class="n">multiparams</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;before_execute&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span>
+
+<span class="c"># named argument style (new in 0.9)</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;before_execute&#39;</span><span class="p">,</span> <span class="n">named</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_before_execute</span><span class="p">(</span><span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;before_execute&#39; event&quot;</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">kw</span><span class="p">[</span><span class="s">&#39;conn&#39;</span><span class="p">]</span>
+    <span class="n">clauseelement</span> <span class="o">=</span> <span class="n">kw</span><span class="p">[</span><span class="s">&#39;clauseelement&#39;</span><span class="p">]</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<p>This event is good for debugging SQL compilation issues as well
+as early manipulation of the parameters being sent to the database,
+as the parameter lists will be in a consistent format here.</p>
+<p>This event can be optionally established with the <code class="docutils literal"><span class="pre">retval=True</span></code>
+flag.  The <code class="docutils literal"><span class="pre">clauseelement</span></code>, <code class="docutils literal"><span class="pre">multiparams</span></code>, and <code class="docutils literal"><span class="pre">params</span></code>
+arguments should be returned as a three-tuple in this case:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">Engine</span><span class="p">,</span> <span class="s">&quot;before_execute&quot;</span><span class="p">,</span> <span class="n">retval</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">before_execute</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">conn</span><span class="p">,</span> <span class="n">clauseelement</span><span class="p">,</span> <span class="n">multiparams</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+    <span class="c"># do something with clauseelement, multiparams, params</span>
+    <span class="k">return</span> <span class="n">clauseelement</span><span class="p">,</span> <span class="n">multiparams</span><span class="p">,</span> <span class="n">params</span></pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.before_execute.params.conn"></span><strong>conn</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.before_execute.params.conn">¶</a> &#8211; <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.before_execute.params.clauseelement"></span><strong>clauseelement</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.before_execute.params.clauseelement">¶</a> &#8211; SQL expression construct, <a class="reference internal" href="internals.html#sqlalchemy.engine.interfaces.Compiled" title="sqlalchemy.engine.interfaces.Compiled"><code class="xref py py-class docutils literal"><span class="pre">Compiled</span></code></a>
+instance, or string statement passed to <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection.execute" title="sqlalchemy.engine.Connection.execute"><code class="xref py py-meth docutils literal"><span class="pre">Connection.execute()</span></code></a>.</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.before_execute.params.multiparams"></span><strong>multiparams</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.before_execute.params.multiparams">¶</a> &#8211; Multiple parameter sets, a list of dictionaries.</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.before_execute.params.params"></span><strong>params</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.before_execute.params.params">¶</a> &#8211; Single parameter set, a single dictionary.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>See also:</p>
+<p><a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.before_cursor_execute" title="sqlalchemy.events.ConnectionEvents.before_cursor_execute"><code class="xref py py-meth docutils literal"><span class="pre">before_cursor_execute()</span></code></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.ConnectionEvents.begin">
+<code class="descname">begin</code><span class="sig-paren">(</span><em>conn</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.ConnectionEvents.begin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intercept begin() events.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;begin&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_begin</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;begin&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><span class="target" id="sqlalchemy.events.ConnectionEvents.begin.params.conn"></span><strong>conn</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.begin.params.conn">¶</a> &#8211; <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.ConnectionEvents.begin_twophase">
+<code class="descname">begin_twophase</code><span class="sig-paren">(</span><em>conn</em>, <em>xid</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.ConnectionEvents.begin_twophase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intercept begin_twophase() events.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;begin_twophase&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_begin_twophase</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">xid</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;begin_twophase&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.begin_twophase.params.conn"></span><strong>conn</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.begin_twophase.params.conn">¶</a> &#8211; <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.begin_twophase.params.xid"></span><strong>xid</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.begin_twophase.params.xid">¶</a> &#8211; two-phase XID identifier</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.ConnectionEvents.commit">
+<code class="descname">commit</code><span class="sig-paren">(</span><em>conn</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.ConnectionEvents.commit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intercept commit() events, as initiated by a
+<a class="reference internal" href="connections.html#sqlalchemy.engine.Transaction" title="sqlalchemy.engine.Transaction"><code class="xref py py-class docutils literal"><span class="pre">Transaction</span></code></a>.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;commit&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_commit</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;commit&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<p>Note that the <a class="reference internal" href="pooling.html#sqlalchemy.pool.Pool" title="sqlalchemy.pool.Pool"><code class="xref py py-class docutils literal"><span class="pre">Pool</span></code></a> may also &#8220;auto-commit&#8221;
+a DBAPI connection upon checkin, if the <code class="docutils literal"><span class="pre">reset_on_return</span></code>
+flag is set to the value <code class="docutils literal"><span class="pre">'commit'</span></code>.  To intercept this
+commit, use the <a class="reference internal" href="#sqlalchemy.events.PoolEvents.reset" title="sqlalchemy.events.PoolEvents.reset"><code class="xref py py-meth docutils literal"><span class="pre">PoolEvents.reset()</span></code></a> hook.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><span class="target" id="sqlalchemy.events.ConnectionEvents.commit.params.conn"></span><strong>conn</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.commit.params.conn">¶</a> &#8211; <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.ConnectionEvents.commit_twophase">
+<code class="descname">commit_twophase</code><span class="sig-paren">(</span><em>conn</em>, <em>xid</em>, <em>is_prepared</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.ConnectionEvents.commit_twophase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intercept commit_twophase() events.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;commit_twophase&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_commit_twophase</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">xid</span><span class="p">,</span> <span class="n">is_prepared</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;commit_twophase&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.commit_twophase.params.conn"></span><strong>conn</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.commit_twophase.params.conn">¶</a> &#8211; <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.commit_twophase.params.xid"></span><strong>xid</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.commit_twophase.params.xid">¶</a> &#8211; two-phase XID identifier</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.commit_twophase.params.is_prepared"></span><strong>is_prepared</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.commit_twophase.params.is_prepared">¶</a> &#8211; boolean, indicates if
+<a class="reference internal" href="connections.html#sqlalchemy.engine.TwoPhaseTransaction.prepare" title="sqlalchemy.engine.TwoPhaseTransaction.prepare"><code class="xref py py-meth docutils literal"><span class="pre">TwoPhaseTransaction.prepare()</span></code></a> was called.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.ConnectionEvents.dbapi_error">
+<code class="descname">dbapi_error</code><span class="sig-paren">(</span><em>conn</em>, <em>cursor</em>, <em>statement</em>, <em>parameters</em>, <em>context</em>, <em>exception</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.ConnectionEvents.dbapi_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intercept a raw DBAPI error.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;dbapi_error&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_dbapi_error</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">cursor</span><span class="p">,</span> <span class="n">statement</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">exception</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;dbapi_error&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span>
+
+<span class="c"># named argument style (new in 0.9)</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;dbapi_error&#39;</span><span class="p">,</span> <span class="n">named</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_dbapi_error</span><span class="p">(</span><span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;dbapi_error&#39; event&quot;</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">kw</span><span class="p">[</span><span class="s">&#39;conn&#39;</span><span class="p">]</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">kw</span><span class="p">[</span><span class="s">&#39;cursor&#39;</span><span class="p">]</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<p>This event is called with the DBAPI exception instance
+received from the DBAPI itself, <em>before</em> SQLAlchemy wraps the
+exception with it&#8217;s own exception wrappers, and before any
+other operations are performed on the DBAPI cursor; the
+existing transaction remains in effect as well as any state
+on the cursor.</p>
+<p>The use case here is to inject low-level exception handling
+into an <a class="reference internal" href="connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a>, typically for logging and
+debugging purposes.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Code should <strong>not</strong> modify
+any state or throw any exceptions here as this will
+interfere with SQLAlchemy&#8217;s cleanup and error handling
+routines.  For exception modification, please refer to the
+new <a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.handle_error" title="sqlalchemy.events.ConnectionEvents.handle_error"><code class="xref py py-meth docutils literal"><span class="pre">ConnectionEvents.handle_error()</span></code></a> event.</p>
+</div>
+<p>Subsequent to this hook, SQLAlchemy may attempt any
+number of operations on the connection/cursor, including
+closing the cursor, rolling back of the transaction in the
+case of connectionless execution, and disposing of the entire
+connection pool if a &#8220;disconnect&#8221; was detected.   The
+exception is then wrapped in a SQLAlchemy DBAPI exception
+wrapper and re-thrown.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.dbapi_error.params.conn"></span><strong>conn</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.dbapi_error.params.conn">¶</a> &#8211; <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.dbapi_error.params.cursor"></span><strong>cursor</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.dbapi_error.params.cursor">¶</a> &#8211; DBAPI cursor object</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.dbapi_error.params.statement"></span><strong>statement</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.dbapi_error.params.statement">¶</a> &#8211; string SQL statement, as passed to the DBAPI</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.dbapi_error.params.parameters"></span><strong>parameters</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.dbapi_error.params.parameters">¶</a> &#8211; Dictionary, tuple, or list of parameters being
+passed to the <code class="docutils literal"><span class="pre">execute()</span></code> or <code class="docutils literal"><span class="pre">executemany()</span></code> method of the
+DBAPI <code class="docutils literal"><span class="pre">cursor</span></code>.  In some cases may be <code class="docutils literal"><span class="pre">None</span></code>.</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.dbapi_error.params.context"></span><strong>context</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.dbapi_error.params.context">¶</a> &#8211; <a class="reference internal" href="internals.html#sqlalchemy.engine.interfaces.ExecutionContext" title="sqlalchemy.engine.interfaces.ExecutionContext"><code class="xref py py-class docutils literal"><span class="pre">ExecutionContext</span></code></a> object in use.  May
+be <code class="docutils literal"><span class="pre">None</span></code>.</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.dbapi_error.params.exception"></span><strong>exception</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.dbapi_error.params.exception">¶</a> &#8211; The <strong>unwrapped</strong> exception emitted directly from the
+DBAPI.  The class here is specific to the DBAPI module in use.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="deprecated">
+<p><span class="versionmodified">Deprecated since version 0.9.7: </span>- replaced by
+<a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.handle_error" title="sqlalchemy.events.ConnectionEvents.handle_error"><code class="xref py py-meth docutils literal"><span class="pre">ConnectionEvents.handle_error()</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.ConnectionEvents.engine_connect">
+<code class="descname">engine_connect</code><span class="sig-paren">(</span><em>conn</em>, <em>branch</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.ConnectionEvents.engine_connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intercept the creation of a new <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a>.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;engine_connect&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_engine_connect</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">branch</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;engine_connect&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<p>This event is called typically as the direct result of calling
+the <a class="reference internal" href="connections.html#sqlalchemy.engine.Engine.connect" title="sqlalchemy.engine.Engine.connect"><code class="xref py py-meth docutils literal"><span class="pre">Engine.connect()</span></code></a> method.</p>
+<p>It differs from the <a class="reference internal" href="#sqlalchemy.events.PoolEvents.connect" title="sqlalchemy.events.PoolEvents.connect"><code class="xref py py-meth docutils literal"><span class="pre">PoolEvents.connect()</span></code></a> method, which
+refers to the actual connection to a database at the DBAPI level;
+a DBAPI connection may be pooled and reused for many operations.
+In contrast, this event refers only to the production of a higher level
+<a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> wrapper around such a DBAPI connection.</p>
+<p>It also differs from the <a class="reference internal" href="#sqlalchemy.events.PoolEvents.checkout" title="sqlalchemy.events.PoolEvents.checkout"><code class="xref py py-meth docutils literal"><span class="pre">PoolEvents.checkout()</span></code></a> event
+in that it is specific to the <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object, not the
+DBAPI connection that <a class="reference internal" href="#sqlalchemy.events.PoolEvents.checkout" title="sqlalchemy.events.PoolEvents.checkout"><code class="xref py py-meth docutils literal"><span class="pre">PoolEvents.checkout()</span></code></a> deals with, although
+this DBAPI connection is available here via the
+<a class="reference internal" href="connections.html#sqlalchemy.engine.Connection.connection" title="sqlalchemy.engine.Connection.connection"><code class="xref py py-attr docutils literal"><span class="pre">Connection.connection</span></code></a> attribute.  But note there can in fact
+be multiple <a class="reference internal" href="#sqlalchemy.events.PoolEvents.checkout" title="sqlalchemy.events.PoolEvents.checkout"><code class="xref py py-meth docutils literal"><span class="pre">PoolEvents.checkout()</span></code></a> events within the lifespan
+of a single <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object, if that <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a>
+is invalidated and re-established.  There can also be multiple
+<a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> objects generated for the same already-checked-out
+DBAPI connection, in the case that a &#8220;branch&#8221; of a <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a>
+is produced.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.engine_connect.params.conn"></span><strong>conn</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.engine_connect.params.conn">¶</a> &#8211; <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object.</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.engine_connect.params.branch"></span><strong>branch</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.engine_connect.params.branch">¶</a> &#8211; if True, this is a &#8220;branch&#8221; of an existing
+<a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a>.  A branch is generated within the course
+of a statement execution to invoke supplemental statements, most
+typically to pre-execute a SELECT of a default value for the purposes
+of an INSERT statement.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.9.0.</span></p>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p><a class="reference internal" href="#sqlalchemy.events.PoolEvents.checkout" title="sqlalchemy.events.PoolEvents.checkout"><code class="xref py py-meth docutils literal"><span class="pre">PoolEvents.checkout()</span></code></a> the lower-level pool checkout event
+for an individual DBAPI connection</p>
+<p class="last"><a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.set_connection_execution_options" title="sqlalchemy.events.ConnectionEvents.set_connection_execution_options"><code class="xref py py-meth docutils literal"><span class="pre">ConnectionEvents.set_connection_execution_options()</span></code></a> - a copy
+of a <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> is also made when the
+<a class="reference internal" href="connections.html#sqlalchemy.engine.Connection.execution_options" title="sqlalchemy.engine.Connection.execution_options"><code class="xref py py-meth docutils literal"><span class="pre">Connection.execution_options()</span></code></a> method is called.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.ConnectionEvents.engine_disposed">
+<code class="descname">engine_disposed</code><span class="sig-paren">(</span><em>engine</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.ConnectionEvents.engine_disposed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intercept when the <a class="reference internal" href="connections.html#sqlalchemy.engine.Engine.dispose" title="sqlalchemy.engine.Engine.dispose"><code class="xref py py-meth docutils literal"><span class="pre">Engine.dispose()</span></code></a> method is called.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;engine_disposed&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_engine_disposed</span><span class="p">(</span><span class="n">engine</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;engine_disposed&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<p>The <a class="reference internal" href="connections.html#sqlalchemy.engine.Engine.dispose" title="sqlalchemy.engine.Engine.dispose"><code class="xref py py-meth docutils literal"><span class="pre">Engine.dispose()</span></code></a> method instructs the engine to
+&#8220;dispose&#8221; of it&#8217;s connection pool (e.g. <a class="reference internal" href="pooling.html#sqlalchemy.pool.Pool" title="sqlalchemy.pool.Pool"><code class="xref py py-class docutils literal"><span class="pre">Pool</span></code></a>), and
+replaces it with a new one.  Disposing of the old pool has the
+effect that existing checked-in connections are closed.  The new
+pool does not establish any new connections until it is first used.</p>
+<p>This event can be used to indicate that resources related to the
+<a class="reference internal" href="connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a> should also be cleaned up, keeping in mind that the
+<a class="reference internal" href="connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a> can still be used for new requests in which case
+it re-acquires connection resources.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 1.0.5.</span></p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.ConnectionEvents.handle_error">
+<code class="descname">handle_error</code><span class="sig-paren">(</span><em>exception_context</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.ConnectionEvents.handle_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intercept all exceptions processed by the <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a>.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;handle_error&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_handle_error</span><span class="p">(</span><span class="n">exception_context</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;handle_error&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<p>This includes all exceptions emitted by the DBAPI as well as
+within SQLAlchemy&#8217;s statement invocation process, including
+encoding errors and other statement validation errors.  Other areas
+in which the event is invoked include transaction begin and end,
+result row fetching, cursor creation.</p>
+<p>Note that <a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.handle_error" title="sqlalchemy.events.ConnectionEvents.handle_error"><code class="xref py py-meth docutils literal"><span class="pre">handle_error()</span></code></a> may support new kinds of exceptions
+and new calling scenarios at <em>any time</em>.  Code which uses this
+event must expect new calling patterns to be present in minor
+releases.</p>
+<p>To support the wide variety of members that correspond to an exception,
+as well as to allow extensibility of the event without backwards
+incompatibility, the sole argument received is an instance of
+<a class="reference internal" href="connections.html#sqlalchemy.engine.ExceptionContext" title="sqlalchemy.engine.ExceptionContext"><code class="xref py py-class docutils literal"><span class="pre">ExceptionContext</span></code></a>.   This object contains data members
+representing detail about the exception.</p>
+<p>Use cases supported by this hook include:</p>
+<ul class="simple">
+<li>read-only, low-level exception handling for logging and
+debugging purposes</li>
+<li>exception re-writing</li>
+</ul>
+<p>The hook is called while the cursor from the failed operation
+(if any) is still open and accessible.   Special cleanup operations
+can be called on this cursor; SQLAlchemy will attempt to close
+this cursor subsequent to this hook being invoked.  If the connection
+is in &#8220;autocommit&#8221; mode, the transaction also remains open within
+the scope of this hook; the rollback of the per-statement transaction
+also occurs after the hook is called.</p>
+<p>The user-defined event handler has two options for replacing
+the SQLAlchemy-constructed exception into one that is user
+defined.   It can either raise this new exception directly, in
+which case all further event listeners are bypassed and the
+exception will be raised, after appropriate cleanup as taken
+place:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">Engine</span><span class="p">,</span> <span class="s">&quot;handle_error&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">handle_exception</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">original_exception</span><span class="p">,</span>
+        <span class="n">psycopg2</span><span class="o">.</span><span class="n">OperationalError</span><span class="p">)</span> <span class="ow">and</span> \
+        <span class="s">&quot;failed&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">original_exception</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">MySpecialException</span><span class="p">(</span><span class="s">&quot;failed operation&quot;</span><span class="p">)</span></pre></div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Because the <a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.handle_error" title="sqlalchemy.events.ConnectionEvents.handle_error"><code class="xref py py-meth docutils literal"><span class="pre">ConnectionEvents.handle_error()</span></code></a>
+event specifically provides for exceptions to be re-thrown as
+the ultimate exception raised by the failed statement,
+<strong>stack traces will be misleading</strong> if the user-defined event
+handler itself fails and throws an unexpected exception;
+the stack trace may not illustrate the actual code line that
+failed!  It is advised to code carefully here and use
+logging and/or inline debugging if unexpected exceptions are
+occurring.</p>
+</div>
+<p>Alternatively, a &#8220;chained&#8221; style of event handling can be
+used, by configuring the handler with the <code class="docutils literal"><span class="pre">retval=True</span></code>
+modifier and returning the new exception instance from the
+function.  In this case, event handling will continue onto the
+next handler.   The &#8220;chained&#8221; exception is available using
+<a class="reference internal" href="connections.html#sqlalchemy.engine.ExceptionContext.chained_exception" title="sqlalchemy.engine.ExceptionContext.chained_exception"><code class="xref py py-attr docutils literal"><span class="pre">ExceptionContext.chained_exception</span></code></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">Engine</span><span class="p">,</span> <span class="s">&quot;handle_error&quot;</span><span class="p">,</span> <span class="n">retval</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">handle_exception</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">context</span><span class="o">.</span><span class="n">chained_exception</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> \
+        <span class="s">&quot;special&quot;</span> <span class="ow">in</span> <span class="n">context</span><span class="o">.</span><span class="n">chained_exception</span><span class="o">.</span><span class="n">message</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">MySpecialException</span><span class="p">(</span><span class="s">&quot;failed&quot;</span><span class="p">,</span>
+            <span class="n">cause</span><span class="o">=</span><span class="n">context</span><span class="o">.</span><span class="n">chained_exception</span><span class="p">)</span></pre></div>
+</div>
+<p>Handlers that return <code class="docutils literal"><span class="pre">None</span></code> may remain within this chain; the
+last non-<code class="docutils literal"><span class="pre">None</span></code> return value is the one that continues to be
+passed to the next handler.</p>
+<p>When a custom exception is raised or returned, SQLAlchemy raises
+this new exception as-is, it is not wrapped by any SQLAlchemy
+object.  If the exception is not a subclass of
+<a class="reference internal" href="exceptions.html#sqlalchemy.exc.StatementError" title="sqlalchemy.exc.StatementError"><code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.exc.StatementError</span></code></a>,
+certain features may not be available; currently this includes
+the ORM&#8217;s feature of adding a detail hint about &#8220;autoflush&#8221; to
+exceptions raised within the autoflush process.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><span class="target" id="sqlalchemy.events.ConnectionEvents.handle_error.params.context"></span><strong>context</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.handle_error.params.context">¶</a> &#8211; an <a class="reference internal" href="connections.html#sqlalchemy.engine.ExceptionContext" title="sqlalchemy.engine.ExceptionContext"><code class="xref py py-class docutils literal"><span class="pre">ExceptionContext</span></code></a> object.  See this
+class for details on all available members.</td>
+</tr>
+</tbody>
+</table>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.9.7: </span>Added the
+<a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.handle_error" title="sqlalchemy.events.ConnectionEvents.handle_error"><code class="xref py py-meth docutils literal"><span class="pre">ConnectionEvents.handle_error()</span></code></a> hook.</p>
+</div>
+<div class="versionchanged">
+<p><span class="versionmodified">Changed in version 1.0.0: </span>The <a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.handle_error" title="sqlalchemy.events.ConnectionEvents.handle_error"><code class="xref py py-meth docutils literal"><span class="pre">handle_error()</span></code></a> event is now
+invoked when an <a class="reference internal" href="connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a> fails during the initial
+call to <a class="reference internal" href="connections.html#sqlalchemy.engine.Engine.connect" title="sqlalchemy.engine.Engine.connect"><code class="xref py py-meth docutils literal"><span class="pre">Engine.connect()</span></code></a>, as well as when a
+<a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object encounters an error during a
+reconnect operation.</p>
+</div>
+<div class="versionchanged">
+<p><span class="versionmodified">Changed in version 1.0.0: </span>The <a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.handle_error" title="sqlalchemy.events.ConnectionEvents.handle_error"><code class="xref py py-meth docutils literal"><span class="pre">handle_error()</span></code></a> event is
+not fired off when a dialect makes use of the
+<code class="docutils literal"><span class="pre">skip_user_error_events</span></code> execution option.   This is used
+by dialects which intend to catch SQLAlchemy-specific exceptions
+within specific operations, such as when the MySQL dialect detects
+a table not present within the <code class="docutils literal"><span class="pre">has_table()</span></code> dialect method.
+Prior to 1.0.0, code which implements <a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.handle_error" title="sqlalchemy.events.ConnectionEvents.handle_error"><code class="xref py py-meth docutils literal"><span class="pre">handle_error()</span></code></a> needs
+to ensure that exceptions thrown in these scenarios are re-raised
+without modification.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.ConnectionEvents.prepare_twophase">
+<code class="descname">prepare_twophase</code><span class="sig-paren">(</span><em>conn</em>, <em>xid</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.ConnectionEvents.prepare_twophase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intercept prepare_twophase() events.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;prepare_twophase&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_prepare_twophase</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">xid</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;prepare_twophase&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.prepare_twophase.params.conn"></span><strong>conn</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.prepare_twophase.params.conn">¶</a> &#8211; <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.prepare_twophase.params.xid"></span><strong>xid</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.prepare_twophase.params.xid">¶</a> &#8211; two-phase XID identifier</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.ConnectionEvents.release_savepoint">
+<code class="descname">release_savepoint</code><span class="sig-paren">(</span><em>conn</em>, <em>name</em>, <em>context</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.ConnectionEvents.release_savepoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intercept release_savepoint() events.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;release_savepoint&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_release_savepoint</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;release_savepoint&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.release_savepoint.params.conn"></span><strong>conn</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.release_savepoint.params.conn">¶</a> &#8211; <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.release_savepoint.params.name"></span><strong>name</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.release_savepoint.params.name">¶</a> &#8211; specified name used for the savepoint.</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.release_savepoint.params.context"></span><strong>context</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.release_savepoint.params.context">¶</a> &#8211; <a class="reference internal" href="internals.html#sqlalchemy.engine.interfaces.ExecutionContext" title="sqlalchemy.engine.interfaces.ExecutionContext"><code class="xref py py-class docutils literal"><span class="pre">ExecutionContext</span></code></a> in use.  May be <code class="docutils literal"><span class="pre">None</span></code>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.ConnectionEvents.rollback">
+<code class="descname">rollback</code><span class="sig-paren">(</span><em>conn</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.ConnectionEvents.rollback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intercept rollback() events, as initiated by a
+<a class="reference internal" href="connections.html#sqlalchemy.engine.Transaction" title="sqlalchemy.engine.Transaction"><code class="xref py py-class docutils literal"><span class="pre">Transaction</span></code></a>.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;rollback&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_rollback</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;rollback&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<p>Note that the <a class="reference internal" href="pooling.html#sqlalchemy.pool.Pool" title="sqlalchemy.pool.Pool"><code class="xref py py-class docutils literal"><span class="pre">Pool</span></code></a> also &#8220;auto-rolls back&#8221;
+a DBAPI connection upon checkin, if the <code class="docutils literal"><span class="pre">reset_on_return</span></code>
+flag is set to its default value of <code class="docutils literal"><span class="pre">'rollback'</span></code>.
+To intercept this
+rollback, use the <a class="reference internal" href="#sqlalchemy.events.PoolEvents.reset" title="sqlalchemy.events.PoolEvents.reset"><code class="xref py py-meth docutils literal"><span class="pre">PoolEvents.reset()</span></code></a> hook.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><span class="target" id="sqlalchemy.events.ConnectionEvents.rollback.params.conn"></span><strong>conn</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.rollback.params.conn">¶</a> &#8211; <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#sqlalchemy.events.PoolEvents.reset" title="sqlalchemy.events.PoolEvents.reset"><code class="xref py py-meth docutils literal"><span class="pre">PoolEvents.reset()</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.ConnectionEvents.rollback_savepoint">
+<code class="descname">rollback_savepoint</code><span class="sig-paren">(</span><em>conn</em>, <em>name</em>, <em>context</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.ConnectionEvents.rollback_savepoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intercept rollback_savepoint() events.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;rollback_savepoint&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_rollback_savepoint</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;rollback_savepoint&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.rollback_savepoint.params.conn"></span><strong>conn</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.rollback_savepoint.params.conn">¶</a> &#8211; <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.rollback_savepoint.params.name"></span><strong>name</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.rollback_savepoint.params.name">¶</a> &#8211; specified name used for the savepoint.</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.rollback_savepoint.params.context"></span><strong>context</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.rollback_savepoint.params.context">¶</a> &#8211; <a class="reference internal" href="internals.html#sqlalchemy.engine.interfaces.ExecutionContext" title="sqlalchemy.engine.interfaces.ExecutionContext"><code class="xref py py-class docutils literal"><span class="pre">ExecutionContext</span></code></a> in use.  May be <code class="docutils literal"><span class="pre">None</span></code>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.ConnectionEvents.rollback_twophase">
+<code class="descname">rollback_twophase</code><span class="sig-paren">(</span><em>conn</em>, <em>xid</em>, <em>is_prepared</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.ConnectionEvents.rollback_twophase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intercept rollback_twophase() events.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;rollback_twophase&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_rollback_twophase</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">xid</span><span class="p">,</span> <span class="n">is_prepared</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;rollback_twophase&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.rollback_twophase.params.conn"></span><strong>conn</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.rollback_twophase.params.conn">¶</a> &#8211; <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.rollback_twophase.params.xid"></span><strong>xid</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.rollback_twophase.params.xid">¶</a> &#8211; two-phase XID identifier</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.rollback_twophase.params.is_prepared"></span><strong>is_prepared</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.rollback_twophase.params.is_prepared">¶</a> &#8211; boolean, indicates if
+<a class="reference internal" href="connections.html#sqlalchemy.engine.TwoPhaseTransaction.prepare" title="sqlalchemy.engine.TwoPhaseTransaction.prepare"><code class="xref py py-meth docutils literal"><span class="pre">TwoPhaseTransaction.prepare()</span></code></a> was called.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.ConnectionEvents.savepoint">
+<code class="descname">savepoint</code><span class="sig-paren">(</span><em>conn</em>, <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.ConnectionEvents.savepoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intercept savepoint() events.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;savepoint&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_savepoint</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;savepoint&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.savepoint.params.conn"></span><strong>conn</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.savepoint.params.conn">¶</a> &#8211; <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.savepoint.params.name"></span><strong>name</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.savepoint.params.name">¶</a> &#8211; specified name used for the savepoint.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.ConnectionEvents.set_connection_execution_options">
+<code class="descname">set_connection_execution_options</code><span class="sig-paren">(</span><em>conn</em>, <em>opts</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.ConnectionEvents.set_connection_execution_options" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intercept when the <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection.execution_options" title="sqlalchemy.engine.Connection.execution_options"><code class="xref py py-meth docutils literal"><span class="pre">Connection.execution_options()</span></code></a>
+method is called.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;set_connection_execution_options&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_set_connection_execution_options</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">opts</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;set_connection_execution_options&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<p>This method is called after the new <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> has been
+produced, with the newly updated execution options collection, but
+before the <a class="reference internal" href="internals.html#sqlalchemy.engine.interfaces.Dialect" title="sqlalchemy.engine.interfaces.Dialect"><code class="xref py py-class docutils literal"><span class="pre">Dialect</span></code></a> has acted upon any of those new options.</p>
+<p>Note that this method is not called when a new <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a>
+is produced which is inheriting execution options from its parent
+<a class="reference internal" href="connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a>; to intercept this condition, use the
+<a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.engine_connect" title="sqlalchemy.events.ConnectionEvents.engine_connect"><code class="xref py py-meth docutils literal"><span class="pre">ConnectionEvents.engine_connect()</span></code></a> event.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.set_connection_execution_options.params.conn"></span><strong>conn</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.set_connection_execution_options.params.conn">¶</a> &#8211; The newly copied <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.set_connection_execution_options.params.opts"></span><strong>opts</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.set_connection_execution_options.params.opts">¶</a> &#8211; dictionary of options that were passed to the
+<a class="reference internal" href="connections.html#sqlalchemy.engine.Connection.execution_options" title="sqlalchemy.engine.Connection.execution_options"><code class="xref py py-meth docutils literal"><span class="pre">Connection.execution_options()</span></code></a> method.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.9.0.</span></p>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.set_engine_execution_options" title="sqlalchemy.events.ConnectionEvents.set_engine_execution_options"><code class="xref py py-meth docutils literal"><span class="pre">ConnectionEvents.set_engine_execution_options()</span></code></a> - event
+which is called when <a class="reference internal" href="connections.html#sqlalchemy.engine.Engine.execution_options" title="sqlalchemy.engine.Engine.execution_options"><code class="xref py py-meth docutils literal"><span class="pre">Engine.execution_options()</span></code></a> is called.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.ConnectionEvents.set_engine_execution_options">
+<code class="descname">set_engine_execution_options</code><span class="sig-paren">(</span><em>engine</em>, <em>opts</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.ConnectionEvents.set_engine_execution_options" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intercept when the <a class="reference internal" href="connections.html#sqlalchemy.engine.Engine.execution_options" title="sqlalchemy.engine.Engine.execution_options"><code class="xref py py-meth docutils literal"><span class="pre">Engine.execution_options()</span></code></a>
+method is called.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;set_engine_execution_options&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_set_engine_execution_options</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">opts</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;set_engine_execution_options&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<p>The <a class="reference internal" href="connections.html#sqlalchemy.engine.Engine.execution_options" title="sqlalchemy.engine.Engine.execution_options"><code class="xref py py-meth docutils literal"><span class="pre">Engine.execution_options()</span></code></a> method produces a shallow
+copy of the <a class="reference internal" href="connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a> which stores the new options.  That new
+<a class="reference internal" href="connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a> is passed here.   A particular application of this
+method is to add a <a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.engine_connect" title="sqlalchemy.events.ConnectionEvents.engine_connect"><code class="xref py py-meth docutils literal"><span class="pre">ConnectionEvents.engine_connect()</span></code></a> event
+handler to the given <a class="reference internal" href="connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a> which will perform some per-
+<a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> task specific to these execution options.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.set_engine_execution_options.params.conn"></span><strong>conn</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.set_engine_execution_options.params.conn">¶</a> &#8211; The newly copied <a class="reference internal" href="connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a> object</li>
+<li><span class="target" id="sqlalchemy.events.ConnectionEvents.set_engine_execution_options.params.opts"></span><strong>opts</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.ConnectionEvents.set_engine_execution_options.params.opts">¶</a> &#8211; dictionary of options that were passed to the
+<a class="reference internal" href="connections.html#sqlalchemy.engine.Connection.execution_options" title="sqlalchemy.engine.Connection.execution_options"><code class="xref py py-meth docutils literal"><span class="pre">Connection.execution_options()</span></code></a> method.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.9.0.</span></p>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.set_connection_execution_options" title="sqlalchemy.events.ConnectionEvents.set_connection_execution_options"><code class="xref py py-meth docutils literal"><span class="pre">ConnectionEvents.set_connection_execution_options()</span></code></a> - event
+which is called when <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection.execution_options" title="sqlalchemy.engine.Connection.execution_options"><code class="xref py py-meth docutils literal"><span class="pre">Connection.execution_options()</span></code></a> is
+called.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="sqlalchemy.events.DialectEvents">
+<em class="property">class </em><code class="descclassname">sqlalchemy.events.</code><code class="descname">DialectEvents</code><a class="headerlink" href="#sqlalchemy.events.DialectEvents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#sqlalchemy.event.base.Events" title="sqlalchemy.event.base.Events"><code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.event.base.Events</span></code></a></p>
+<p>event interface for execution-replacement functions.</p>
+<p>These events allow direct instrumentation and replacement
+of key dialect functions which interact with the DBAPI.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><a class="reference internal" href="#sqlalchemy.events.DialectEvents" title="sqlalchemy.events.DialectEvents"><code class="xref py py-class docutils literal"><span class="pre">DialectEvents</span></code></a> hooks should be considered <strong>semi-public</strong>
+and experimental.
+These hooks are not for general use and are only for those situations
+where intricate re-statement of DBAPI mechanics must be injected onto
+an existing dialect.  For general-use statement-interception events,
+please use the <a class="reference internal" href="#sqlalchemy.events.ConnectionEvents" title="sqlalchemy.events.ConnectionEvents"><code class="xref py py-class docutils literal"><span class="pre">ConnectionEvents</span></code></a> interface.</p>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p><a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.before_cursor_execute" title="sqlalchemy.events.ConnectionEvents.before_cursor_execute"><code class="xref py py-meth docutils literal"><span class="pre">ConnectionEvents.before_cursor_execute()</span></code></a></p>
+<p><a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.before_execute" title="sqlalchemy.events.ConnectionEvents.before_execute"><code class="xref py py-meth docutils literal"><span class="pre">ConnectionEvents.before_execute()</span></code></a></p>
+<p><a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.after_cursor_execute" title="sqlalchemy.events.ConnectionEvents.after_cursor_execute"><code class="xref py py-meth docutils literal"><span class="pre">ConnectionEvents.after_cursor_execute()</span></code></a></p>
+<p class="last"><a class="reference internal" href="#sqlalchemy.events.ConnectionEvents.after_execute" title="sqlalchemy.events.ConnectionEvents.after_execute"><code class="xref py py-meth docutils literal"><span class="pre">ConnectionEvents.after_execute()</span></code></a></p>
+</div>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.9.4.</span></p>
+</div>
+<dl class="method">
+<dt id="sqlalchemy.events.DialectEvents.do_connect">
+<code class="descname">do_connect</code><span class="sig-paren">(</span><em>dialect</em>, <em>conn_rec</em>, <em>cargs</em>, <em>cparams</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.DialectEvents.do_connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive connection arguments before a connection is made.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;do_connect&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_do_connect</span><span class="p">(</span><span class="n">dialect</span><span class="p">,</span> <span class="n">conn_rec</span><span class="p">,</span> <span class="n">cargs</span><span class="p">,</span> <span class="n">cparams</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;do_connect&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span>
+
+<span class="c"># named argument style (new in 0.9)</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;do_connect&#39;</span><span class="p">,</span> <span class="n">named</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_do_connect</span><span class="p">(</span><span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;do_connect&#39; event&quot;</span>
+    <span class="n">dialect</span> <span class="o">=</span> <span class="n">kw</span><span class="p">[</span><span class="s">&#39;dialect&#39;</span><span class="p">]</span>
+    <span class="n">conn_rec</span> <span class="o">=</span> <span class="n">kw</span><span class="p">[</span><span class="s">&#39;conn_rec&#39;</span><span class="p">]</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<p>Return a DBAPI connection to halt further events from invoking;
+the returned connection will be used.</p>
+<p>Alternatively, the event can manipulate the cargs and/or cparams
+collections; cargs will always be a Python list that can be mutated
+in-place and cparams a Python dictionary.  Return None to
+allow control to pass to the next event handler and ultimately
+to allow the dialect to connect normally, given the updated
+arguments.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 1.0.3.</span></p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.DialectEvents.do_execute">
+<code class="descname">do_execute</code><span class="sig-paren">(</span><em>cursor</em>, <em>statement</em>, <em>parameters</em>, <em>context</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.DialectEvents.do_execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive a cursor to have execute() called.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;do_execute&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_do_execute</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">statement</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;do_execute&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span>
+
+<span class="c"># named argument style (new in 0.9)</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;do_execute&#39;</span><span class="p">,</span> <span class="n">named</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_do_execute</span><span class="p">(</span><span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;do_execute&#39; event&quot;</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">kw</span><span class="p">[</span><span class="s">&#39;cursor&#39;</span><span class="p">]</span>
+    <span class="n">statement</span> <span class="o">=</span> <span class="n">kw</span><span class="p">[</span><span class="s">&#39;statement&#39;</span><span class="p">]</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<p>Return the value True to halt further events from invoking,
+and to indicate that the cursor execution has already taken
+place within the event handler.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.DialectEvents.do_execute_no_params">
+<code class="descname">do_execute_no_params</code><span class="sig-paren">(</span><em>cursor</em>, <em>statement</em>, <em>context</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.DialectEvents.do_execute_no_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive a cursor to have execute() with no parameters called.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;do_execute_no_params&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_do_execute_no_params</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">statement</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;do_execute_no_params&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<p>Return the value True to halt further events from invoking,
+and to indicate that the cursor execution has already taken
+place within the event handler.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.DialectEvents.do_executemany">
+<code class="descname">do_executemany</code><span class="sig-paren">(</span><em>cursor</em>, <em>statement</em>, <em>parameters</em>, <em>context</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.DialectEvents.do_executemany" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive a cursor to have executemany() called.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;do_executemany&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_do_executemany</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">statement</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;do_executemany&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span>
+
+<span class="c"># named argument style (new in 0.9)</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeEngine</span><span class="p">,</span> <span class="s">&#39;do_executemany&#39;</span><span class="p">,</span> <span class="n">named</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_do_executemany</span><span class="p">(</span><span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;do_executemany&#39; event&quot;</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">kw</span><span class="p">[</span><span class="s">&#39;cursor&#39;</span><span class="p">]</span>
+    <span class="n">statement</span> <span class="o">=</span> <span class="n">kw</span><span class="p">[</span><span class="s">&#39;statement&#39;</span><span class="p">]</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<p>Return the value True to halt further events from invoking,
+and to indicate that the cursor execution has already taken
+place within the event handler.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="schema-events">
+<h2>Schema Events<a class="headerlink" href="#schema-events" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="sqlalchemy.events.DDLEvents">
+<em class="property">class </em><code class="descclassname">sqlalchemy.events.</code><code class="descname">DDLEvents</code><a class="headerlink" href="#sqlalchemy.events.DDLEvents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#sqlalchemy.event.base.Events" title="sqlalchemy.event.base.Events"><code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.event.base.Events</span></code></a></p>
+<p>Define event listeners for schema objects,
+that is, <a class="reference internal" href="metadata.html#sqlalchemy.schema.SchemaItem" title="sqlalchemy.schema.SchemaItem"><code class="xref py py-class docutils literal"><span class="pre">SchemaItem</span></code></a> and other <a class="reference internal" href="#sqlalchemy.events.SchemaEventTarget" title="sqlalchemy.events.SchemaEventTarget"><code class="xref py py-class docutils literal"><span class="pre">SchemaEventTarget</span></code></a>
+subclasses, including <a class="reference internal" href="metadata.html#sqlalchemy.schema.MetaData" title="sqlalchemy.schema.MetaData"><code class="xref py py-class docutils literal"><span class="pre">MetaData</span></code></a>, <a class="reference internal" href="metadata.html#sqlalchemy.schema.Table" title="sqlalchemy.schema.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a>,
+<a class="reference internal" href="metadata.html#sqlalchemy.schema.Column" title="sqlalchemy.schema.Column"><code class="xref py py-class docutils literal"><span class="pre">Column</span></code></a>.</p>
+<p><a class="reference internal" href="metadata.html#sqlalchemy.schema.MetaData" title="sqlalchemy.schema.MetaData"><code class="xref py py-class docutils literal"><span class="pre">MetaData</span></code></a> and <a class="reference internal" href="metadata.html#sqlalchemy.schema.Table" title="sqlalchemy.schema.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> support events
+specifically regarding when CREATE and DROP
+DDL is emitted to the database.</p>
+<p>Attachment events are also provided to customize
+behavior whenever a child schema element is associated
+with a parent, such as, when a <a class="reference internal" href="metadata.html#sqlalchemy.schema.Column" title="sqlalchemy.schema.Column"><code class="xref py py-class docutils literal"><span class="pre">Column</span></code></a> is associated
+with its <a class="reference internal" href="metadata.html#sqlalchemy.schema.Table" title="sqlalchemy.schema.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a>, when a <a class="reference internal" href="constraints.html#sqlalchemy.schema.ForeignKeyConstraint" title="sqlalchemy.schema.ForeignKeyConstraint"><code class="xref py py-class docutils literal"><span class="pre">ForeignKeyConstraint</span></code></a>
+is associated with a <a class="reference internal" href="metadata.html#sqlalchemy.schema.Table" title="sqlalchemy.schema.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a>, etc.</p>
+<p>Example using the <code class="docutils literal"><span class="pre">after_create</span></code> event:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">Table</span><span class="p">,</span> <span class="n">Column</span><span class="p">,</span> <span class="n">Metadata</span><span class="p">,</span> <span class="n">Integer</span>
+
+<span class="n">m</span> <span class="o">=</span> <span class="n">MetaData</span><span class="p">()</span>
+<span class="n">some_table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s">&#39;some_table&#39;</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">Column</span><span class="p">(</span><span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">after_create</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;ALTER TABLE </span><span class="si">%s</span><span class="s"> SET name=foo_</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                            <span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">target</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+
+<span class="n">event</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="n">some_table</span><span class="p">,</span> <span class="s">&quot;after_create&quot;</span><span class="p">,</span> <span class="n">after_create</span><span class="p">)</span></pre></div>
+</div>
+<p>DDL events integrate closely with the
+<a class="reference internal" href="ddl.html#sqlalchemy.schema.DDL" title="sqlalchemy.schema.DDL"><code class="xref py py-class docutils literal"><span class="pre">DDL</span></code></a> class and the <a class="reference internal" href="ddl.html#sqlalchemy.schema.DDLElement" title="sqlalchemy.schema.DDLElement"><code class="xref py py-class docutils literal"><span class="pre">DDLElement</span></code></a> hierarchy
+of DDL clause constructs, which are themselves appropriate
+as listener callables:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">DDL</span>
+<span class="n">event</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span>
+    <span class="n">some_table</span><span class="p">,</span>
+    <span class="s">&quot;after_create&quot;</span><span class="p">,</span>
+    <span class="n">DDL</span><span class="p">(</span><span class="s">&quot;ALTER TABLE </span><span class="si">%(table)s</span><span class="s"> SET name=foo_</span><span class="si">%(table)s</span><span class="s">&quot;</span><span class="p">)</span>
+<span class="p">)</span></pre></div>
+</div>
+<p>The methods here define the name of an event as well
+as the names of members that are passed to listener
+functions.</p>
+<p>See also:</p>
+<blockquote>
+<div><p><a class="reference internal" href="event.html"><span>Events</span></a></p>
+<p><a class="reference internal" href="ddl.html#sqlalchemy.schema.DDLElement" title="sqlalchemy.schema.DDLElement"><code class="xref py py-class docutils literal"><span class="pre">DDLElement</span></code></a></p>
+<p><a class="reference internal" href="ddl.html#sqlalchemy.schema.DDL" title="sqlalchemy.schema.DDL"><code class="xref py py-class docutils literal"><span class="pre">DDL</span></code></a></p>
+<p><a class="reference internal" href="ddl.html#schema-ddl-sequences"><span>Controlling DDL Sequences</span></a></p>
+</div></blockquote>
+<dl class="method">
+<dt id="sqlalchemy.events.DDLEvents.after_create">
+<code class="descname">after_create</code><span class="sig-paren">(</span><em>target</em>, <em>connection</em>, <em>**kw</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.DDLEvents.after_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called after CREATE statements are emitted.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeSchemaClassOrObject</span><span class="p">,</span> <span class="s">&#39;after_create&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_after_create</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;after_create&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.DDLEvents.after_create.params.target"></span><strong>target</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.DDLEvents.after_create.params.target">¶</a> &#8211; the <a class="reference internal" href="metadata.html#sqlalchemy.schema.MetaData" title="sqlalchemy.schema.MetaData"><code class="xref py py-class docutils literal"><span class="pre">MetaData</span></code></a> or <a class="reference internal" href="metadata.html#sqlalchemy.schema.Table" title="sqlalchemy.schema.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a>
+object which is the target of the event.</li>
+<li><span class="target" id="sqlalchemy.events.DDLEvents.after_create.params.connection"></span><strong>connection</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.DDLEvents.after_create.params.connection">¶</a> &#8211; the <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> where the
+CREATE statement or statements have been emitted.</li>
+<li><span class="target" id="sqlalchemy.events.DDLEvents.after_create.params.**kw"></span><strong>**kw</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.DDLEvents.after_create.params.**kw">¶</a> &#8211; additional keyword arguments relevant
+to the event.  The contents of this dictionary
+may vary across releases, and include the
+list of tables being generated for a metadata-level
+event, the checkfirst flag, and other
+elements used by internal events.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.DDLEvents.after_drop">
+<code class="descname">after_drop</code><span class="sig-paren">(</span><em>target</em>, <em>connection</em>, <em>**kw</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.DDLEvents.after_drop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called after DROP statements are emitted.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeSchemaClassOrObject</span><span class="p">,</span> <span class="s">&#39;after_drop&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_after_drop</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;after_drop&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.DDLEvents.after_drop.params.target"></span><strong>target</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.DDLEvents.after_drop.params.target">¶</a> &#8211; the <a class="reference internal" href="metadata.html#sqlalchemy.schema.MetaData" title="sqlalchemy.schema.MetaData"><code class="xref py py-class docutils literal"><span class="pre">MetaData</span></code></a> or <a class="reference internal" href="metadata.html#sqlalchemy.schema.Table" title="sqlalchemy.schema.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a>
+object which is the target of the event.</li>
+<li><span class="target" id="sqlalchemy.events.DDLEvents.after_drop.params.connection"></span><strong>connection</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.DDLEvents.after_drop.params.connection">¶</a> &#8211; the <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> where the
+DROP statement or statements have been emitted.</li>
+<li><span class="target" id="sqlalchemy.events.DDLEvents.after_drop.params.**kw"></span><strong>**kw</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.DDLEvents.after_drop.params.**kw">¶</a> &#8211; additional keyword arguments relevant
+to the event.  The contents of this dictionary
+may vary across releases, and include the
+list of tables being generated for a metadata-level
+event, the checkfirst flag, and other
+elements used by internal events.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.DDLEvents.after_parent_attach">
+<code class="descname">after_parent_attach</code><span class="sig-paren">(</span><em>target</em>, <em>parent</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.DDLEvents.after_parent_attach" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called after a <a class="reference internal" href="metadata.html#sqlalchemy.schema.SchemaItem" title="sqlalchemy.schema.SchemaItem"><code class="xref py py-class docutils literal"><span class="pre">SchemaItem</span></code></a> is associated with
+a parent <a class="reference internal" href="metadata.html#sqlalchemy.schema.SchemaItem" title="sqlalchemy.schema.SchemaItem"><code class="xref py py-class docutils literal"><span class="pre">SchemaItem</span></code></a>.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeSchemaClassOrObject</span><span class="p">,</span> <span class="s">&#39;after_parent_attach&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_after_parent_attach</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;after_parent_attach&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.DDLEvents.after_parent_attach.params.target"></span><strong>target</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.DDLEvents.after_parent_attach.params.target">¶</a> &#8211; the target object</li>
+<li><span class="target" id="sqlalchemy.events.DDLEvents.after_parent_attach.params.parent"></span><strong>parent</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.DDLEvents.after_parent_attach.params.parent">¶</a> &#8211; the parent to which the target is being attached.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><a class="reference internal" href="event.html#sqlalchemy.event.listen" title="sqlalchemy.event.listen"><code class="xref py py-func docutils literal"><span class="pre">event.listen()</span></code></a> also accepts a modifier for this event:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><span class="target" id="sqlalchemy.events.DDLEvents.after_parent_attach.params.propagate"></span><strong>propagate=False</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.DDLEvents.after_parent_attach.params.propagate">¶</a> &#8211; When True, the listener function will
+be established for any copies made of the target object,
+i.e. those copies that are generated when
+<a class="reference internal" href="metadata.html#sqlalchemy.schema.Table.tometadata" title="sqlalchemy.schema.Table.tometadata"><code class="xref py py-meth docutils literal"><span class="pre">Table.tometadata()</span></code></a> is used.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.DDLEvents.before_create">
+<code class="descname">before_create</code><span class="sig-paren">(</span><em>target</em>, <em>connection</em>, <em>**kw</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.DDLEvents.before_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called before CREATE statements are emitted.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeSchemaClassOrObject</span><span class="p">,</span> <span class="s">&#39;before_create&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_before_create</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;before_create&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.DDLEvents.before_create.params.target"></span><strong>target</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.DDLEvents.before_create.params.target">¶</a> &#8211; the <a class="reference internal" href="metadata.html#sqlalchemy.schema.MetaData" title="sqlalchemy.schema.MetaData"><code class="xref py py-class docutils literal"><span class="pre">MetaData</span></code></a> or <a class="reference internal" href="metadata.html#sqlalchemy.schema.Table" title="sqlalchemy.schema.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a>
+object which is the target of the event.</li>
+<li><span class="target" id="sqlalchemy.events.DDLEvents.before_create.params.connection"></span><strong>connection</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.DDLEvents.before_create.params.connection">¶</a> &#8211; the <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> where the
+CREATE statement or statements will be emitted.</li>
+<li><span class="target" id="sqlalchemy.events.DDLEvents.before_create.params.**kw"></span><strong>**kw</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.DDLEvents.before_create.params.**kw">¶</a> &#8211; additional keyword arguments relevant
+to the event.  The contents of this dictionary
+may vary across releases, and include the
+list of tables being generated for a metadata-level
+event, the checkfirst flag, and other
+elements used by internal events.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.DDLEvents.before_drop">
+<code class="descname">before_drop</code><span class="sig-paren">(</span><em>target</em>, <em>connection</em>, <em>**kw</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.DDLEvents.before_drop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called before DROP statements are emitted.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeSchemaClassOrObject</span><span class="p">,</span> <span class="s">&#39;before_drop&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_before_drop</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;before_drop&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.DDLEvents.before_drop.params.target"></span><strong>target</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.DDLEvents.before_drop.params.target">¶</a> &#8211; the <a class="reference internal" href="metadata.html#sqlalchemy.schema.MetaData" title="sqlalchemy.schema.MetaData"><code class="xref py py-class docutils literal"><span class="pre">MetaData</span></code></a> or <a class="reference internal" href="metadata.html#sqlalchemy.schema.Table" title="sqlalchemy.schema.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a>
+object which is the target of the event.</li>
+<li><span class="target" id="sqlalchemy.events.DDLEvents.before_drop.params.connection"></span><strong>connection</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.DDLEvents.before_drop.params.connection">¶</a> &#8211; the <a class="reference internal" href="connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> where the
+DROP statement or statements will be emitted.</li>
+<li><span class="target" id="sqlalchemy.events.DDLEvents.before_drop.params.**kw"></span><strong>**kw</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.DDLEvents.before_drop.params.**kw">¶</a> &#8211; additional keyword arguments relevant
+to the event.  The contents of this dictionary
+may vary across releases, and include the
+list of tables being generated for a metadata-level
+event, the checkfirst flag, and other
+elements used by internal events.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.DDLEvents.before_parent_attach">
+<code class="descname">before_parent_attach</code><span class="sig-paren">(</span><em>target</em>, <em>parent</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.DDLEvents.before_parent_attach" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called before a <a class="reference internal" href="metadata.html#sqlalchemy.schema.SchemaItem" title="sqlalchemy.schema.SchemaItem"><code class="xref py py-class docutils literal"><span class="pre">SchemaItem</span></code></a> is associated with
+a parent <a class="reference internal" href="metadata.html#sqlalchemy.schema.SchemaItem" title="sqlalchemy.schema.SchemaItem"><code class="xref py py-class docutils literal"><span class="pre">SchemaItem</span></code></a>.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeSchemaClassOrObject</span><span class="p">,</span> <span class="s">&#39;before_parent_attach&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_before_parent_attach</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;before_parent_attach&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.events.DDLEvents.before_parent_attach.params.target"></span><strong>target</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.DDLEvents.before_parent_attach.params.target">¶</a> &#8211; the target object</li>
+<li><span class="target" id="sqlalchemy.events.DDLEvents.before_parent_attach.params.parent"></span><strong>parent</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.DDLEvents.before_parent_attach.params.parent">¶</a> &#8211; the parent to which the target is being attached.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><a class="reference internal" href="event.html#sqlalchemy.event.listen" title="sqlalchemy.event.listen"><code class="xref py py-func docutils literal"><span class="pre">event.listen()</span></code></a> also accepts a modifier for this event:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><span class="target" id="sqlalchemy.events.DDLEvents.before_parent_attach.params.propagate"></span><strong>propagate=False</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.events.DDLEvents.before_parent_attach.params.propagate">¶</a> &#8211; When True, the listener function will
+be established for any copies made of the target object,
+i.e. those copies that are generated when
+<a class="reference internal" href="metadata.html#sqlalchemy.schema.Table.tometadata" title="sqlalchemy.schema.Table.tometadata"><code class="xref py py-meth docutils literal"><span class="pre">Table.tometadata()</span></code></a> is used.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.events.DDLEvents.column_reflect">
+<code class="descname">column_reflect</code><span class="sig-paren">(</span><em>inspector</em>, <em>table</em>, <em>column_info</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.events.DDLEvents.column_reflect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called for each unit of &#8216;column info&#8217; retrieved when
+a <a class="reference internal" href="metadata.html#sqlalchemy.schema.Table" title="sqlalchemy.schema.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> is being reflected.</p>
+<div class="event-signatures container">
+<p>Example argument forms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="c"># standard decorator style</span>
+<span class="nd">@event.listens_for</span><span class="p">(</span><span class="n">SomeSchemaClassOrObject</span><span class="p">,</span> <span class="s">&#39;column_reflect&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">receive_column_reflect</span><span class="p">(</span><span class="n">inspector</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">column_info</span><span class="p">):</span>
+    <span class="s">&quot;listen for the &#39;column_reflect&#39; event&quot;</span>
+
+    <span class="c"># ... (event handling logic) ...</span></pre></div>
+</div>
+</div>
+<p>The dictionary of column information as returned by the
+dialect is passed, and can be modified.  The dictionary
+is that returned in each element of the list returned
+by <a class="reference internal" href="reflection.html#sqlalchemy.engine.reflection.Inspector.get_columns" title="sqlalchemy.engine.reflection.Inspector.get_columns"><code class="xref py py-meth docutils literal"><span class="pre">reflection.Inspector.get_columns()</span></code></a>.</p>
+<p>The event is called before any action is taken against
+this dictionary, and the contents can be modified.
+The <a class="reference internal" href="metadata.html#sqlalchemy.schema.Column" title="sqlalchemy.schema.Column"><code class="xref py py-class docutils literal"><span class="pre">Column</span></code></a> specific arguments <code class="docutils literal"><span class="pre">info</span></code>, <code class="docutils literal"><span class="pre">key</span></code>,
+and <code class="docutils literal"><span class="pre">quote</span></code> can also be added to the dictionary and
+will be passed to the constructor of <a class="reference internal" href="metadata.html#sqlalchemy.schema.Column" title="sqlalchemy.schema.Column"><code class="xref py py-class docutils literal"><span class="pre">Column</span></code></a>.</p>
+<p>Note that this event is only meaningful if either
+associated with the <a class="reference internal" href="metadata.html#sqlalchemy.schema.Table" title="sqlalchemy.schema.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> class across the
+board, e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy.schema</span> <span class="kn">import</span> <span class="n">Table</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span>
+
+<span class="k">def</span> <span class="nf">listen_for_reflect</span><span class="p">(</span><span class="n">inspector</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">column_info</span><span class="p">):</span>
+    <span class="s">&quot;receive a column_reflect event&quot;</span>
+    <span class="c"># ...</span>
+
+<span class="n">event</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span>
+        <span class="n">Table</span><span class="p">,</span>
+        <span class="s">&#39;column_reflect&#39;</span><span class="p">,</span>
+        <span class="n">listen_for_reflect</span><span class="p">)</span></pre></div>
+</div>
+<p>...or with a specific <a class="reference internal" href="metadata.html#sqlalchemy.schema.Table" title="sqlalchemy.schema.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a> instance using
+the <code class="docutils literal"><span class="pre">listeners</span></code> argument:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">listen_for_reflect</span><span class="p">(</span><span class="n">inspector</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">column_info</span><span class="p">):</span>
+    <span class="s">&quot;receive a column_reflect event&quot;</span>
+    <span class="c"># ...</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span>
+    <span class="s">&#39;sometable&#39;</span><span class="p">,</span>
+    <span class="n">autoload</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">listeners</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">(</span><span class="s">&#39;column_reflect&#39;</span><span class="p">,</span> <span class="n">listen_for_reflect</span><span class="p">)</span>
+    <span class="p">])</span></pre></div>
+</div>
+<p>This because the reflection process initiated by <code class="docutils literal"><span class="pre">autoload=True</span></code>
+completes within the scope of the constructor for <a class="reference internal" href="metadata.html#sqlalchemy.schema.Table" title="sqlalchemy.schema.Table"><code class="xref py py-class docutils literal"><span class="pre">Table</span></code></a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="sqlalchemy.events.SchemaEventTarget">
+<em class="property">class </em><code class="descclassname">sqlalchemy.events.</code><code class="descname">SchemaEventTarget</code><a class="headerlink" href="#sqlalchemy.events.SchemaEventTarget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for elements that are the targets of <a class="reference internal" href="#sqlalchemy.events.DDLEvents" title="sqlalchemy.events.DDLEvents"><code class="xref py py-class docutils literal"><span class="pre">DDLEvents</span></code></a>
+events.</p>
+<p>This includes <a class="reference internal" href="metadata.html#sqlalchemy.schema.SchemaItem" title="sqlalchemy.schema.SchemaItem"><code class="xref py py-class docutils literal"><span class="pre">SchemaItem</span></code></a> as well as <a class="reference internal" href="type_basics.html#sqlalchemy.types.SchemaType" title="sqlalchemy.types.SchemaType"><code class="xref py py-class docutils literal"><span class="pre">SchemaType</span></code></a>.</p>
+</dd></dl>
+
+</div>
+</div>
+
+    </div>
+
+</div>
+
+<div id="docs-bottom-navigation" class="docs-navigation-links">
+        Previous:
+        <a href="pooling.html" title="previous chapter">Connection Pooling</a>
+        Next:
+        <a href="api_basics.html" title="next chapter">Core API Basics</a>
+
+    <div id="docs-copyright">
+        &copy; <a href="../copyright.html">Copyright</a> 2007-2015, the SQLAlchemy authors and contributors.
+        Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.3.1.
+    </div>
+</div>
+
+</div>
+
+
+        
+        
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+          URL_ROOT:    '../',
+          VERSION:     '1.0.8',
+          COLLAPSE_MODINDEX: false,
+          FILE_SUFFIX: '.html'
+      };
+    </script>
+
+    <!-- begin iterate through sphinx environment script_files -->
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+    <!-- end iterate through sphinx environment script_files -->
+
+    <script type="text/javascript" src="../_static/detectmobile.js"></script>
+    <script type="text/javascript" src="../_static/init.js"></script>
+
+
+    </body>
+</html>
+
+

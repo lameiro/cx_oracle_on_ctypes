@@ -1,0 +1,873 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        
+        <title>
+            
+    
+    Association Proxy
+ &mdash;
+    SQLAlchemy 1.0 Documentation
+
+        </title>
+
+        
+            <!-- begin iterate through SQLA + sphinx environment css_files -->
+                <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+                <link rel="stylesheet" href="../../_static/changelog.css" type="text/css" />
+                <link rel="stylesheet" href="../../_static/sphinx_paramlinks.css" type="text/css" />
+                <link rel="stylesheet" href="../../_static/docs.css" type="text/css" />
+            <!-- end iterate through SQLA + sphinx environment css_files -->
+        
+
+        
+
+    
+
+    <!-- begin layout.mako headers -->
+
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+        <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="SQLAlchemy 1.0 Documentation" href="../../index.html" />
+        <link rel="up" title="ORM Extensions" href="index.html" />
+        <link rel="next" title="Automap" href="automap.html" />
+        <link rel="prev" title="ORM Extensions" href="index.html" />
+    <!-- end layout.mako headers -->
+
+
+    </head>
+    <body>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="docs-container">
+
+
+
+
+
+<div id="docs-top-navigation-container" class="body-background">
+<div id="docs-header">
+    <div id="docs-version-header">
+        Release: <span class="version-num">1.0.8</span> | Release Date: July 22, 2015
+    </div>
+
+    <h1>SQLAlchemy 1.0 Documentation</h1>
+
+</div>
+</div>
+
+<div id="docs-body-container">
+
+    <div id="fixed-sidebar" class="withsidebar">
+
+
+        <div id="docs-sidebar-popout">
+            <h3><a href="../../index.html">SQLAlchemy 1.0 Documentation</a></h3>
+
+            <p id="sidebar-topnav">
+                <a href="../../contents.html">Contents</a> |
+                <a href="../../genindex.html">Index</a>
+            </p>
+
+            <div id="sidebar-search">
+                <form class="search" action="../../search.html" method="get">
+                  <input type="text" name="q" size="12" /> <input type="submit" value="Search" />
+                  <input type="hidden" name="check_keywords" value="yes" />
+                  <input type="hidden" name="area" value="default" />
+                </form>
+            </div>
+
+        </div>
+
+        <div id="docs-sidebar">
+
+        
+        <h3>
+            <a href="../index.html" title="SQLAlchemy ORM">SQLAlchemy ORM</a>
+        </h3>
+
+        <ul>
+<li><span class="link-container first"><a class="reference external" href="../tutorial.html">Object Relational Tutorial</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="../mapper_config.html">Mapper Configuration</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="../relationships.html">Relationship Configuration</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="../loading_objects.html">Loading Objects</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="../session.html">Using the Session</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="../extending.html">Events and Internals</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="index.html">ORM Extensions</a></span><ul>
+<li class="selected"><span class="link-container first"><strong>Association Proxy</strong><a class="paramlink headerlink reference internal" href="#">¶</a></span><ul>
+<li><span class="link-container first"><a class="reference external" href="#simplifying-scalar-collections">Simplifying Scalar Collections</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#creation-of-new-values">Creation of New Values</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#simplifying-association-objects">Simplifying Association Objects</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#proxying-to-dictionary-based-collections">Proxying to Dictionary Based Collections</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#composite-association-proxies">Composite Association Proxies</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#querying-with-association-proxies">Querying with Association Proxies</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#api-documentation">API Documentation</a></span></li>
+</ul>
+</li>
+<li><span class="link-container first"><a class="reference external" href="automap.html">Automap</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="baked.html">Baked Queries</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="declarative/index.html">Declarative</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="mutable.html">Mutation Tracking</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="orderinglist.html">Ordering List</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="horizontal_shard.html">Horizontal Sharding</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="hybrid.html">Hybrid Attributes</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="instrumentation.html">Alternate Class Instrumentation</a></span></li>
+</ul>
+</li>
+<li><span class="link-container first"><a class="reference external" href="../examples.html">ORM Examples</a></span></li>
+</ul>
+
+
+
+        </div>
+
+    </div>
+
+    
+
+    <div id="docs-body" class="withsidebar" >
+        
+<div class="section" id="module-sqlalchemy.ext.associationproxy">
+<span id="association-proxy"></span><span id="associationproxy-toplevel"></span><h1>Association Proxy<a class="headerlink" href="#module-sqlalchemy.ext.associationproxy" title="Permalink to this headline">¶</a></h1>
+<p><code class="docutils literal"><span class="pre">associationproxy</span></code> is used to create a read/write view of a
+target attribute across a relationship.  It essentially conceals
+the usage of a &#8220;middle&#8221; attribute between two endpoints, and
+can be used to cherry-pick fields from a collection of
+related objects or to reduce the verbosity of using the association
+object pattern.   Applied creatively, the association proxy allows
+the construction of sophisticated collections and dictionary
+views of virtually any geometry, persisted to the database using
+standard, transparently configured relational patterns.</p>
+<div class="section" id="simplifying-scalar-collections">
+<h2>Simplifying Scalar Collections<a class="headerlink" href="#simplifying-scalar-collections" title="Permalink to this headline">¶</a></h2>
+<p>Consider a many-to-many mapping between two classes, <code class="docutils literal"><span class="pre">User</span></code> and <code class="docutils literal"><span class="pre">Keyword</span></code>.
+Each <code class="docutils literal"><span class="pre">User</span></code> can have any number of <code class="docutils literal"><span class="pre">Keyword</span></code> objects, and vice-versa
+(the many-to-many pattern is described at <a class="reference internal" href="../basic_relationships.html#relationships-many-to-many"><span>Many To Many</span></a>):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">Column</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">,</span> <span class="n">Table</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">relationship</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.ext.declarative</span> <span class="kn">import</span> <span class="n">declarative_base</span>
+
+<span class="n">Base</span> <span class="o">=</span> <span class="n">declarative_base</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;user&#39;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">64</span><span class="p">))</span>
+    <span class="n">kw</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s">&quot;Keyword&quot;</span><span class="p">,</span> <span class="n">secondary</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">userkeywords_table</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+
+<span class="k">class</span> <span class="nc">Keyword</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;keyword&#39;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">keyword</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="s">&#39;keyword&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">64</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keyword</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keyword</span> <span class="o">=</span> <span class="n">keyword</span>
+
+<span class="n">userkeywords_table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s">&#39;userkeywords&#39;</span><span class="p">,</span> <span class="n">Base</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;user_id&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s">&quot;user.id&quot;</span><span class="p">),</span>
+           <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s">&#39;keyword_id&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s">&quot;keyword.id&quot;</span><span class="p">),</span>
+           <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="p">)</span></pre></div>
+</div>
+<p>Reading and manipulating the collection of &#8220;keyword&#8221; strings associated
+with <code class="docutils literal"><span class="pre">User</span></code> requires traversal from each collection element to the <code class="docutils literal"><span class="pre">.keyword</span></code>
+attribute, which can be awkward:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="s">&#39;jek&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">kw</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Keyword</span><span class="p">(</span><span class="s">&#39;cheese inspector&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">kw</span><span class="p">)</span>
+<span class="go">[&lt;__main__.Keyword object at 0x12bf830&gt;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">kw</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
+<span class="go">cheese inspector</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">([</span><span class="n">keyword</span><span class="o">.</span><span class="n">keyword</span> <span class="k">for</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">user</span><span class="o">.</span><span class="n">kw</span><span class="p">])</span>
+<span class="go">[&#39;cheese inspector&#39;]</span></pre></div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">association_proxy</span></code> is applied to the <code class="docutils literal"><span class="pre">User</span></code> class to produce
+a &#8220;view&#8221; of the <code class="docutils literal"><span class="pre">kw</span></code> relationship, which only exposes the string
+value of <code class="docutils literal"><span class="pre">.keyword</span></code> associated with each <code class="docutils literal"><span class="pre">Keyword</span></code> object:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy.ext.associationproxy</span> <span class="kn">import</span> <span class="n">association_proxy</span>
+
+<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;user&#39;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">64</span><span class="p">))</span>
+    <span class="n">kw</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s">&quot;Keyword&quot;</span><span class="p">,</span> <span class="n">secondary</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">userkeywords_table</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+
+    <span class="c"># proxy the &#39;keyword&#39; attribute from the &#39;kw&#39; relationship</span>
+    <span class="n">keywords</span> <span class="o">=</span> <span class="n">association_proxy</span><span class="p">(</span><span class="s">&#39;kw&#39;</span><span class="p">,</span> <span class="s">&#39;keyword&#39;</span><span class="p">)</span></pre></div>
+</div>
+<p>We can now reference the <code class="docutils literal"><span class="pre">.keywords</span></code> collection as a listing of strings,
+which is both readable and writable.  New <code class="docutils literal"><span class="pre">Keyword</span></code> objects are created
+for us transparently:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="s">&#39;jek&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">keywords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;cheese inspector&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">keywords</span>
+<span class="go">[&#39;cheese inspector&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">keywords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;snack ninja&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">kw</span>
+<span class="go">[&lt;__main__.Keyword object at 0x12cdd30&gt;, &lt;__main__.Keyword object at 0x12cde30&gt;]</span></pre></div>
+</div>
+<p>The <a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy" title="sqlalchemy.ext.associationproxy.AssociationProxy"><code class="xref py py-class docutils literal"><span class="pre">AssociationProxy</span></code></a> object produced by the <a class="reference internal" href="#sqlalchemy.ext.associationproxy.association_proxy" title="sqlalchemy.ext.associationproxy.association_proxy"><code class="xref py py-func docutils literal"><span class="pre">association_proxy()</span></code></a> function
+is an instance of a <a class="reference external" href="http://docs.python.org/howto/descriptor.html">Python descriptor</a>.
+It is always declared with the user-defined class being mapped, regardless of
+whether Declarative or classical mappings via the <a class="reference internal" href="../mapping_api.html#sqlalchemy.orm.mapper" title="sqlalchemy.orm.mapper"><code class="xref py py-func docutils literal"><span class="pre">mapper()</span></code></a> function are used.</p>
+<p>The proxy functions by operating upon the underlying mapped attribute
+or collection in response to operations, and changes made via the proxy are immediately
+apparent in the mapped attribute, as well as vice versa.   The underlying
+attribute remains fully accessible.</p>
+<p>When first accessed, the association proxy performs introspection
+operations on the target collection so that its behavior corresponds correctly.
+Details such as if the locally proxied attribute is a collection (as is typical)
+or a scalar reference, as well as if the collection acts like a set, list,
+or dictionary is taken into account, so that the proxy should act just like
+the underlying collection or attribute does.</p>
+</div>
+<div class="section" id="creation-of-new-values">
+<h2>Creation of New Values<a class="headerlink" href="#creation-of-new-values" title="Permalink to this headline">¶</a></h2>
+<p>When a list append() event (or set add(), dictionary __setitem__(), or scalar
+assignment event) is intercepted by the association proxy, it instantiates a
+new instance of the &#8220;intermediary&#8221; object using its constructor, passing as a
+single argument the given value. In our example above, an operation like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">user</span><span class="o">.</span><span class="n">keywords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;cheese inspector&#39;</span><span class="p">)</span></pre></div>
+</div>
+<p>Is translated by the association proxy into the operation:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">user</span><span class="o">.</span><span class="n">kw</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Keyword</span><span class="p">(</span><span class="s">&#39;cheese inspector&#39;</span><span class="p">))</span></pre></div>
+</div>
+<p>The example works here because we have designed the constructor for <code class="docutils literal"><span class="pre">Keyword</span></code>
+to accept a single positional argument, <code class="docutils literal"><span class="pre">keyword</span></code>.   For those cases where a
+single-argument constructor isn&#8217;t feasible, the association proxy&#8217;s creational
+behavior can be customized using the <code class="docutils literal"><span class="pre">creator</span></code> argument, which references a
+callable (i.e. Python function) that will produce a new object instance given the
+singular argument.  Below we illustrate this using a lambda as is typical:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="c"># ...</span>
+
+    <span class="c"># use Keyword(keyword=kw) on append() events</span>
+    <span class="n">keywords</span> <span class="o">=</span> <span class="n">association_proxy</span><span class="p">(</span><span class="s">&#39;kw&#39;</span><span class="p">,</span> <span class="s">&#39;keyword&#39;</span><span class="p">,</span>
+                    <span class="n">creator</span><span class="o">=</span><span class="k">lambda</span> <span class="n">kw</span><span class="p">:</span> <span class="n">Keyword</span><span class="p">(</span><span class="n">keyword</span><span class="o">=</span><span class="n">kw</span><span class="p">))</span></pre></div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">creator</span></code> function accepts a single argument in the case of a list-
+or set- based collection, or a scalar attribute.  In the case of a dictionary-based
+collection, it accepts two arguments, &#8220;key&#8221; and &#8220;value&#8221;.   An example
+of this is below in <a class="reference internal" href="#proxying-dictionaries"><span>Proxying to Dictionary Based Collections</span></a>.</p>
+</div>
+<div class="section" id="simplifying-association-objects">
+<h2>Simplifying Association Objects<a class="headerlink" href="#simplifying-association-objects" title="Permalink to this headline">¶</a></h2>
+<p>The &#8220;association object&#8221; pattern is an extended form of a many-to-many
+relationship, and is described at <a class="reference internal" href="../basic_relationships.html#association-pattern"><span>Association Object</span></a>. Association
+proxies are useful for keeping &#8220;association objects&#8221; out the way during
+regular use.</p>
+<p>Suppose our <code class="docutils literal"><span class="pre">userkeywords</span></code> table above had additional columns
+which we&#8217;d like to map explicitly, but in most cases we don&#8217;t
+require direct access to these attributes.  Below, we illustrate
+a new mapping which introduces the <code class="docutils literal"><span class="pre">UserKeyword</span></code> class, which
+is mapped to the <code class="docutils literal"><span class="pre">userkeywords</span></code> table illustrated earlier.
+This class adds an additional column <code class="docutils literal"><span class="pre">special_key</span></code>, a value which
+we occasionally want to access, but not in the usual case.   We
+create an association proxy on the <code class="docutils literal"><span class="pre">User</span></code> class called
+<code class="docutils literal"><span class="pre">keywords</span></code>, which will bridge the gap from the <code class="docutils literal"><span class="pre">user_keywords</span></code>
+collection of <code class="docutils literal"><span class="pre">User</span></code> to the <code class="docutils literal"><span class="pre">.keyword</span></code> attribute present on each
+<code class="docutils literal"><span class="pre">UserKeyword</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">Column</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">ForeignKey</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">relationship</span><span class="p">,</span> <span class="n">backref</span>
+
+<span class="kn">from</span> <span class="nn">sqlalchemy.ext.associationproxy</span> <span class="kn">import</span> <span class="n">association_proxy</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.ext.declarative</span> <span class="kn">import</span> <span class="n">declarative_base</span>
+
+<span class="n">Base</span> <span class="o">=</span> <span class="n">declarative_base</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;user&#39;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">64</span><span class="p">))</span>
+
+    <span class="c"># association proxy of &quot;user_keywords&quot; collection</span>
+    <span class="c"># to &quot;keyword&quot; attribute</span>
+    <span class="n">keywords</span> <span class="o">=</span> <span class="n">association_proxy</span><span class="p">(</span><span class="s">&#39;user_keywords&#39;</span><span class="p">,</span> <span class="s">&#39;keyword&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+
+<span class="k">class</span> <span class="nc">UserKeyword</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;user_keyword&#39;</span>
+    <span class="n">user_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;user.id&#39;</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">keyword_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;keyword.id&#39;</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">special_key</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">50</span><span class="p">))</span>
+
+    <span class="c"># bidirectional attribute/collection of &quot;user&quot;/&quot;user_keywords&quot;</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="n">User</span><span class="p">,</span>
+                <span class="n">backref</span><span class="o">=</span><span class="n">backref</span><span class="p">(</span><span class="s">&quot;user_keywords&quot;</span><span class="p">,</span>
+                                <span class="n">cascade</span><span class="o">=</span><span class="s">&quot;all, delete-orphan&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+
+    <span class="c"># reference to the &quot;Keyword&quot; object</span>
+    <span class="n">keyword</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s">&quot;Keyword&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keyword</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">special_key</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">user</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keyword</span> <span class="o">=</span> <span class="n">keyword</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">special_key</span> <span class="o">=</span> <span class="n">special_key</span>
+
+<span class="k">class</span> <span class="nc">Keyword</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;keyword&#39;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">keyword</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="s">&#39;keyword&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">64</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keyword</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keyword</span> <span class="o">=</span> <span class="n">keyword</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;Keyword(</span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span></pre></div>
+</div>
+<p>With the above configuration, we can operate upon the <code class="docutils literal"><span class="pre">.keywords</span></code>
+collection of each <code class="docutils literal"><span class="pre">User</span></code> object, and the usage of <code class="docutils literal"><span class="pre">UserKeyword</span></code>
+is concealed:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="s">&#39;log&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">kw</span> <span class="ow">in</span> <span class="p">(</span><span class="n">Keyword</span><span class="p">(</span><span class="s">&#39;new_from_blammo&#39;</span><span class="p">),</span> <span class="n">Keyword</span><span class="p">(</span><span class="s">&#39;its_big&#39;</span><span class="p">)):</span>
+<span class="gp">... </span>    <span class="n">user</span><span class="o">.</span><span class="n">keywords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kw</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">keywords</span><span class="p">)</span>
+<span class="go">[Keyword(&#39;new_from_blammo&#39;), Keyword(&#39;its_big&#39;)]</span></pre></div>
+</div>
+<p>Where above, each <code class="docutils literal"><span class="pre">.keywords.append()</span></code> operation is equivalent to:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">user_keywords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">UserKeyword</span><span class="p">(</span><span class="n">Keyword</span><span class="p">(</span><span class="s">&#39;its_heavy&#39;</span><span class="p">)))</span></pre></div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">UserKeyword</span></code> association object has two attributes here which are populated;
+the <code class="docutils literal"><span class="pre">.keyword</span></code> attribute is populated directly as a result of passing
+the <code class="docutils literal"><span class="pre">Keyword</span></code> object as the first argument.   The <code class="docutils literal"><span class="pre">.user</span></code> argument is then
+assigned as the <code class="docutils literal"><span class="pre">UserKeyword</span></code> object is appended to the <code class="docutils literal"><span class="pre">User.user_keywords</span></code>
+collection, where the bidirectional relationship configured between <code class="docutils literal"><span class="pre">User.user_keywords</span></code>
+and <code class="docutils literal"><span class="pre">UserKeyword.user</span></code> results in a population of the <code class="docutils literal"><span class="pre">UserKeyword.user</span></code> attribute.
+The <code class="docutils literal"><span class="pre">special_key</span></code> argument above is left at its default value of <code class="docutils literal"><span class="pre">None</span></code>.</p>
+<p>For those cases where we do want <code class="docutils literal"><span class="pre">special_key</span></code> to have a value, we
+create the <code class="docutils literal"><span class="pre">UserKeyword</span></code> object explicitly.  Below we assign all three
+attributes, where the assignment of <code class="docutils literal"><span class="pre">.user</span></code> has the effect of the <code class="docutils literal"><span class="pre">UserKeyword</span></code>
+being appended to the <code class="docutils literal"><span class="pre">User.user_keywords</span></code> collection:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">UserKeyword</span><span class="p">(</span><span class="n">Keyword</span><span class="p">(</span><span class="s">&#39;its_wood&#39;</span><span class="p">),</span> <span class="n">user</span><span class="p">,</span> <span class="n">special_key</span><span class="o">=</span><span class="s">&#39;my special key&#39;</span><span class="p">)</span></pre></div>
+</div>
+<p>The association proxy returns to us a collection of <code class="docutils literal"><span class="pre">Keyword</span></code> objects represented
+by all these operations:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">keywords</span>
+<span class="go">[Keyword(&#39;new_from_blammo&#39;), Keyword(&#39;its_big&#39;), Keyword(&#39;its_heavy&#39;), Keyword(&#39;its_wood&#39;)]</span></pre></div>
+</div>
+</div>
+<div class="section" id="proxying-to-dictionary-based-collections">
+<span id="proxying-dictionaries"></span><h2>Proxying to Dictionary Based Collections<a class="headerlink" href="#proxying-to-dictionary-based-collections" title="Permalink to this headline">¶</a></h2>
+<p>The association proxy can proxy to dictionary based collections as well.   SQLAlchemy
+mappings usually use the <a class="reference internal" href="../collections.html#sqlalchemy.orm.collections.attribute_mapped_collection" title="sqlalchemy.orm.collections.attribute_mapped_collection"><code class="xref py py-func docutils literal"><span class="pre">attribute_mapped_collection()</span></code></a> collection type to
+create dictionary collections, as well as the extended techniques described in
+<a class="reference internal" href="../collections.html#id1"><span>Custom Dictionary-Based Collections</span></a>.</p>
+<p>The association proxy adjusts its behavior when it detects the usage of a
+dictionary-based collection. When new values are added to the dictionary, the
+association proxy instantiates the intermediary object by passing two
+arguments to the creation function instead of one, the key and the value. As
+always, this creation function defaults to the constructor of the intermediary
+class, and can be customized using the <code class="docutils literal"><span class="pre">creator</span></code> argument.</p>
+<p>Below, we modify our <code class="docutils literal"><span class="pre">UserKeyword</span></code> example such that the <code class="docutils literal"><span class="pre">User.user_keywords</span></code>
+collection will now be mapped using a dictionary, where the <code class="docutils literal"><span class="pre">UserKeyword.special_key</span></code>
+argument will be used as the key for the dictionary.   We then apply a <code class="docutils literal"><span class="pre">creator</span></code>
+argument to the <code class="docutils literal"><span class="pre">User.keywords</span></code> proxy so that these values are assigned appropriately
+when new elements are added to the dictionary:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">Column</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">ForeignKey</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">relationship</span><span class="p">,</span> <span class="n">backref</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.ext.associationproxy</span> <span class="kn">import</span> <span class="n">association_proxy</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.ext.declarative</span> <span class="kn">import</span> <span class="n">declarative_base</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm.collections</span> <span class="kn">import</span> <span class="n">attribute_mapped_collection</span>
+
+<span class="n">Base</span> <span class="o">=</span> <span class="n">declarative_base</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;user&#39;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">64</span><span class="p">))</span>
+
+    <span class="c"># proxy to &#39;user_keywords&#39;, instantiating UserKeyword</span>
+    <span class="c"># assigning the new key to &#39;special_key&#39;, values to</span>
+    <span class="c"># &#39;keyword&#39;.</span>
+    <span class="n">keywords</span> <span class="o">=</span> <span class="n">association_proxy</span><span class="p">(</span><span class="s">&#39;user_keywords&#39;</span><span class="p">,</span> <span class="s">&#39;keyword&#39;</span><span class="p">,</span>
+                    <span class="n">creator</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span>
+                                <span class="n">UserKeyword</span><span class="p">(</span><span class="n">special_key</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">keyword</span><span class="o">=</span><span class="n">v</span><span class="p">)</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+
+<span class="k">class</span> <span class="nc">UserKeyword</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;user_keyword&#39;</span>
+    <span class="n">user_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;user.id&#39;</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">keyword_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;keyword.id&#39;</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">special_key</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+
+    <span class="c"># bidirectional user/user_keywords relationships, mapping</span>
+    <span class="c"># user_keywords with a dictionary against &quot;special_key&quot; as key.</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="n">backref</span><span class="p">(</span>
+                    <span class="s">&quot;user_keywords&quot;</span><span class="p">,</span>
+                    <span class="n">collection_class</span><span class="o">=</span><span class="n">attribute_mapped_collection</span><span class="p">(</span><span class="s">&quot;special_key&quot;</span><span class="p">),</span>
+                    <span class="n">cascade</span><span class="o">=</span><span class="s">&quot;all, delete-orphan&quot;</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+    <span class="n">keyword</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s">&quot;Keyword&quot;</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Keyword</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;keyword&#39;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">keyword</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="s">&#39;keyword&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">64</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keyword</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keyword</span> <span class="o">=</span> <span class="n">keyword</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;Keyword(</span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span></pre></div>
+</div>
+<p>We illustrate the <code class="docutils literal"><span class="pre">.keywords</span></code> collection as a dictionary, mapping the
+<code class="docutils literal"><span class="pre">UserKeyword.string_key</span></code> value to <code class="docutils literal"><span class="pre">Keyword</span></code> objects:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="s">&#39;log&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">keywords</span><span class="p">[</span><span class="s">&#39;sk1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Keyword</span><span class="p">(</span><span class="s">&#39;kw1&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">keywords</span><span class="p">[</span><span class="s">&#39;sk2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Keyword</span><span class="p">(</span><span class="s">&#39;kw2&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">keywords</span><span class="p">)</span>
+<span class="go">{&#39;sk1&#39;: Keyword(&#39;kw1&#39;), &#39;sk2&#39;: Keyword(&#39;kw2&#39;)}</span></pre></div>
+</div>
+</div>
+<div class="section" id="composite-association-proxies">
+<span id="composite-association-proxy"></span><h2>Composite Association Proxies<a class="headerlink" href="#composite-association-proxies" title="Permalink to this headline">¶</a></h2>
+<p>Given our previous examples of proxying from relationship to scalar
+attribute, proxying across an association object, and proxying dictionaries,
+we can combine all three techniques together to give <code class="docutils literal"><span class="pre">User</span></code>
+a <code class="docutils literal"><span class="pre">keywords</span></code> dictionary that deals strictly with the string value
+of <code class="docutils literal"><span class="pre">special_key</span></code> mapped to the string <code class="docutils literal"><span class="pre">keyword</span></code>.  Both the <code class="docutils literal"><span class="pre">UserKeyword</span></code>
+and <code class="docutils literal"><span class="pre">Keyword</span></code> classes are entirely concealed.  This is achieved by building
+an association proxy on <code class="docutils literal"><span class="pre">User</span></code> that refers to an association proxy
+present on <code class="docutils literal"><span class="pre">UserKeyword</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">Column</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">ForeignKey</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">relationship</span><span class="p">,</span> <span class="n">backref</span>
+
+<span class="kn">from</span> <span class="nn">sqlalchemy.ext.associationproxy</span> <span class="kn">import</span> <span class="n">association_proxy</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.ext.declarative</span> <span class="kn">import</span> <span class="n">declarative_base</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm.collections</span> <span class="kn">import</span> <span class="n">attribute_mapped_collection</span>
+
+<span class="n">Base</span> <span class="o">=</span> <span class="n">declarative_base</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;user&#39;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">64</span><span class="p">))</span>
+
+    <span class="c"># the same &#39;user_keywords&#39;-&gt;&#39;keyword&#39; proxy as in</span>
+    <span class="c"># the basic dictionary example</span>
+    <span class="n">keywords</span> <span class="o">=</span> <span class="n">association_proxy</span><span class="p">(</span>
+                <span class="s">&#39;user_keywords&#39;</span><span class="p">,</span>
+                <span class="s">&#39;keyword&#39;</span><span class="p">,</span>
+                <span class="n">creator</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span>
+                            <span class="n">UserKeyword</span><span class="p">(</span><span class="n">special_key</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">keyword</span><span class="o">=</span><span class="n">v</span><span class="p">)</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+
+<span class="k">class</span> <span class="nc">UserKeyword</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;user_keyword&#39;</span>
+    <span class="n">user_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;user.id&#39;</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">keyword_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;keyword.id&#39;</span><span class="p">),</span>
+                                                    <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">special_key</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="n">backref</span><span class="p">(</span>
+            <span class="s">&quot;user_keywords&quot;</span><span class="p">,</span>
+            <span class="n">collection_class</span><span class="o">=</span><span class="n">attribute_mapped_collection</span><span class="p">(</span><span class="s">&quot;special_key&quot;</span><span class="p">),</span>
+            <span class="n">cascade</span><span class="o">=</span><span class="s">&quot;all, delete-orphan&quot;</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="c"># the relationship to Keyword is now called</span>
+    <span class="c"># &#39;kw&#39;</span>
+    <span class="n">kw</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s">&quot;Keyword&quot;</span><span class="p">)</span>
+
+    <span class="c"># &#39;keyword&#39; is changed to be a proxy to the</span>
+    <span class="c"># &#39;keyword&#39; attribute of &#39;Keyword&#39;</span>
+    <span class="n">keyword</span> <span class="o">=</span> <span class="n">association_proxy</span><span class="p">(</span><span class="s">&#39;kw&#39;</span><span class="p">,</span> <span class="s">&#39;keyword&#39;</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Keyword</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;keyword&#39;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">keyword</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="s">&#39;keyword&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">64</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keyword</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keyword</span> <span class="o">=</span> <span class="n">keyword</span></pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">User.keywords</span></code> is now a dictionary of string to string, where
+<code class="docutils literal"><span class="pre">UserKeyword</span></code> and <code class="docutils literal"><span class="pre">Keyword</span></code> objects are created and removed for us
+transparently using the association proxy. In the example below, we illustrate
+usage of the assignment operator, also appropriately handled by the
+association proxy, to apply a dictionary value to the collection at once:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="s">&#39;log&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">keywords</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s">&#39;sk1&#39;</span><span class="p">:</span><span class="s">&#39;kw1&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s">&#39;sk2&#39;</span><span class="p">:</span><span class="s">&#39;kw2&#39;</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">keywords</span><span class="p">)</span>
+<span class="go">{&#39;sk1&#39;: &#39;kw1&#39;, &#39;sk2&#39;: &#39;kw2&#39;}</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">keywords</span><span class="p">[</span><span class="s">&#39;sk3&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;kw3&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">user</span><span class="o">.</span><span class="n">keywords</span><span class="p">[</span><span class="s">&#39;sk2&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">keywords</span><span class="p">)</span>
+<span class="go">{&#39;sk1&#39;: &#39;kw1&#39;, &#39;sk3&#39;: &#39;kw3&#39;}</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># illustrate un-proxied usage</span>
+<span class="gp">... </span><span class="k">print</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">user_keywords</span><span class="p">[</span><span class="s">&#39;sk3&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">kw</span><span class="p">)</span>
+<span class="go">&lt;__main__.Keyword object at 0x12ceb90&gt;</span></pre></div>
+</div>
+<p>One caveat with our example above is that because <code class="docutils literal"><span class="pre">Keyword</span></code> objects are created
+for each dictionary set operation, the example fails to maintain uniqueness for
+the <code class="docutils literal"><span class="pre">Keyword</span></code> objects on their string name, which is a typical requirement for
+a tagging scenario such as this one.  For this use case the recipe
+<a class="reference external" href="http://www.sqlalchemy.org/trac/wiki/UsageRecipes/UniqueObject">UniqueObject</a>, or
+a comparable creational strategy, is
+recommended, which will apply a &#8220;lookup first, then create&#8221; strategy to the constructor
+of the <code class="docutils literal"><span class="pre">Keyword</span></code> class, so that an already existing <code class="docutils literal"><span class="pre">Keyword</span></code> is returned if the
+given name is already present.</p>
+</div>
+<div class="section" id="querying-with-association-proxies">
+<h2>Querying with Association Proxies<a class="headerlink" href="#querying-with-association-proxies" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy" title="sqlalchemy.ext.associationproxy.AssociationProxy"><code class="xref py py-class docutils literal"><span class="pre">AssociationProxy</span></code></a> features simple SQL construction capabilities
+which relate down to the underlying <a class="reference internal" href="../relationship_api.html#sqlalchemy.orm.relationship" title="sqlalchemy.orm.relationship"><code class="xref py py-func docutils literal"><span class="pre">relationship()</span></code></a> in use as well
+as the target attribute.  For example, the <a class="reference internal" href="../internals.html#sqlalchemy.orm.properties.RelationshipProperty.Comparator.any" title="sqlalchemy.orm.properties.RelationshipProperty.Comparator.any"><code class="xref py py-meth docutils literal"><span class="pre">RelationshipProperty.Comparator.any()</span></code></a>
+and <a class="reference internal" href="../internals.html#sqlalchemy.orm.properties.RelationshipProperty.Comparator.has" title="sqlalchemy.orm.properties.RelationshipProperty.Comparator.has"><code class="xref py py-meth docutils literal"><span class="pre">RelationshipProperty.Comparator.has()</span></code></a> operations are available, and will produce
+a &#8220;nested&#8221; EXISTS clause, such as in our basic association object example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">User</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">User</span><span class="o">.</span><span class="n">keywords</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">keyword</span><span class="o">=</span><span class="s">&#39;jek&#39;</span><span class="p">)))</span>
+<span class="go">SELECT user.id AS user_id, user.name AS user_name</span>
+<span class="go">FROM user</span>
+<span class="go">WHERE EXISTS (SELECT 1</span>
+<span class="go">FROM user_keyword</span>
+<span class="go">WHERE user.id = user_keyword.user_id AND (EXISTS (SELECT 1</span>
+<span class="go">FROM keyword</span>
+<span class="go">WHERE keyword.id = user_keyword.keyword_id AND keyword.keyword = :keyword_1)))</span></pre></div>
+</div>
+<p>For a proxy to a scalar attribute, <code class="docutils literal"><span class="pre">__eq__()</span></code> is supported:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">UserKeyword</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">UserKeyword</span><span class="o">.</span><span class="n">keyword</span> <span class="o">==</span> <span class="s">&#39;jek&#39;</span><span class="p">))</span>
+<span class="go">SELECT user_keyword.*</span>
+<span class="go">FROM user_keyword</span>
+<span class="go">WHERE EXISTS (SELECT 1</span>
+<span class="go">    FROM keyword</span>
+<span class="go">    WHERE keyword.id = user_keyword.keyword_id AND keyword.keyword = :keyword_1)</span></pre></div>
+</div>
+<p>and <code class="docutils literal"><span class="pre">.contains()</span></code> is available for a proxy to a scalar collection:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">User</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">User</span><span class="o">.</span><span class="n">keywords</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s">&#39;jek&#39;</span><span class="p">)))</span>
+<span class="go">SELECT user.*</span>
+<span class="go">FROM user</span>
+<span class="go">WHERE EXISTS (SELECT 1</span>
+<span class="go">FROM userkeywords, keyword</span>
+<span class="go">WHERE user.id = userkeywords.user_id</span>
+<span class="go">    AND keyword.id = userkeywords.keyword_id</span>
+<span class="go">    AND keyword.keyword = :keyword_1)</span></pre></div>
+</div>
+<p><a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy" title="sqlalchemy.ext.associationproxy.AssociationProxy"><code class="xref py py-class docutils literal"><span class="pre">AssociationProxy</span></code></a> can be used with <a class="reference internal" href="../query.html#sqlalchemy.orm.query.Query.join" title="sqlalchemy.orm.query.Query.join"><code class="xref py py-meth docutils literal"><span class="pre">Query.join()</span></code></a> somewhat manually
+using the <a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy.attr" title="sqlalchemy.ext.associationproxy.AssociationProxy.attr"><code class="xref py py-attr docutils literal"><span class="pre">attr</span></code></a> attribute in a star-args context:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">q</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">User</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="o">*</span><span class="n">User</span><span class="o">.</span><span class="n">keywords</span><span class="o">.</span><span class="n">attr</span><span class="p">)</span></pre></div>
+</div>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.7.3: </span><a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy.attr" title="sqlalchemy.ext.associationproxy.AssociationProxy.attr"><code class="xref py py-attr docutils literal"><span class="pre">attr</span></code></a> attribute in a star-args context.</p>
+</div>
+<p><a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy.attr" title="sqlalchemy.ext.associationproxy.AssociationProxy.attr"><code class="xref py py-attr docutils literal"><span class="pre">attr</span></code></a> is composed of <a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy.local_attr" title="sqlalchemy.ext.associationproxy.AssociationProxy.local_attr"><code class="xref py py-attr docutils literal"><span class="pre">AssociationProxy.local_attr</span></code></a> and <a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy.remote_attr" title="sqlalchemy.ext.associationproxy.AssociationProxy.remote_attr"><code class="xref py py-attr docutils literal"><span class="pre">AssociationProxy.remote_attr</span></code></a>,
+which are just synonyms for the actual proxied attributes, and can also
+be used for querying:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">uka</span> <span class="o">=</span> <span class="n">aliased</span><span class="p">(</span><span class="n">UserKeyword</span><span class="p">)</span>
+<span class="n">ka</span> <span class="o">=</span> <span class="n">aliased</span><span class="p">(</span><span class="n">Keyword</span><span class="p">)</span>
+<span class="n">q</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">User</span><span class="p">)</span><span class="o">.</span>\
+        <span class="n">join</span><span class="p">(</span><span class="n">uka</span><span class="p">,</span> <span class="n">User</span><span class="o">.</span><span class="n">keywords</span><span class="o">.</span><span class="n">local_attr</span><span class="p">)</span><span class="o">.</span>\
+        <span class="n">join</span><span class="p">(</span><span class="n">ka</span><span class="p">,</span> <span class="n">User</span><span class="o">.</span><span class="n">keywords</span><span class="o">.</span><span class="n">remote_attr</span><span class="p">)</span></pre></div>
+</div>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.7.3: </span><a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy.local_attr" title="sqlalchemy.ext.associationproxy.AssociationProxy.local_attr"><code class="xref py py-attr docutils literal"><span class="pre">AssociationProxy.local_attr</span></code></a> and <a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy.remote_attr" title="sqlalchemy.ext.associationproxy.AssociationProxy.remote_attr"><code class="xref py py-attr docutils literal"><span class="pre">AssociationProxy.remote_attr</span></code></a>,
+synonyms for the actual proxied attributes, and usable for querying.</p>
+</div>
+</div>
+<div class="section" id="api-documentation">
+<h2>API Documentation<a class="headerlink" href="#api-documentation" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="sqlalchemy.ext.associationproxy.association_proxy">
+<code class="descclassname">sqlalchemy.ext.associationproxy.</code><code class="descname">association_proxy</code><span class="sig-paren">(</span><em>target_collection</em>, <em>attr</em>, <em>**kw</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.associationproxy.association_proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a Python property implementing a view of a target
+attribute which references an attribute on members of the
+target.</p>
+<p>The returned value is an instance of <a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy" title="sqlalchemy.ext.associationproxy.AssociationProxy"><code class="xref py py-class docutils literal"><span class="pre">AssociationProxy</span></code></a>.</p>
+<p>Implements a Python property representing a relationship as a collection
+of simpler values, or a scalar value.  The proxied property will mimic
+the collection type of the target (list, dict or set), or, in the case of
+a one to one relationship, a simple scalar value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.ext.associationproxy.association_proxy.params.target_collection"></span><strong>target_collection</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.ext.associationproxy.association_proxy.params.target_collection">¶</a> &#8211; Name of the attribute we&#8217;ll proxy to.
+This attribute is typically mapped by
+<a class="reference internal" href="../relationship_api.html#sqlalchemy.orm.relationship" title="sqlalchemy.orm.relationship"><code class="xref py py-func docutils literal"><span class="pre">relationship()</span></code></a> to link to a target collection, but
+can also be a many-to-one or non-scalar relationship.</li>
+<li><span class="target" id="sqlalchemy.ext.associationproxy.association_proxy.params.attr"></span><strong>attr</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.ext.associationproxy.association_proxy.params.attr">¶</a> &#8211; <p>Attribute on the associated instance or instances we&#8217;ll
+proxy for.</p>
+<p>For example, given a target collection of [obj1, obj2], a list created
+by this proxy property would look like [getattr(obj1, <em>attr</em>),
+getattr(obj2, <em>attr</em>)]</p>
+<p>If the relationship is one-to-one or otherwise uselist=False, then
+simply: getattr(obj, <em>attr</em>)</p>
+</li>
+<li><span class="target" id="sqlalchemy.ext.associationproxy.association_proxy.params.creator"></span><strong>creator</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.ext.associationproxy.association_proxy.params.creator">¶</a> &#8211; <p>optional.</p>
+<p>When new items are added to this proxied collection, new instances of
+the class collected by the target collection will be created.  For list
+and set collections, the target class constructor will be called with
+the &#8216;value&#8217; for the new instance.  For dict types, two arguments are
+passed: key and value.</p>
+<p>If you want to construct instances differently, supply a <em>creator</em>
+function that takes arguments as above and returns instances.</p>
+<p>For scalar relationships, creator() will be called if the target is None.
+If the target is present, set operations are proxied to setattr() on the
+associated object.</p>
+<p>If you have an associated object with multiple attributes, you may set
+up multiple association proxies mapping to different attributes.  See
+the unit tests for examples, and for examples of how creator() functions
+can be used to construct the scalar relationship on-demand in this
+situation.</p>
+</li>
+<li><span class="target" id="sqlalchemy.ext.associationproxy.association_proxy.params.**kw"></span><strong>**kw</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.ext.associationproxy.association_proxy.params.**kw">¶</a> &#8211; Passes along any other keyword arguments to
+<a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy" title="sqlalchemy.ext.associationproxy.AssociationProxy"><code class="xref py py-class docutils literal"><span class="pre">AssociationProxy</span></code></a>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="sqlalchemy.ext.associationproxy.AssociationProxy">
+<em class="property">class </em><code class="descclassname">sqlalchemy.ext.associationproxy.</code><code class="descname">AssociationProxy</code><span class="sig-paren">(</span><em>target_collection</em>, <em>attr</em>, <em>creator=None</em>, <em>getset_factory=None</em>, <em>proxy_factory=None</em>, <em>proxy_bulk_set=None</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.associationproxy.AssociationProxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../internals.html#sqlalchemy.orm.base.InspectionAttrInfo" title="sqlalchemy.orm.base.InspectionAttrInfo"><code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.orm.base.InspectionAttrInfo</span></code></a></p>
+<p>A descriptor that presents a read/write view of an object attribute.</p>
+<dl class="method">
+<dt id="sqlalchemy.ext.associationproxy.AssociationProxy.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>target_collection</em>, <em>attr</em>, <em>creator=None</em>, <em>getset_factory=None</em>, <em>proxy_factory=None</em>, <em>proxy_bulk_set=None</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.associationproxy.AssociationProxy.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a new <a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy" title="sqlalchemy.ext.associationproxy.AssociationProxy"><code class="xref py py-class docutils literal"><span class="pre">AssociationProxy</span></code></a>.</p>
+<p>The <a class="reference internal" href="#sqlalchemy.ext.associationproxy.association_proxy" title="sqlalchemy.ext.associationproxy.association_proxy"><code class="xref py py-func docutils literal"><span class="pre">association_proxy()</span></code></a> function is provided as the usual
+entrypoint here, though <a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy" title="sqlalchemy.ext.associationproxy.AssociationProxy"><code class="xref py py-class docutils literal"><span class="pre">AssociationProxy</span></code></a> can be instantiated
+and/or subclassed directly.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.ext.associationproxy.AssociationProxy.params.target_collection"></span><strong>target_collection</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy.params.target_collection">¶</a> &#8211; Name of the collection we&#8217;ll proxy to,
+usually created with <a class="reference internal" href="../relationship_api.html#sqlalchemy.orm.relationship" title="sqlalchemy.orm.relationship"><code class="xref py py-func docutils literal"><span class="pre">relationship()</span></code></a>.</li>
+<li><span class="target" id="sqlalchemy.ext.associationproxy.AssociationProxy.params.attr"></span><strong>attr</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy.params.attr">¶</a> &#8211; Attribute on the collected instances we&#8217;ll proxy
+for.  For example, given a target collection of [obj1, obj2], a
+list created by this proxy property would look like
+[getattr(obj1, attr), getattr(obj2, attr)]</li>
+<li><span class="target" id="sqlalchemy.ext.associationproxy.AssociationProxy.params.creator"></span><strong>creator</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy.params.creator">¶</a> &#8211; <p>Optional. When new items are added to this proxied
+collection, new instances of the class collected by the target
+collection will be created.  For list and set collections, the
+target class constructor will be called with the &#8216;value&#8217; for the
+new instance.  For dict types, two arguments are passed:
+key and value.</p>
+<p>If you want to construct instances differently, supply a &#8216;creator&#8217;
+function that takes arguments as above and returns instances.</p>
+</li>
+<li><span class="target" id="sqlalchemy.ext.associationproxy.AssociationProxy.params.getset_factory"></span><strong>getset_factory</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy.params.getset_factory">¶</a> &#8211; <p>Optional.  Proxied attribute access is
+automatically handled by routines that get and set values based on
+the <cite>attr</cite> argument for this proxy.</p>
+<p>If you would like to customize this behavior, you may supply a
+<cite>getset_factory</cite> callable that produces a tuple of <cite>getter</cite> and
+<cite>setter</cite> functions.  The factory is called with two arguments, the
+abstract type of the underlying collection and this proxy instance.</p>
+</li>
+<li><span class="target" id="sqlalchemy.ext.associationproxy.AssociationProxy.params.proxy_factory"></span><strong>proxy_factory</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy.params.proxy_factory">¶</a> &#8211; Optional.  The type of collection to emulate is
+determined by sniffing the target collection.  If your collection
+type can&#8217;t be determined by duck typing or you&#8217;d like to use a
+different collection implementation, you may supply a factory
+function to produce those collections.  Only applicable to
+non-scalar relationships.</li>
+<li><span class="target" id="sqlalchemy.ext.associationproxy.AssociationProxy.params.proxy_bulk_set"></span><strong>proxy_bulk_set</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy.params.proxy_bulk_set">¶</a> &#8211; Optional, use with proxy_factory.  See
+the _set() method for details.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.ext.associationproxy.AssociationProxy.any">
+<code class="descname">any</code><span class="sig-paren">(</span><em>criterion=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.associationproxy.AssociationProxy.any" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce a proxied &#8216;any&#8217; expression using EXISTS.</p>
+<p>This expression will be a composed product
+using the <a class="reference internal" href="../internals.html#sqlalchemy.orm.properties.RelationshipProperty.Comparator.any" title="sqlalchemy.orm.properties.RelationshipProperty.Comparator.any"><code class="xref py py-meth docutils literal"><span class="pre">RelationshipProperty.Comparator.any()</span></code></a>
+and/or <a class="reference internal" href="../internals.html#sqlalchemy.orm.properties.RelationshipProperty.Comparator.has" title="sqlalchemy.orm.properties.RelationshipProperty.Comparator.has"><code class="xref py py-meth docutils literal"><span class="pre">RelationshipProperty.Comparator.has()</span></code></a>
+operators of the underlying proxied attributes.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="sqlalchemy.ext.associationproxy.AssociationProxy.attr">
+<code class="descname">attr</code><a class="headerlink" href="#sqlalchemy.ext.associationproxy.AssociationProxy.attr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a tuple of <code class="docutils literal"><span class="pre">(local_attr,</span> <span class="pre">remote_attr)</span></code>.</p>
+<p>This attribute is convenient when specifying a join
+using <a class="reference internal" href="../query.html#sqlalchemy.orm.query.Query.join" title="sqlalchemy.orm.query.Query.join"><code class="xref py py-meth docutils literal"><span class="pre">Query.join()</span></code></a> across two relationships:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">sess</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Parent</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="o">*</span><span class="n">Parent</span><span class="o">.</span><span class="n">proxied</span><span class="o">.</span><span class="n">attr</span><span class="p">)</span></pre></div>
+</div>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.7.3.</span></p>
+</div>
+<p>See also:</p>
+<p><a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy.local_attr" title="sqlalchemy.ext.associationproxy.AssociationProxy.local_attr"><code class="xref py py-attr docutils literal"><span class="pre">AssociationProxy.local_attr</span></code></a></p>
+<p><a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy.remote_attr" title="sqlalchemy.ext.associationproxy.AssociationProxy.remote_attr"><code class="xref py py-attr docutils literal"><span class="pre">AssociationProxy.remote_attr</span></code></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.ext.associationproxy.AssociationProxy.contains">
+<code class="descname">contains</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.associationproxy.AssociationProxy.contains" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce a proxied &#8216;contains&#8217; expression using EXISTS.</p>
+<p>This expression will be a composed product
+using the <a class="reference internal" href="../internals.html#sqlalchemy.orm.properties.RelationshipProperty.Comparator.any" title="sqlalchemy.orm.properties.RelationshipProperty.Comparator.any"><code class="xref py py-meth docutils literal"><span class="pre">RelationshipProperty.Comparator.any()</span></code></a>
+, <a class="reference internal" href="../internals.html#sqlalchemy.orm.properties.RelationshipProperty.Comparator.has" title="sqlalchemy.orm.properties.RelationshipProperty.Comparator.has"><code class="xref py py-meth docutils literal"><span class="pre">RelationshipProperty.Comparator.has()</span></code></a>,
+and/or <a class="reference internal" href="../internals.html#sqlalchemy.orm.properties.RelationshipProperty.Comparator.contains" title="sqlalchemy.orm.properties.RelationshipProperty.Comparator.contains"><code class="xref py py-meth docutils literal"><span class="pre">RelationshipProperty.Comparator.contains()</span></code></a>
+operators of the underlying proxied attributes.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="sqlalchemy.ext.associationproxy.AssociationProxy.extension_type">
+<code class="descname">extension_type</code><em class="property"> = symbol('ASSOCIATION_PROXY')</em><a class="headerlink" href="#sqlalchemy.ext.associationproxy.AssociationProxy.extension_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy.ext.associationproxy.AssociationProxy.has">
+<code class="descname">has</code><span class="sig-paren">(</span><em>criterion=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.associationproxy.AssociationProxy.has" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce a proxied &#8216;has&#8217; expression using EXISTS.</p>
+<p>This expression will be a composed product
+using the <a class="reference internal" href="../internals.html#sqlalchemy.orm.properties.RelationshipProperty.Comparator.any" title="sqlalchemy.orm.properties.RelationshipProperty.Comparator.any"><code class="xref py py-meth docutils literal"><span class="pre">RelationshipProperty.Comparator.any()</span></code></a>
+and/or <a class="reference internal" href="../internals.html#sqlalchemy.orm.properties.RelationshipProperty.Comparator.has" title="sqlalchemy.orm.properties.RelationshipProperty.Comparator.has"><code class="xref py py-meth docutils literal"><span class="pre">RelationshipProperty.Comparator.has()</span></code></a>
+operators of the underlying proxied attributes.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="sqlalchemy.ext.associationproxy.AssociationProxy.is_attribute">
+<code class="descname">is_attribute</code><em class="property"> = False</em><a class="headerlink" href="#sqlalchemy.ext.associationproxy.AssociationProxy.is_attribute" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="sqlalchemy.ext.associationproxy.AssociationProxy.local_attr">
+<code class="descname">local_attr</code><a class="headerlink" href="#sqlalchemy.ext.associationproxy.AssociationProxy.local_attr" title="Permalink to this definition">¶</a></dt>
+<dd><p>The &#8216;local&#8217; <a class="reference internal" href="../internals.html#sqlalchemy.orm.interfaces.MapperProperty" title="sqlalchemy.orm.interfaces.MapperProperty"><code class="xref py py-class docutils literal"><span class="pre">MapperProperty</span></code></a> referenced by this
+<a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy" title="sqlalchemy.ext.associationproxy.AssociationProxy"><code class="xref py py-class docutils literal"><span class="pre">AssociationProxy</span></code></a>.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.7.3.</span></p>
+</div>
+<p>See also:</p>
+<p><a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy.attr" title="sqlalchemy.ext.associationproxy.AssociationProxy.attr"><code class="xref py py-attr docutils literal"><span class="pre">AssociationProxy.attr</span></code></a></p>
+<p><a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy.remote_attr" title="sqlalchemy.ext.associationproxy.AssociationProxy.remote_attr"><code class="xref py py-attr docutils literal"><span class="pre">AssociationProxy.remote_attr</span></code></a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="sqlalchemy.ext.associationproxy.AssociationProxy.remote_attr">
+<code class="descname">remote_attr</code><a class="headerlink" href="#sqlalchemy.ext.associationproxy.AssociationProxy.remote_attr" title="Permalink to this definition">¶</a></dt>
+<dd><p>The &#8216;remote&#8217; <a class="reference internal" href="../internals.html#sqlalchemy.orm.interfaces.MapperProperty" title="sqlalchemy.orm.interfaces.MapperProperty"><code class="xref py py-class docutils literal"><span class="pre">MapperProperty</span></code></a> referenced by this
+<a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy" title="sqlalchemy.ext.associationproxy.AssociationProxy"><code class="xref py py-class docutils literal"><span class="pre">AssociationProxy</span></code></a>.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.7.3.</span></p>
+</div>
+<p>See also:</p>
+<p><a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy.attr" title="sqlalchemy.ext.associationproxy.AssociationProxy.attr"><code class="xref py py-attr docutils literal"><span class="pre">AssociationProxy.attr</span></code></a></p>
+<p><a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy.local_attr" title="sqlalchemy.ext.associationproxy.AssociationProxy.local_attr"><code class="xref py py-attr docutils literal"><span class="pre">AssociationProxy.local_attr</span></code></a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="sqlalchemy.ext.associationproxy.AssociationProxy.scalar">
+<code class="descname">scalar</code><a class="headerlink" href="#sqlalchemy.ext.associationproxy.AssociationProxy.scalar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if this <a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy" title="sqlalchemy.ext.associationproxy.AssociationProxy"><code class="xref py py-class docutils literal"><span class="pre">AssociationProxy</span></code></a> proxies a scalar
+relationship on the local side.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="sqlalchemy.ext.associationproxy.AssociationProxy.target_class">
+<code class="descname">target_class</code><a class="headerlink" href="#sqlalchemy.ext.associationproxy.AssociationProxy.target_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>The intermediary class handled by this <a class="reference internal" href="#sqlalchemy.ext.associationproxy.AssociationProxy" title="sqlalchemy.ext.associationproxy.AssociationProxy"><code class="xref py py-class docutils literal"><span class="pre">AssociationProxy</span></code></a>.</p>
+<p>Intercepted append/set/assignment events will result
+in the generation of new instances of this class.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="data">
+<dt id="sqlalchemy.ext.associationproxy.ASSOCIATION_PROXY">
+<code class="descclassname">sqlalchemy.ext.associationproxy.</code><code class="descname">ASSOCIATION_PROXY</code><em class="property"> = symbol('ASSOCIATION_PROXY')</em><a class="headerlink" href="#sqlalchemy.ext.associationproxy.ASSOCIATION_PROXY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+    </div>
+
+</div>
+
+<div id="docs-bottom-navigation" class="docs-navigation-links">
+        Previous:
+        <a href="index.html" title="previous chapter">ORM Extensions</a>
+        Next:
+        <a href="automap.html" title="next chapter">Automap</a>
+
+    <div id="docs-copyright">
+        &copy; <a href="../../copyright.html">Copyright</a> 2007-2015, the SQLAlchemy authors and contributors.
+        Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.3.1.
+    </div>
+</div>
+
+</div>
+
+
+        
+        
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+          URL_ROOT:    '../../',
+          VERSION:     '1.0.8',
+          COLLAPSE_MODINDEX: false,
+          FILE_SUFFIX: '.html'
+      };
+    </script>
+
+    <!-- begin iterate through sphinx environment script_files -->
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <!-- end iterate through sphinx environment script_files -->
+
+    <script type="text/javascript" src="../../_static/detectmobile.js"></script>
+    <script type="text/javascript" src="../../_static/init.js"></script>
+
+
+    </body>
+</html>
+
+

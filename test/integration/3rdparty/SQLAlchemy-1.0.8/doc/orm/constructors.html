@@ -1,0 +1,243 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        
+        <title>
+            
+    
+    Constructors and Object Initialization
+ &mdash;
+    SQLAlchemy 1.0 Documentation
+
+        </title>
+
+        
+            <!-- begin iterate through SQLA + sphinx environment css_files -->
+                <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+                <link rel="stylesheet" href="../_static/changelog.css" type="text/css" />
+                <link rel="stylesheet" href="../_static/sphinx_paramlinks.css" type="text/css" />
+                <link rel="stylesheet" href="../_static/docs.css" type="text/css" />
+            <!-- end iterate through SQLA + sphinx environment css_files -->
+        
+
+        
+
+    
+
+    <!-- begin layout.mako headers -->
+
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+        <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="top" title="SQLAlchemy 1.0 Documentation" href="../index.html" />
+        <link rel="up" title="Loading Objects" href="loading_objects.html" />
+        <link rel="next" title="Query API" href="query.html" />
+        <link rel="prev" title="Relationship Loading Techniques" href="loading_relationships.html" />
+    <!-- end layout.mako headers -->
+
+
+    </head>
+    <body>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="docs-container">
+
+
+
+
+
+<div id="docs-top-navigation-container" class="body-background">
+<div id="docs-header">
+    <div id="docs-version-header">
+        Release: <span class="version-num">1.0.8</span> | Release Date: July 22, 2015
+    </div>
+
+    <h1>SQLAlchemy 1.0 Documentation</h1>
+
+</div>
+</div>
+
+<div id="docs-body-container">
+
+    <div id="fixed-sidebar" class="withsidebar">
+
+
+        <div id="docs-sidebar-popout">
+            <h3><a href="../index.html">SQLAlchemy 1.0 Documentation</a></h3>
+
+            <p id="sidebar-topnav">
+                <a href="../contents.html">Contents</a> |
+                <a href="../genindex.html">Index</a>
+            </p>
+
+            <div id="sidebar-search">
+                <form class="search" action="../search.html" method="get">
+                  <input type="text" name="q" size="12" /> <input type="submit" value="Search" />
+                  <input type="hidden" name="check_keywords" value="yes" />
+                  <input type="hidden" name="area" value="default" />
+                </form>
+            </div>
+
+        </div>
+
+        <div id="docs-sidebar">
+
+        
+        <h3>
+            <a href="index.html" title="SQLAlchemy ORM">SQLAlchemy ORM</a>
+        </h3>
+
+        <ul>
+<li><span class="link-container first"><a class="reference external" href="tutorial.html">Object Relational Tutorial</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="mapper_config.html">Mapper Configuration</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="relationships.html">Relationship Configuration</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="loading_objects.html">Loading Objects</a></span><ul>
+<li><span class="link-container first"><a class="reference external" href="loading_columns.html">Loading Columns</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="loading_relationships.html">Relationship Loading Techniques</a></span></li>
+<li class="selected"><span class="link-container first"><strong>Constructors and Object Initialization</strong><a class="paramlink headerlink reference internal" href="#">¶</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="query.html">Query API</a></span></li>
+</ul>
+</li>
+<li><span class="link-container first"><a class="reference external" href="session.html">Using the Session</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="extending.html">Events and Internals</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="extensions/index.html">ORM Extensions</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="examples.html">ORM Examples</a></span></li>
+</ul>
+
+
+
+        </div>
+
+    </div>
+
+    
+
+    <div id="docs-body" class="withsidebar" >
+        
+<span class="target" id="module-sqlalchemy.orm"></span><div class="section" id="constructors-and-object-initialization">
+<span id="mapping-constructors"></span><h1>Constructors and Object Initialization<a class="headerlink" href="#constructors-and-object-initialization" title="Permalink to this headline">¶</a></h1>
+<p>Mapping imposes no restrictions or requirements on the constructor
+(<code class="docutils literal"><span class="pre">__init__</span></code>) method for the class. You are free to require any arguments for
+the function that you wish, assign attributes to the instance that are unknown
+to the ORM, and generally do anything else you would normally do when writing
+a constructor for a Python class.</p>
+<p>The SQLAlchemy ORM does not call <code class="docutils literal"><span class="pre">__init__</span></code> when recreating objects from
+database rows. The ORM&#8217;s process is somewhat akin to the Python standard
+library&#8217;s <code class="docutils literal"><span class="pre">pickle</span></code> module, invoking the low level <code class="docutils literal"><span class="pre">__new__</span></code> method and
+then quietly restoring attributes directly on the instance rather than calling
+<code class="docutils literal"><span class="pre">__init__</span></code>.</p>
+<p>If you need to do some setup on database-loaded instances before they&#8217;re ready
+to use, you can use the <code class="docutils literal"><span class="pre">&#64;reconstructor</span></code> decorator to tag a method as the
+ORM counterpart to <code class="docutils literal"><span class="pre">__init__</span></code>. SQLAlchemy will call this method with no
+arguments every time it loads or reconstructs one of your instances. This is
+useful for recreating transient properties that are normally assigned in your
+<code class="docutils literal"><span class="pre">__init__</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">orm</span>
+
+<span class="k">class</span> <span class="nc">MyMappedClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="c"># we need stuff on all instances, but not in the database.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stuff</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="nd">@orm.reconstructor</span>
+    <span class="k">def</span> <span class="nf">init_on_load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stuff</span> <span class="o">=</span> <span class="p">[]</span></pre></div>
+</div>
+<p>When <code class="docutils literal"><span class="pre">obj</span> <span class="pre">=</span> <span class="pre">MyMappedClass()</span></code> is executed, Python calls the <code class="docutils literal"><span class="pre">__init__</span></code>
+method as normal and the <code class="docutils literal"><span class="pre">data</span></code> argument is required.  When instances are
+loaded during a <a class="reference internal" href="query.html#sqlalchemy.orm.query.Query" title="sqlalchemy.orm.query.Query"><code class="xref py py-class docutils literal"><span class="pre">Query</span></code></a> operation as in
+<code class="docutils literal"><span class="pre">query(MyMappedClass).one()</span></code>, <code class="docutils literal"><span class="pre">init_on_load</span></code> is called.</p>
+<p>Any method may be tagged as the <a class="reference internal" href="#sqlalchemy.orm.reconstructor" title="sqlalchemy.orm.reconstructor"><code class="xref py py-func docutils literal"><span class="pre">reconstructor()</span></code></a>, even
+the <code class="docutils literal"><span class="pre">__init__</span></code> method. SQLAlchemy will call the reconstructor method with no
+arguments. Scalar (non-collection) database-mapped attributes of the instance
+will be available for use within the function. Eagerly-loaded collections are
+generally not yet available and will usually only contain the first element.
+ORM state changes made to objects at this stage will not be recorded for the
+next flush() operation, so the activity within a reconstructor should be
+conservative.</p>
+<p><a class="reference internal" href="#sqlalchemy.orm.reconstructor" title="sqlalchemy.orm.reconstructor"><code class="xref py py-func docutils literal"><span class="pre">reconstructor()</span></code></a> is a shortcut into a larger system
+of &#8220;instance level&#8221; events, which can be subscribed to using the
+event API - see <a class="reference internal" href="events.html#sqlalchemy.orm.events.InstanceEvents" title="sqlalchemy.orm.events.InstanceEvents"><code class="xref py py-class docutils literal"><span class="pre">InstanceEvents</span></code></a> for the full API description
+of these events.</p>
+<dl class="function">
+<dt id="sqlalchemy.orm.reconstructor">
+<code class="descclassname">sqlalchemy.orm.</code><code class="descname">reconstructor</code><span class="sig-paren">(</span><em>fn</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.orm.reconstructor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorate a method as the &#8216;reconstructor&#8217; hook.</p>
+<p>Designates a method as the &#8220;reconstructor&#8221;, an <code class="docutils literal"><span class="pre">__init__</span></code>-like
+method that will be called by the ORM after the instance has been
+loaded from the database or otherwise reconstituted.</p>
+<p>The reconstructor will be invoked with no arguments.  Scalar
+(non-collection) database-mapped attributes of the instance will
+be available for use within the function.  Eagerly-loaded
+collections are generally not yet available and will usually only
+contain the first element.  ORM state changes made to objects at
+this stage will not be recorded for the next flush() operation, so
+the activity within a reconstructor should be conservative.</p>
+</dd></dl>
+
+</div>
+
+    </div>
+
+</div>
+
+<div id="docs-bottom-navigation" class="docs-navigation-links">
+        Previous:
+        <a href="loading_relationships.html" title="previous chapter">Relationship Loading Techniques</a>
+        Next:
+        <a href="query.html" title="next chapter">Query API</a>
+
+    <div id="docs-copyright">
+        &copy; <a href="../copyright.html">Copyright</a> 2007-2015, the SQLAlchemy authors and contributors.
+        Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.3.1.
+    </div>
+</div>
+
+</div>
+
+
+        
+        
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+          URL_ROOT:    '../',
+          VERSION:     '1.0.8',
+          COLLAPSE_MODINDEX: false,
+          FILE_SUFFIX: '.html'
+      };
+    </script>
+
+    <!-- begin iterate through sphinx environment script_files -->
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+    <!-- end iterate through sphinx environment script_files -->
+
+    <script type="text/javascript" src="../_static/detectmobile.js"></script>
+    <script type="text/javascript" src="../_static/init.js"></script>
+
+
+    </body>
+</html>
+
+

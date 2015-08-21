@@ -1,0 +1,249 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        
+        <title>
+            
+    
+    Horizontal Sharding
+ &mdash;
+    SQLAlchemy 1.0 Documentation
+
+        </title>
+
+        
+            <!-- begin iterate through SQLA + sphinx environment css_files -->
+                <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+                <link rel="stylesheet" href="../../_static/changelog.css" type="text/css" />
+                <link rel="stylesheet" href="../../_static/sphinx_paramlinks.css" type="text/css" />
+                <link rel="stylesheet" href="../../_static/docs.css" type="text/css" />
+            <!-- end iterate through SQLA + sphinx environment css_files -->
+        
+
+        
+
+    
+
+    <!-- begin layout.mako headers -->
+
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+        <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="SQLAlchemy 1.0 Documentation" href="../../index.html" />
+        <link rel="up" title="ORM Extensions" href="index.html" />
+        <link rel="next" title="Hybrid Attributes" href="hybrid.html" />
+        <link rel="prev" title="Ordering List" href="orderinglist.html" />
+    <!-- end layout.mako headers -->
+
+
+    </head>
+    <body>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="docs-container">
+
+
+
+
+
+<div id="docs-top-navigation-container" class="body-background">
+<div id="docs-header">
+    <div id="docs-version-header">
+        Release: <span class="version-num">1.0.8</span> | Release Date: July 22, 2015
+    </div>
+
+    <h1>SQLAlchemy 1.0 Documentation</h1>
+
+</div>
+</div>
+
+<div id="docs-body-container">
+
+    <div id="fixed-sidebar" class="withsidebar">
+
+
+        <div id="docs-sidebar-popout">
+            <h3><a href="../../index.html">SQLAlchemy 1.0 Documentation</a></h3>
+
+            <p id="sidebar-topnav">
+                <a href="../../contents.html">Contents</a> |
+                <a href="../../genindex.html">Index</a>
+            </p>
+
+            <div id="sidebar-search">
+                <form class="search" action="../../search.html" method="get">
+                  <input type="text" name="q" size="12" /> <input type="submit" value="Search" />
+                  <input type="hidden" name="check_keywords" value="yes" />
+                  <input type="hidden" name="area" value="default" />
+                </form>
+            </div>
+
+        </div>
+
+        <div id="docs-sidebar">
+
+        
+        <h3>
+            <a href="../index.html" title="SQLAlchemy ORM">SQLAlchemy ORM</a>
+        </h3>
+
+        <ul>
+<li><span class="link-container first"><a class="reference external" href="../tutorial.html">Object Relational Tutorial</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="../mapper_config.html">Mapper Configuration</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="../relationships.html">Relationship Configuration</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="../loading_objects.html">Loading Objects</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="../session.html">Using the Session</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="../extending.html">Events and Internals</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="index.html">ORM Extensions</a></span><ul>
+<li><span class="link-container first"><a class="reference external" href="associationproxy.html">Association Proxy</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="automap.html">Automap</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="baked.html">Baked Queries</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="declarative/index.html">Declarative</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="mutable.html">Mutation Tracking</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="orderinglist.html">Ordering List</a></span></li>
+<li class="selected"><span class="link-container first"><strong>Horizontal Sharding</strong><a class="paramlink headerlink reference internal" href="#">¶</a></span><ul>
+<li><span class="link-container first"><a class="reference external" href="#api-documentation">API Documentation</a></span></li>
+</ul>
+</li>
+<li><span class="link-container first"><a class="reference external" href="hybrid.html">Hybrid Attributes</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="instrumentation.html">Alternate Class Instrumentation</a></span></li>
+</ul>
+</li>
+<li><span class="link-container first"><a class="reference external" href="../examples.html">ORM Examples</a></span></li>
+</ul>
+
+
+
+        </div>
+
+    </div>
+
+    
+
+    <div id="docs-body" class="withsidebar" >
+        
+<div class="section" id="module-sqlalchemy.ext.horizontal_shard">
+<span id="horizontal-sharding"></span><h1>Horizontal Sharding<a class="headerlink" href="#module-sqlalchemy.ext.horizontal_shard" title="Permalink to this headline">¶</a></h1>
+<p>Horizontal sharding support.</p>
+<p>Defines a rudimental &#8216;horizontal sharding&#8217; system which allows a Session to
+distribute queries and persistence operations across multiple databases.</p>
+<p>For a usage example, see the <a class="reference internal" href="../examples.html#examples-sharding"><span>Horizontal Sharding</span></a> example included in
+the source distribution.</p>
+<div class="section" id="api-documentation">
+<h2>API Documentation<a class="headerlink" href="#api-documentation" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="sqlalchemy.ext.horizontal_shard.ShardedSession">
+<em class="property">class </em><code class="descclassname">sqlalchemy.ext.horizontal_shard.</code><code class="descname">ShardedSession</code><span class="sig-paren">(</span><em>shard_chooser</em>, <em>id_chooser</em>, <em>query_chooser</em>, <em>shards=None</em>, <em>query_cls=&lt;class 'sqlalchemy.ext.horizontal_shard.ShardedQuery'&gt;</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.horizontal_shard.ShardedSession" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../session_api.html#sqlalchemy.orm.session.Session" title="sqlalchemy.orm.session.Session"><code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.orm.session.Session</span></code></a></p>
+<dl class="method">
+<dt id="sqlalchemy.ext.horizontal_shard.ShardedSession.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>shard_chooser</em>, <em>id_chooser</em>, <em>query_chooser</em>, <em>shards=None</em>, <em>query_cls=&lt;class 'sqlalchemy.ext.horizontal_shard.ShardedQuery'&gt;</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.horizontal_shard.ShardedSession.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a ShardedSession.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><span class="target" id="sqlalchemy.ext.horizontal_shard.ShardedSession.params.shard_chooser"></span><strong>shard_chooser</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.ext.horizontal_shard.ShardedSession.params.shard_chooser">¶</a> &#8211; A callable which, passed a Mapper, a mapped
+instance, and possibly a SQL clause, returns a shard ID.  This id
+may be based off of the attributes present within the object, or on
+some round-robin scheme. If the scheme is based on a selection, it
+should set whatever state on the instance to mark it in the future as
+participating in that shard.</li>
+<li><span class="target" id="sqlalchemy.ext.horizontal_shard.ShardedSession.params.id_chooser"></span><strong>id_chooser</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.ext.horizontal_shard.ShardedSession.params.id_chooser">¶</a> &#8211; A callable, passed a query and a tuple of identity
+values, which should return a list of shard ids where the ID might
+reside.  The databases will be queried in the order of this listing.</li>
+<li><span class="target" id="sqlalchemy.ext.horizontal_shard.ShardedSession.params.query_chooser"></span><strong>query_chooser</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.ext.horizontal_shard.ShardedSession.params.query_chooser">¶</a> &#8211; For a given Query, returns the list of shard_ids
+where the query should be issued.  Results from all shards returned
+will be combined together into a single listing.</li>
+<li><span class="target" id="sqlalchemy.ext.horizontal_shard.ShardedSession.params.shards"></span><strong>shards</strong><a class="paramlink headerlink reference internal" href="#sqlalchemy.ext.horizontal_shard.ShardedSession.params.shards">¶</a> &#8211; A dictionary of string shard names
+to <a class="reference internal" href="../../core/connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a> objects.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="sqlalchemy.ext.horizontal_shard.ShardedQuery">
+<em class="property">class </em><code class="descclassname">sqlalchemy.ext.horizontal_shard.</code><code class="descname">ShardedQuery</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.horizontal_shard.ShardedQuery" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../query.html#sqlalchemy.orm.query.Query" title="sqlalchemy.orm.query.Query"><code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.orm.query.Query</span></code></a></p>
+<dl class="method">
+<dt id="sqlalchemy.ext.horizontal_shard.ShardedQuery.set_shard">
+<code class="descname">set_shard</code><span class="sig-paren">(</span><em>shard_id</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlalchemy.ext.horizontal_shard.ShardedQuery.set_shard" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a new query, limited to a single shard ID.</p>
+<p>all subsequent operations with the returned query will
+be against the single shard regardless of other state.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+    </div>
+
+</div>
+
+<div id="docs-bottom-navigation" class="docs-navigation-links">
+        Previous:
+        <a href="orderinglist.html" title="previous chapter">Ordering List</a>
+        Next:
+        <a href="hybrid.html" title="next chapter">Hybrid Attributes</a>
+
+    <div id="docs-copyright">
+        &copy; <a href="../../copyright.html">Copyright</a> 2007-2015, the SQLAlchemy authors and contributors.
+        Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.3.1.
+    </div>
+</div>
+
+</div>
+
+
+        
+        
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+          URL_ROOT:    '../../',
+          VERSION:     '1.0.8',
+          COLLAPSE_MODINDEX: false,
+          FILE_SUFFIX: '.html'
+      };
+    </script>
+
+    <!-- begin iterate through sphinx environment script_files -->
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <!-- end iterate through sphinx environment script_files -->
+
+    <script type="text/javascript" src="../../_static/detectmobile.js"></script>
+    <script type="text/javascript" src="../../_static/init.js"></script>
+
+
+    </body>
+</html>
+
+

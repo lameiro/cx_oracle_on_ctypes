@@ -1,0 +1,459 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        
+        <title>
+            
+    
+    Additional Persistence Techniques
+ &mdash;
+    SQLAlchemy 1.0 Documentation
+
+        </title>
+
+        
+            <!-- begin iterate through SQLA + sphinx environment css_files -->
+                <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+                <link rel="stylesheet" href="../_static/changelog.css" type="text/css" />
+                <link rel="stylesheet" href="../_static/sphinx_paramlinks.css" type="text/css" />
+                <link rel="stylesheet" href="../_static/docs.css" type="text/css" />
+            <!-- end iterate through SQLA + sphinx environment css_files -->
+        
+
+        
+
+    
+
+    <!-- begin layout.mako headers -->
+
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+        <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="top" title="SQLAlchemy 1.0 Documentation" href="../index.html" />
+        <link rel="up" title="Using the Session" href="session.html" />
+        <link rel="next" title="Contextual/Thread-local Sessions" href="contextual.html" />
+        <link rel="prev" title="Transactions and Connection Management" href="session_transaction.html" />
+    <!-- end layout.mako headers -->
+
+
+    </head>
+    <body>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="docs-container">
+
+
+
+
+
+<div id="docs-top-navigation-container" class="body-background">
+<div id="docs-header">
+    <div id="docs-version-header">
+        Release: <span class="version-num">1.0.8</span> | Release Date: July 22, 2015
+    </div>
+
+    <h1>SQLAlchemy 1.0 Documentation</h1>
+
+</div>
+</div>
+
+<div id="docs-body-container">
+
+    <div id="fixed-sidebar" class="withsidebar">
+
+
+        <div id="docs-sidebar-popout">
+            <h3><a href="../index.html">SQLAlchemy 1.0 Documentation</a></h3>
+
+            <p id="sidebar-topnav">
+                <a href="../contents.html">Contents</a> |
+                <a href="../genindex.html">Index</a>
+            </p>
+
+            <div id="sidebar-search">
+                <form class="search" action="../search.html" method="get">
+                  <input type="text" name="q" size="12" /> <input type="submit" value="Search" />
+                  <input type="hidden" name="check_keywords" value="yes" />
+                  <input type="hidden" name="area" value="default" />
+                </form>
+            </div>
+
+        </div>
+
+        <div id="docs-sidebar">
+
+        
+        <h3>
+            <a href="index.html" title="SQLAlchemy ORM">SQLAlchemy ORM</a>
+        </h3>
+
+        <ul>
+<li><span class="link-container first"><a class="reference external" href="tutorial.html">Object Relational Tutorial</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="mapper_config.html">Mapper Configuration</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="relationships.html">Relationship Configuration</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="loading_objects.html">Loading Objects</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="session.html">Using the Session</a></span><ul>
+<li><span class="link-container first"><a class="reference external" href="session_basics.html">Session Basics</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="session_state_management.html">State Management</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="cascades.html">Cascades</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="session_transaction.html">Transactions and Connection Management</a></span></li>
+<li class="selected"><span class="link-container first"><strong>Additional Persistence Techniques</strong><a class="paramlink headerlink reference internal" href="#">¶</a></span><ul>
+<li><span class="link-container first"><a class="reference external" href="#embedding-sql-insert-update-expressions-into-a-flush">Embedding SQL Insert/Update Expressions into a Flush</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#using-sql-expressions-with-sessions">Using SQL Expressions with Sessions</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#partitioning-strategies">Partitioning Strategies</a></span><ul>
+<li><span class="link-container first"><a class="reference external" href="#simple-vertical-partitioning">Simple Vertical Partitioning</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#custom-vertical-partitioning">Custom Vertical Partitioning</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#horizontal-partitioning">Horizontal Partitioning</a></span></li>
+</ul>
+</li>
+<li><span class="link-container first"><a class="reference external" href="#bulk-operations">Bulk Operations</a></span><ul>
+<li><span class="link-container first"><a class="reference external" href="#usage">Usage</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#comparison-to-core-insert-update-constructs">Comparison to Core Insert / Update Constructs</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="#orm-compatibility">ORM Compatibility</a></span></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><span class="link-container first"><a class="reference external" href="contextual.html">Contextual/Thread-local Sessions</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="session_api.html">Session API</a></span></li>
+</ul>
+</li>
+<li><span class="link-container first"><a class="reference external" href="extending.html">Events and Internals</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="extensions/index.html">ORM Extensions</a></span></li>
+<li><span class="link-container first"><a class="reference external" href="examples.html">ORM Examples</a></span></li>
+</ul>
+
+
+
+        </div>
+
+    </div>
+
+    
+
+    <div id="docs-body" class="withsidebar" >
+        
+<div class="section" id="additional-persistence-techniques">
+<h1>Additional Persistence Techniques<a class="headerlink" href="#additional-persistence-techniques" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="embedding-sql-insert-update-expressions-into-a-flush">
+<span id="flush-embedded-sql-expressions"></span><h2>Embedding SQL Insert/Update Expressions into a Flush<a class="headerlink" href="#embedding-sql-insert-update-expressions-into-a-flush" title="Permalink to this headline">¶</a></h2>
+<p>This feature allows the value of a database column to be set to a SQL
+expression instead of a literal value. It&#8217;s especially useful for atomic
+updates, calling stored procedures, etc. All you do is assign an expression to
+an attribute:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SomeClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="n">mapper</span><span class="p">(</span><span class="n">SomeClass</span><span class="p">,</span> <span class="n">some_table</span><span class="p">)</span>
+
+<span class="n">someobject</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">SomeClass</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="c"># set &#39;value&#39; attribute to a SQL expression adding one</span>
+<span class="n">someobject</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">some_table</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="mi">1</span>
+
+<span class="c"># issues &quot;UPDATE some_table SET value=value+1&quot;</span>
+<span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span></pre></div>
+</div>
+<p>This technique works both for INSERT and UPDATE statements. After the
+flush/commit operation, the <code class="docutils literal"><span class="pre">value</span></code> attribute on <code class="docutils literal"><span class="pre">someobject</span></code> above is
+expired, so that when next accessed the newly generated value will be loaded
+from the database.</p>
+</div>
+<div class="section" id="using-sql-expressions-with-sessions">
+<span id="session-sql-expressions"></span><h2>Using SQL Expressions with Sessions<a class="headerlink" href="#using-sql-expressions-with-sessions" title="Permalink to this headline">¶</a></h2>
+<p>SQL expressions and strings can be executed via the
+<a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session" title="sqlalchemy.orm.session.Session"><code class="xref py py-class docutils literal"><span class="pre">Session</span></code></a> within its transactional context.
+This is most easily accomplished using the
+<a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session.execute" title="sqlalchemy.orm.session.Session.execute"><code class="xref py py-meth docutils literal"><span class="pre">execute()</span></code></a> method, which returns a
+<a class="reference internal" href="../core/connections.html#sqlalchemy.engine.ResultProxy" title="sqlalchemy.engine.ResultProxy"><code class="xref py py-class docutils literal"><span class="pre">ResultProxy</span></code></a> in the same manner as an
+<a class="reference internal" href="../core/connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a> or
+<a class="reference internal" href="../core/connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Session</span> <span class="o">=</span> <span class="n">sessionmaker</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+<span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
+
+<span class="c"># execute a string statement</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select * from table where id=:id&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;id&#39;</span><span class="p">:</span><span class="mi">7</span><span class="p">})</span>
+
+<span class="c"># execute a SQL expression construct</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">select</span><span class="p">([</span><span class="n">mytable</span><span class="p">])</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mytable</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">id</span><span class="o">==</span><span class="mi">7</span><span class="p">))</span></pre></div>
+</div>
+<p>The current <a class="reference internal" href="../core/connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> held by the
+<a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session" title="sqlalchemy.orm.session.Session"><code class="xref py py-class docutils literal"><span class="pre">Session</span></code></a> is accessible using the
+<a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session.connection" title="sqlalchemy.orm.session.Session.connection"><code class="xref py py-meth docutils literal"><span class="pre">connection()</span></code></a> method:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">connection</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">connection</span><span class="p">()</span></pre></div>
+</div>
+<p>The examples above deal with a <a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session" title="sqlalchemy.orm.session.Session"><code class="xref py py-class docutils literal"><span class="pre">Session</span></code></a> that&#8217;s
+bound to a single <a class="reference internal" href="../core/connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a> or
+<a class="reference internal" href="../core/connections.html#sqlalchemy.engine.Connection" title="sqlalchemy.engine.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a>. To execute statements using a
+<a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session" title="sqlalchemy.orm.session.Session"><code class="xref py py-class docutils literal"><span class="pre">Session</span></code></a> which is bound either to multiple
+engines, or none at all (i.e. relies upon bound metadata), both
+<a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session.execute" title="sqlalchemy.orm.session.Session.execute"><code class="xref py py-meth docutils literal"><span class="pre">execute()</span></code></a> and
+<a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session.connection" title="sqlalchemy.orm.session.Session.connection"><code class="xref py py-meth docutils literal"><span class="pre">connection()</span></code></a> accept a <code class="docutils literal"><span class="pre">mapper</span></code> keyword
+argument, which is passed a mapped class or
+<a class="reference internal" href="mapping_api.html#sqlalchemy.orm.mapper.Mapper" title="sqlalchemy.orm.mapper.Mapper"><code class="xref py py-class docutils literal"><span class="pre">Mapper</span></code></a> instance, which is used to locate the
+proper context for the desired engine:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Session</span> <span class="o">=</span> <span class="n">sessionmaker</span><span class="p">()</span>
+<span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
+
+<span class="c"># need to specify mapper or class when executing</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select * from table where id=:id&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;id&#39;</span><span class="p">:</span><span class="mi">7</span><span class="p">},</span> <span class="n">mapper</span><span class="o">=</span><span class="n">MyMappedClass</span><span class="p">)</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">select</span><span class="p">([</span><span class="n">mytable</span><span class="p">],</span> <span class="n">mytable</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">id</span><span class="o">==</span><span class="mi">7</span><span class="p">),</span> <span class="n">mapper</span><span class="o">=</span><span class="n">MyMappedClass</span><span class="p">)</span>
+
+<span class="n">connection</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">connection</span><span class="p">(</span><span class="n">MyMappedClass</span><span class="p">)</span></pre></div>
+</div>
+</div>
+<div class="section" id="partitioning-strategies">
+<span id="session-partitioning"></span><h2>Partitioning Strategies<a class="headerlink" href="#partitioning-strategies" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="simple-vertical-partitioning">
+<h3>Simple Vertical Partitioning<a class="headerlink" href="#simple-vertical-partitioning" title="Permalink to this headline">¶</a></h3>
+<p>Vertical partitioning places different kinds of objects, or different tables,
+across multiple databases:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">engine1</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="s">&#39;postgresql://db1&#39;</span><span class="p">)</span>
+<span class="n">engine2</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="s">&#39;postgresql://db2&#39;</span><span class="p">)</span>
+
+<span class="n">Session</span> <span class="o">=</span> <span class="n">sessionmaker</span><span class="p">(</span><span class="n">twophase</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c"># bind User operations to engine 1, Account operations to engine 2</span>
+<span class="n">Session</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">binds</span><span class="o">=</span><span class="p">{</span><span class="n">User</span><span class="p">:</span><span class="n">engine1</span><span class="p">,</span> <span class="n">Account</span><span class="p">:</span><span class="n">engine2</span><span class="p">})</span>
+
+<span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span></pre></div>
+</div>
+<p>Above, operations against either class will make usage of the <a class="reference internal" href="../core/connections.html#sqlalchemy.engine.Engine" title="sqlalchemy.engine.Engine"><code class="xref py py-class docutils literal"><span class="pre">Engine</span></code></a>
+linked to that class.   Upon a flush operation, similar rules take place
+to ensure each class is written to the right database.</p>
+<p>The transactions among the multiple databases can optionally be coordinated
+via two phase commit, if the underlying backend supports it.  See
+<a class="reference internal" href="session_transaction.html#session-twophase"><span>Enabling Two-Phase Commit</span></a> for an example.</p>
+</div>
+<div class="section" id="custom-vertical-partitioning">
+<h3>Custom Vertical Partitioning<a class="headerlink" href="#custom-vertical-partitioning" title="Permalink to this headline">¶</a></h3>
+<p>More comprehensive rule-based class-level partitioning can be built by
+overriding the <a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session.get_bind" title="sqlalchemy.orm.session.Session.get_bind"><code class="xref py py-meth docutils literal"><span class="pre">Session.get_bind()</span></code></a> method.   Below we illustrate
+a custom <a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session" title="sqlalchemy.orm.session.Session"><code class="xref py py-class docutils literal"><span class="pre">Session</span></code></a> which delivers the following rules:</p>
+<ol class="arabic simple">
+<li>Flush operations are delivered to the engine named <code class="docutils literal"><span class="pre">master</span></code>.</li>
+<li>Operations on objects that subclass <code class="docutils literal"><span class="pre">MyOtherClass</span></code> all
+occur on the <code class="docutils literal"><span class="pre">other</span></code> engine.</li>
+<li>Read operations for all other classes occur on a random
+choice of the <code class="docutils literal"><span class="pre">slave1</span></code> or <code class="docutils literal"><span class="pre">slave2</span></code> database.</li>
+</ol>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">engines</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;master&#39;</span><span class="p">:</span><span class="n">create_engine</span><span class="p">(</span><span class="s">&quot;sqlite:///master.db&quot;</span><span class="p">),</span>
+    <span class="s">&#39;other&#39;</span><span class="p">:</span><span class="n">create_engine</span><span class="p">(</span><span class="s">&quot;sqlite:///other.db&quot;</span><span class="p">),</span>
+    <span class="s">&#39;slave1&#39;</span><span class="p">:</span><span class="n">create_engine</span><span class="p">(</span><span class="s">&quot;sqlite:///slave1.db&quot;</span><span class="p">),</span>
+    <span class="s">&#39;slave2&#39;</span><span class="p">:</span><span class="n">create_engine</span><span class="p">(</span><span class="s">&quot;sqlite:///slave2.db&quot;</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">Session</span><span class="p">,</span> <span class="n">sessionmaker</span>
+<span class="kn">import</span> <span class="nn">random</span>
+
+<span class="k">class</span> <span class="nc">RoutingSession</span><span class="p">(</span><span class="n">Session</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_bind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mapper</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">clause</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">mapper</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">mapper</span><span class="o">.</span><span class="n">class_</span><span class="p">,</span> <span class="n">MyOtherClass</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">engines</span><span class="p">[</span><span class="s">&#39;other&#39;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flushing</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">engines</span><span class="p">[</span><span class="s">&#39;master&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">engines</span><span class="p">[</span>
+                <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="s">&#39;slave1&#39;</span><span class="p">,</span><span class="s">&#39;slave2&#39;</span><span class="p">])</span>
+            <span class="p">]</span></pre></div>
+</div>
+<p>The above <a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session" title="sqlalchemy.orm.session.Session"><code class="xref py py-class docutils literal"><span class="pre">Session</span></code></a> class is plugged in using the <code class="docutils literal"><span class="pre">class_</span></code>
+argument to <a class="reference internal" href="session_api.html#sqlalchemy.orm.session.sessionmaker" title="sqlalchemy.orm.session.sessionmaker"><code class="xref py py-class docutils literal"><span class="pre">sessionmaker</span></code></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Session</span> <span class="o">=</span> <span class="n">sessionmaker</span><span class="p">(</span><span class="n">class_</span><span class="o">=</span><span class="n">RoutingSession</span><span class="p">)</span></pre></div>
+</div>
+<p>This approach can be combined with multiple <a class="reference internal" href="../core/metadata.html#sqlalchemy.schema.MetaData" title="sqlalchemy.schema.MetaData"><code class="xref py py-class docutils literal"><span class="pre">MetaData</span></code></a> objects,
+using an approach such as that of using the declarative <code class="docutils literal"><span class="pre">__abstract__</span></code>
+keyword, described at <a class="reference internal" href="extensions/declarative/api.html#declarative-abstract"><span>__abstract__</span></a>.</p>
+</div>
+<div class="section" id="horizontal-partitioning">
+<h3>Horizontal Partitioning<a class="headerlink" href="#horizontal-partitioning" title="Permalink to this headline">¶</a></h3>
+<p>Horizontal partitioning partitions the rows of a single table (or a set of
+tables) across multiple databases.</p>
+<p>See the &#8220;sharding&#8221; example: <a class="reference internal" href="examples.html#examples-sharding"><span>Horizontal Sharding</span></a>.</p>
+</div>
+</div>
+<div class="section" id="bulk-operations">
+<span id="id1"></span><h2>Bulk Operations<a class="headerlink" href="#bulk-operations" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Bulk Operations mode is a new series of operations made available
+on the <a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session" title="sqlalchemy.orm.session.Session"><code class="xref py py-class docutils literal"><span class="pre">Session</span></code></a> object for the purpose of invoking INSERT and
+UPDATE statements with greatly reduced Python overhead, at the expense
+of much less functionality, automation, and error checking.
+As of SQLAlchemy 1.0, these features should be considered as &#8220;beta&#8221;, and
+additionally are intended for advanced users.</p>
+</div>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 1.0.0.</span></p>
+</div>
+<p>Bulk operations on the <a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session" title="sqlalchemy.orm.session.Session"><code class="xref py py-class docutils literal"><span class="pre">Session</span></code></a> include <a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session.bulk_save_objects" title="sqlalchemy.orm.session.Session.bulk_save_objects"><code class="xref py py-meth docutils literal"><span class="pre">Session.bulk_save_objects()</span></code></a>,
+<a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session.bulk_insert_mappings" title="sqlalchemy.orm.session.Session.bulk_insert_mappings"><code class="xref py py-meth docutils literal"><span class="pre">Session.bulk_insert_mappings()</span></code></a>, and <a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session.bulk_update_mappings" title="sqlalchemy.orm.session.Session.bulk_update_mappings"><code class="xref py py-meth docutils literal"><span class="pre">Session.bulk_update_mappings()</span></code></a>.
+The purpose of these methods is to directly expose internal elements of the unit of work system,
+such that facilities for emitting INSERT and UPDATE statements given dictionaries
+or object states can be utilized alone, bypassing the normal unit of work
+mechanics of state, relationship and attribute management.   The advantages
+to this approach is strictly one of reduced Python overhead:</p>
+<ul class="simple">
+<li>The flush() process, including the survey of all objects, their state,
+their cascade status, the status of all objects associated with them
+via <a class="reference internal" href="relationship_api.html#sqlalchemy.orm.relationship" title="sqlalchemy.orm.relationship"><code class="xref py py-func docutils literal"><span class="pre">relationship()</span></code></a>, and the topological sort of all operations to
+be performed is completely bypassed.  This reduces a great amount of
+Python overhead.</li>
+<li>The objects as given have no defined relationship to the target
+<a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session" title="sqlalchemy.orm.session.Session"><code class="xref py py-class docutils literal"><span class="pre">Session</span></code></a>, even when the operation is complete, meaning there&#8217;s no
+overhead in attaching them or managing their state in terms of the identity
+map or session.</li>
+<li>The <a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session.bulk_insert_mappings" title="sqlalchemy.orm.session.Session.bulk_insert_mappings"><code class="xref py py-meth docutils literal"><span class="pre">Session.bulk_insert_mappings()</span></code></a> and <a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session.bulk_update_mappings" title="sqlalchemy.orm.session.Session.bulk_update_mappings"><code class="xref py py-meth docutils literal"><span class="pre">Session.bulk_update_mappings()</span></code></a>
+methods accept lists of plain Python dictionaries, not objects; this further
+reduces a large amount of overhead associated with instantiating mapped
+objects and assigning state to them, which normally is also subject to
+expensive tracking of history on a per-attribute basis.</li>
+<li>The process of fetching primary keys after an INSERT also is disabled by
+default.   When performed correctly, INSERT statements can now more readily
+be batched by the unit of work process into <code class="docutils literal"><span class="pre">executemany()</span></code> blocks, which
+perform vastly better than individual statement invocations.</li>
+<li>UPDATE statements can similarly be tailored such that all attributes
+are subject to the SET clase unconditionally, again making it much more
+likely that <code class="docutils literal"><span class="pre">executemany()</span></code> blocks can be used.</li>
+</ul>
+<p>The performance behavior of the bulk routines should be studied using the
+<a class="reference internal" href="examples.html#examples-performance"><span>Performance</span></a> example suite.  This is a series of example
+scripts which illustrate Python call-counts across a variety of scenarios,
+including bulk insert and update scenarios.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="examples.html#examples-performance"><span>Performance</span></a> - includes detailed examples of bulk operations
+contrasted against traditional Core and ORM methods, including performance
+metrics.</p>
+</div>
+<div class="section" id="usage">
+<h3>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h3>
+<p>The methods each work in the context of the <a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session" title="sqlalchemy.orm.session.Session"><code class="xref py py-class docutils literal"><span class="pre">Session</span></code></a> object&#8217;s
+transaction, like any other:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">s</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
+<span class="n">objects</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">User</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;u1&quot;</span><span class="p">),</span>
+    <span class="n">User</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;u2&quot;</span><span class="p">),</span>
+    <span class="n">User</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;u3&quot;</span><span class="p">)</span>
+<span class="p">]</span>
+<span class="n">s</span><span class="o">.</span><span class="n">bulk_save_objects</span><span class="p">(</span><span class="n">objects</span><span class="p">)</span></pre></div>
+</div>
+<p>For <a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session.bulk_insert_mappings" title="sqlalchemy.orm.session.Session.bulk_insert_mappings"><code class="xref py py-meth docutils literal"><span class="pre">Session.bulk_insert_mappings()</span></code></a>, and <a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session.bulk_update_mappings" title="sqlalchemy.orm.session.Session.bulk_update_mappings"><code class="xref py py-meth docutils literal"><span class="pre">Session.bulk_update_mappings()</span></code></a>,
+dictionaries are passed:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">s</span><span class="o">.</span><span class="n">bulk_insert_mappings</span><span class="p">(</span><span class="n">User</span><span class="p">,</span>
+  <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;u1&quot;</span><span class="p">),</span> <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;u2&quot;</span><span class="p">),</span> <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;u3&quot;</span><span class="p">)]</span>
+<span class="p">)</span></pre></div>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p><a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session.bulk_save_objects" title="sqlalchemy.orm.session.Session.bulk_save_objects"><code class="xref py py-meth docutils literal"><span class="pre">Session.bulk_save_objects()</span></code></a></p>
+<p><a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session.bulk_insert_mappings" title="sqlalchemy.orm.session.Session.bulk_insert_mappings"><code class="xref py py-meth docutils literal"><span class="pre">Session.bulk_insert_mappings()</span></code></a></p>
+<p class="last"><a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session.bulk_update_mappings" title="sqlalchemy.orm.session.Session.bulk_update_mappings"><code class="xref py py-meth docutils literal"><span class="pre">Session.bulk_update_mappings()</span></code></a></p>
+</div>
+</div>
+<div class="section" id="comparison-to-core-insert-update-constructs">
+<h3>Comparison to Core Insert / Update Constructs<a class="headerlink" href="#comparison-to-core-insert-update-constructs" title="Permalink to this headline">¶</a></h3>
+<p>The bulk methods offer performance that under particular circumstances
+can be close to that of using the core <a class="reference internal" href="../core/dml.html#sqlalchemy.sql.expression.Insert" title="sqlalchemy.sql.expression.Insert"><code class="xref py py-class docutils literal"><span class="pre">Insert</span></code></a> and
+<a class="reference internal" href="../core/dml.html#sqlalchemy.sql.expression.Update" title="sqlalchemy.sql.expression.Update"><code class="xref py py-class docutils literal"><span class="pre">Update</span></code></a> constructs in an &#8220;executemany&#8221; context (for a description
+of &#8220;executemany&#8221;, see <a class="reference internal" href="../core/tutorial.html#execute-multiple"><span>Executing Multiple Statements</span></a> in the Core tutorial).
+In order to achieve this, the
+<a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session.bulk_insert_mappings.params.return_defaults" title="sqlalchemy.orm.session.Session.bulk_insert_mappings"><code class="xref py py-paramref docutils literal"><span class="pre">Session.bulk_insert_mappings.return_defaults</span></code></a>
+flag should be disabled so that rows can be batched together.   The example
+suite in <a class="reference internal" href="examples.html#examples-performance"><span>Performance</span></a> should be carefully studied in order
+to gain familiarity with how fast bulk performance can be achieved.</p>
+</div>
+<div class="section" id="orm-compatibility">
+<h3>ORM Compatibility<a class="headerlink" href="#orm-compatibility" title="Permalink to this headline">¶</a></h3>
+<p>The bulk insert / update methods lose a significant amount of functionality
+versus traditional ORM use.   The following is a listing of features that
+are <strong>not available</strong> when using these methods:</p>
+<ul class="simple">
+<li>persistence along <a class="reference internal" href="relationship_api.html#sqlalchemy.orm.relationship" title="sqlalchemy.orm.relationship"><code class="xref py py-func docutils literal"><span class="pre">relationship()</span></code></a> linkages</li>
+<li>sorting of rows within order of dependency; rows are inserted or updated
+directly in the order in which they are passed to the methods</li>
+<li>Session-management on the given objects, including attachment to the
+session, identity map management.</li>
+<li>Functionality related to primary key mutation, ON UPDATE cascade</li>
+<li>SQL expression inserts / updates (e.g. <a class="reference internal" href="#flush-embedded-sql-expressions"><span>Embedding SQL Insert/Update Expressions into a Flush</span></a>)</li>
+<li>ORM events such as <a class="reference internal" href="events.html#sqlalchemy.orm.events.MapperEvents.before_insert" title="sqlalchemy.orm.events.MapperEvents.before_insert"><code class="xref py py-meth docutils literal"><span class="pre">MapperEvents.before_insert()</span></code></a>, etc.  The bulk
+session methods have no event support.</li>
+</ul>
+<p>Features that <strong>are available</strong> include:</p>
+<ul class="simple">
+<li>INSERTs and UPDATEs of mapped objects</li>
+<li>Version identifier support</li>
+<li>Multi-table mappings, such as joined-inheritance - however, an object
+to be inserted across multiple tables either needs to have primary key
+identifiers fully populated ahead of time, else the
+<a class="reference internal" href="session_api.html#sqlalchemy.orm.session.Session.bulk_save_objects.params.return_defaults" title="sqlalchemy.orm.session.Session.bulk_save_objects"><code class="xref py py-paramref docutils literal"><span class="pre">Session.bulk_save_objects.return_defaults</span></code></a> flag must be used,
+which will greatly reduce the performance benefits</li>
+</ul>
+</div>
+</div>
+</div>
+
+    </div>
+
+</div>
+
+<div id="docs-bottom-navigation" class="docs-navigation-links">
+        Previous:
+        <a href="session_transaction.html" title="previous chapter">Transactions and Connection Management</a>
+        Next:
+        <a href="contextual.html" title="next chapter">Contextual/Thread-local Sessions</a>
+
+    <div id="docs-copyright">
+        &copy; <a href="../copyright.html">Copyright</a> 2007-2015, the SQLAlchemy authors and contributors.
+        Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.3.1.
+    </div>
+</div>
+
+</div>
+
+
+        
+        
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+          URL_ROOT:    '../',
+          VERSION:     '1.0.8',
+          COLLAPSE_MODINDEX: false,
+          FILE_SUFFIX: '.html'
+      };
+    </script>
+
+    <!-- begin iterate through sphinx environment script_files -->
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+    <!-- end iterate through sphinx environment script_files -->
+
+    <script type="text/javascript" src="../_static/detectmobile.js"></script>
+    <script type="text/javascript" src="../_static/init.js"></script>
+
+
+    </body>
+</html>
+
+
