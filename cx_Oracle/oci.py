@@ -53,3 +53,7 @@ def OCIDateGetTime(date):
 def OCIDateSetTime(date, hour, minute, second):
     time = date.OCIDateTime
     time.OCITimeHH, time.OCITimeMI, time.OCITimeSS = hour, minute, second
+
+class AnythingGoes(object):
+    def from_param(self, val):
+        return val

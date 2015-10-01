@@ -2,7 +2,7 @@ import ctypes
 from ctypes import byref
 
 import oci
-from utils import ReplaceArgtypeByVoidPointerContextManager
+from utils import AnythingGoes
 
 def OCIAttrGet(param, oci_function, oci_type, oci_subfunction, environment, context):
     c_result = oci_type()
@@ -24,12 +24,9 @@ def OCIParamGet(handle, htype, environment, pos, context):
     return result
 
 def OCIHandleAlloc(environment, handle, handle_type, error_message):
-    context_manager = ReplaceArgtypeByVoidPointerContextManager(oci.OCIHandleAlloc, 1)
-    try:
-        context_manager.__enter__()
-        argtypes = oci.OCIHandleAlloc.argtypes
-        status = oci.OCIHandleAlloc(environment.handle, byref(handle), handle_type, 0, argtypes[4]())
-    finally:
-        context_manager.__exit__()
-        
+    WrappedOCIHandleAlloc = oci.OCIHandleAlloc
+    original_argtypes = oci.OCIHandleAlloc.argtypes
+    WrappedOCIHandleAlloc.argtypes = [original_argtypes[0], AnythingGoes()] + original_argtypes[2:]
+    argtypes = WrappedOCIHandleAlloc.argtypes
+    status = WrappedOCIHandleAlloc(environment.handle, byref(handle), handle_type, 0, argtypes[4]())
     environment.check_for_error(status, error_message)

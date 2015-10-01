@@ -1,6 +1,6 @@
 import oci
 from ctypes import byref
-from utils import ReplaceArgtypeByVoidPointerContextManager
+from utils import AnythingGoes
 
 class DescriptorManager(object):
     def finalize(self, variable_type, var, oracle_descriptor_type):
@@ -11,16 +11,12 @@ class DescriptorManager(object):
                 
     def initialize(self, variable_type, var, cursor, oracle_descriptor_type, message):
         typed_data = variable_type.get_typed_data(var)
-        
-        context_manager = ReplaceArgtypeByVoidPointerContextManager(oci.OCIDescriptorAlloc, 1)
-        
-        try:
-            context_manager.__enter__()
-            arg4 = oci.OCIDescriptorAlloc.argtypes[4]()
-            for i in xrange(var.allocelems):
-                element = typed_data[i]
-                status = oci.OCIDescriptorAlloc(var.environment.handle, byref(element), 
-                                                oracle_descriptor_type, 0, arg4)
-                var.environment.check_for_error(status, message)
-        finally:
-            context_manager.__exit__()
+        WrappedOCIDescriptorAlloc = oci.OCIDescriptorAlloc
+        original_argtypes = oci.OCIDescriptorAlloc.argtypes
+        WrappedOCIDescriptorAlloc.argtypes = [original_argtypes[0], AnythingGoes()] + original_argtypes[2:]
+        arg4 = original_argtypes[4]()
+        for i in xrange(var.allocelems):
+            element = typed_data[i]
+            status = WrappedOCIDescriptorAlloc(var.environment.handle, byref(element),
+                                               oracle_descriptor_type, 0, arg4)
+            var.environment.check_for_error(status, message)
