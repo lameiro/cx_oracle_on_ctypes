@@ -1,6 +1,4 @@
 import sys
-import ctypes
-import oci
 import operator
 
 
@@ -41,19 +39,3 @@ DRIVER_NAME = 'cx_Oracle-0.1'
 
 MAX_STRING_CHARS = 4000
 MAX_BINARY_BYTES = 4000
-
-class AnythingGoes(object):
-    def from_param(self, val):
-        return val
-
-class ReplaceArgtypeByVoidPointerContextManager(object):
-    def __init__(self, oci_function, pos):
-        self.oci_function = oci_function
-        self.pos = pos
-    
-    def __enter__(self):
-        self.old_argtypes = self.oci_function.argtypes
-        self.oci_function.argtypes = self.old_argtypes[:self.pos] + [AnythingGoes()] + self.old_argtypes[self.pos+1:]
-        
-    def __exit__(self):
-        self.oci_function.argtypes = self.old_argtypes

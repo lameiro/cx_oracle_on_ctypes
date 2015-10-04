@@ -1,13 +1,12 @@
 import ctypes
-from ctypes import byref
+from ctypes import byref, cast, c_void_p, POINTER
 
 import oci
-from utils import ReplaceArgtypeByVoidPointerContextManager
 
 def OCIAttrGet(param, oci_function, oci_type, oci_subfunction, environment, context):
     c_result = oci_type()
-    arg3 = oci.POINTER(oci.ub4)() # TODO: move somewhere where it is evaluated only once
-    status = oci.OCIAttrGet(param, oci_function, byref(c_result), arg3, oci_subfunction, environment.error_handle)
+    argtypes = oci.OCIAttrGet.argtypes
+    status = oci.OCIAttrGet(param, oci_function, byref(c_result), argtypes[3](), oci_subfunction, environment.error_handle)
     environment.check_for_error(status, context)
     return c_result.value
 
@@ -24,12 +23,7 @@ def OCIParamGet(handle, htype, environment, pos, context):
     return result
 
 def OCIHandleAlloc(environment, handle, handle_type, error_message):
-    context_manager = ReplaceArgtypeByVoidPointerContextManager(oci.OCIHandleAlloc, 1)
-    try:
-        context_manager.__enter__()
-        argtypes = oci.OCIHandleAlloc.argtypes
-        status = oci.OCIHandleAlloc(environment.handle, byref(handle), handle_type, 0, argtypes[4]())
-    finally:
-        context_manager.__exit__()
-        
+    argtypes = oci.OCIHandleAlloc.argtypes
+    status = oci.OCIHandleAlloc(environment.handle, cast(byref(handle), POINTER(c_void_p)), handle_type, 0, argtypes[4]())
+
     environment.check_for_error(status, error_message)
