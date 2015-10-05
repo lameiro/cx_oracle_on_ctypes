@@ -1,0 +1,4 @@
+include *.md
+
+recursive-include docs *
+recursive-include cx_Oracle *
