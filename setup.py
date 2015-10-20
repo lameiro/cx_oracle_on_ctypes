@@ -30,7 +30,7 @@ long_description = (
 setup(
     name='cx_oracle_on_ctypes',
     version=version,
-    description="Ctypes-based Python interface to Oracle",
+    description="Ctypes-based Python interface to Oracle, compatible with cx_Oracle",
     long_description=long_description,
 
     classifiers=[
@@ -49,10 +49,10 @@ setup(
         "Topic :: Database",
         ],
 
-    keywords='Oracle ctypes cx_Oracle ',
+    keywords='Oracle ctypes cx_Oracle',
     license='BSD',
-    author='Leandro Lameiro ',
-    author_email='lameiro@gmails.com',
+    author='Leandro Lameiro',
+    author_email='lameiro@gmail.com',
     url='https://github.com/lameiro/cx_oracle_on_ctypes',
     packages=find_packages(exclude=['ez_setup', 'tests']),
     include_package_data=True,
