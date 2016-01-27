@@ -813,7 +813,7 @@ constantly free the descriptor when an error takes place."""
         status = oci.OCIAttrGet(param, oci.OCI_HTYPE_DESCRIBE, byref(c_name),
                 byref(c_name_length), oci.OCI_ATTR_NAME, self.environment.error_handle)
         self.environment.check_for_error(status, "Cursor_ItemDescription(): name")
-        name = c_name.value[:c_name_length.value] # doesn't it give back a NULL terminated string?!
+        name = ctypes.string_at(c_name, c_name_length.value)
         
         python_type = var_type.python_type
         
