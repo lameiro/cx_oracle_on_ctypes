@@ -2,13 +2,13 @@ import ctypes
 from ctypes import byref
 from decimal import Decimal
 
-from variable_type import VariableType
-from utils import python3_or_better, cxString_from_ascii, cxString_from_encoded_string
-from buffer import cxBuffer
-from transforms import oracle_number_to_python_float
-import oci
-from pythonic_oci import OCIAttrGet
-from variable import Variable
+from cx_Oracle.variable_type import VariableType
+from cx_Oracle.utils import python3_or_better, cxString_from_ascii, cxString_from_encoded_string, dict_iteritems, xrange
+from cx_Oracle.buffer import cxBuffer
+from cx_Oracle.transforms import oracle_number_to_python_float
+from cx_Oracle import oci
+from cx_Oracle.pythonic_oci import OCIAttrGet
+from cx_Oracle.variable import Variable
 
 class NUMBER(Variable):
     @staticmethod
@@ -58,14 +58,16 @@ class BaseNumberVarType(VariableType):
         # not standard variable type
         
         self.mapping_python_type_to_method = {
-            long: self.set_value_from_long,
             bool: self.set_value_from_boolean,
             float: self.set_value_from_float,
             Decimal: self.set_value_from_decimal,
-           }
+        }
     
-        if not python3_or_better():
+        if python3_or_better():
+            self.mapping_python_type_to_method[int] = self.set_value_from_long
+        else:
             self.mapping_python_type_to_method[int] = self.set_value_from_integer
+            self.mapping_python_type_to_method[long] = self.set_value_from_long
 
     def pre_define(self, var, param):
         """Set the type of value (integer, float or string) that will be returned when values are fetched from this variable."""
@@ -136,7 +138,7 @@ class BaseNumberVarType(VariableType):
     def set_value(self, var, pos, value):
         """Set the value of the variable."""
         
-        for type, method in self.mapping_python_type_to_method.iteritems():
+        for type, method in dict_iteritems(self.mapping_python_type_to_method):
             if isinstance(value, type):
                 break
         else:
@@ -207,9 +209,10 @@ class BaseNumberVarType(VariableType):
                     digit = digits[num_digits + i]
                 
                 text_list.append(str(digit))
-        
-        text_obj = cxString_from_ascii(''.join(text_list))
-        format_obj = cxString_from_ascii(''.join(format_list))
+       
+        # cx_oracle_on_ctypes: Py3: as we are appending str, we don't need to convert to cxString as in C
+        text_obj = ''.join(text_list)
+        format_obj = ''.join(format_list)
         
         return text_obj, format_obj
     

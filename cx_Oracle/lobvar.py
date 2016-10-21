@@ -1,13 +1,13 @@
 import ctypes
 from ctypes import byref
 
-from variable_type import VariableType
-import oci
-from utils import python3_or_better
-from buffer import cxBuffer
-from variable import Variable
-from externallobvar import LOB
-from descriptor_manager import DescriptorManager
+from cx_Oracle.variable_type import VariableType
+from cx_Oracle import oci
+from cx_Oracle.utils import python3_or_better, xrange
+from cx_Oracle.buffer import cxBuffer
+from cx_Oracle.variable import Variable
+from cx_Oracle.externallobvar import LOB
+from cx_Oracle.descriptor_manager import DescriptorManager
 
 class CLOB(Variable):
     pass

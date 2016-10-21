@@ -2,7 +2,7 @@ import ctypes
 from ctypes import byref
 from datetime import date, datetime, timedelta
 
-import oci
+from cx_Oracle import oci
 
 def oracle_number_to_python_float(environment, value):
     c_double_value = ctypes.c_double()
@@ -39,7 +39,7 @@ def oracle_timestamp_to_python_date(environment, value):
                                     value, byref(hour), byref(minute), byref(second), byref(fsecond))
     environment.check_for_error(status, "OracleTimestampToPythonDate(): time portion")
     
-    return datetime(year.value, month.value, day.value, hour.value, minute.value, second.value, fsecond.value / 1000)
+    return datetime(year.value, month.value, day.value, hour.value, minute.value, second.value, fsecond.value // 1000)
 
 def oracle_interval_to_python_delta(environment, value):
     days = oci.sb4()
@@ -53,4 +53,4 @@ def oracle_interval_to_python_delta(environment, value):
                                          value)
     environment.check_for_error(status, "OracleIntervalToPythonDelta()")
     seconds = hours.value * 3600 + minutes.value * 60 + seconds.value
-    return timedelta(days=days.value, seconds=seconds, microseconds=fseconds.value/1000)
+    return timedelta(days=days.value, seconds=seconds, microseconds=fseconds.value//1000)

@@ -1,10 +1,10 @@
-import oci
+from cx_Oracle import oci
 import ctypes
 from ctypes import byref
 
-from variable import Variable
-from variable_type import VariableType
-from transforms import oracle_date_to_python_date
+from cx_Oracle.variable import Variable
+from cx_Oracle.variable_type import VariableType
+from cx_Oracle.transforms import oracle_date_to_python_date
 
 from datetime import date, datetime
 

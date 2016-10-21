@@ -1,12 +1,12 @@
-import oci
+from cx_Oracle import oci
 import ctypes
 from ctypes import byref
 from datetime import timedelta
 
-from descriptor_manager import DescriptorManager
-from variable import Variable
-from variable_type import VariableType
-from transforms import oracle_interval_to_python_delta
+from cx_Oracle.descriptor_manager import DescriptorManager
+from cx_Oracle.variable import Variable
+from cx_Oracle.variable_type import VariableType
+from cx_Oracle.transforms import oracle_interval_to_python_delta
 
 class INTERVAL(Variable):
     pass

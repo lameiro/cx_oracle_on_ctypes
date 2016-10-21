@@ -1,7 +1,7 @@
 import ctypes
 from ctypes import byref, cast, c_void_p, POINTER
 
-import oci
+from cx_Oracle import oci
 
 def OCIAttrGet(param, oci_function, oci_type, oci_subfunction, environment, context):
     c_result = oci_type()

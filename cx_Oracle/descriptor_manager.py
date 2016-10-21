@@ -1,5 +1,6 @@
-import oci
+from cx_Oracle import oci
 from ctypes import byref, cast, POINTER, c_void_p
+from cx_Oracle.utils import xrange
 
 class DescriptorManager(object):
     def finalize(self, variable_type, var, oracle_descriptor_type):

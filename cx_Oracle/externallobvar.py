@@ -1,9 +1,9 @@
 import ctypes
 from ctypes import byref
 
-import oci
-from utils import bytes, cxString_from_encoded_string
-from custom_exceptions import ProgrammingError, DatabaseError
+from cx_Oracle import oci
+from cx_Oracle.utils import bytes, cxString_from_encoded_string
+from cx_Oracle.custom_exceptions import ProgrammingError, DatabaseError
 
 class LOB(object):
     def size(self):
@@ -59,7 +59,7 @@ class LOB(object):
         self.lob_var = var
         
     def _value(self, offset, amount):
-        from lobvar import vt_CLOB, vt_NCLOB
+        from cx_Oracle.lobvar import vt_CLOB, vt_NCLOB
         """Return a portion (or all) of the data in the external LOB variable."""
         lob_type = self.lob_var.type
         
@@ -104,7 +104,7 @@ class LOB(object):
         return self.lob_var.type.get_typed_data(self.lob_var)
     
     def _internal_read(self, offset, amount):
-        from lobvar import vt_CLOB, vt_NCLOB
+        from cx_Oracle.lobvar import vt_CLOB, vt_NCLOB
         lob_type = self.lob_var.type
         
         if self.lob_var.is_file:

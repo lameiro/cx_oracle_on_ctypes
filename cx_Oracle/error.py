@@ -1,9 +1,8 @@
 from ctypes import byref
 import ctypes
-from custom_exceptions import InternalError
-import oci
-
-from utils import python3_or_better
+from cx_Oracle.custom_exceptions import InternalError
+from cx_Oracle import oci
+from cx_Oracle.utils import python3_or_better
 
 class Error(object):
     def __init__(self, environment, context, retrieve_error):
@@ -28,7 +27,7 @@ class Error(object):
             if not python3_or_better():
                 self.message = error_text.value
             else:
-                self.message = error_text.decode(environment.encoding)
+                self.message = error_text.value.decode(environment.encoding)
     
     def __str__(self):
         return self.message

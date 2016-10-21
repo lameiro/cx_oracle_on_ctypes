@@ -2,15 +2,15 @@ import ctypes
 from ctypes import byref
 from datetime import datetime
 
-from variable_type import VariableType
-import oci
-from utils import python3_or_better, cxString_from_encoded_string
-from buffer import cxBuffer
-from variable import Variable
+from cx_Oracle.variable_type import VariableType
+from cx_Oracle import oci
+from cx_Oracle.utils import python3_or_better, cxString_from_encoded_string
+from cx_Oracle.buffer import cxBuffer
+from cx_Oracle.variable import Variable
 
-from descriptor_manager import DescriptorManager
-from transforms import oracle_timestamp_to_python_date
-from custom_exceptions import DataError
+from cx_Oracle.descriptor_manager import DescriptorManager
+from cx_Oracle.transforms import oracle_timestamp_to_python_date
+from cx_Oracle.custom_exceptions import DataError
 
 class TIMESTAMP(Variable):
     pass

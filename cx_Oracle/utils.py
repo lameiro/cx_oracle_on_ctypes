@@ -1,7 +1,7 @@
 import sys
 import operator
 
-
+# Python3 compatibility names - maybe I could use six here
 def python3_or_better():
     return sys.version_info.major >= 3
 
@@ -28,12 +28,29 @@ except NameError:
 
 if python3_or_better():
     cxBinary = bytes
-    cxString = unicode
+    cxString = str 
 else:
     cxBinary = buffer
     cxString = bytes
 
-is_sequence = operator.isSequenceType
+def is_sequence(obj):
+    try:
+        from collections import Sequence
+    except ImportError:
+        from operator import isSequenceType
+        return operator.isSequenceType(obj)
+    else:
+        return isinstance(obj, Sequence)
+
+if python3_or_better():
+    xrange = range
+    dict_iteritems = dict.items
+else:
+    xrange = xrange
+    dict_iteritems = dict.iteritems
+
+# C constants
+INT_MAX = 2147483647 # both GCC and VS seem to define at this value for 32 and 64 bits
 
 DRIVER_NAME = 'cx_Oracle-0.1'
 

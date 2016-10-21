@@ -1,9 +1,10 @@
-import oci
 import ctypes
 from ctypes import byref
 
-from variable import Variable
-from variable_type import VariableType
+from cx_Oracle.variable import Variable
+from cx_Oracle.variable_type import VariableType
+from cx_Oracle.utils import xrange
+from cx_Oracle import oci
 
 class CURSOR(Variable):
     pass
@@ -48,7 +49,7 @@ class CursorVariableType(VariableType):
         var.cursors = None
     
     def set_value_proc(self, var, pos, value):
-        from cursor import Cursor
+        from cx_Oracle.cursor import Cursor
         
         if not isinstance(value, Cursor):
             raise TypeError("expecting cursor")

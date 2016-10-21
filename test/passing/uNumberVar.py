@@ -14,7 +14,7 @@ class TestNumberVar(BaseTestCase):
           floatCol = i + i * 0.75
           unconstrainedCol = i ** 3 + i * 0.5
           if i % 2:
-              nullableCol = 143L ** i
+              nullableCol = 143 ** i
           else:
               nullableCol = None
           dataTuple = (i, numberCol, floatCol, unconstrainedCol, nullableCol)
@@ -53,7 +53,7 @@ class TestNumberVar(BaseTestCase):
         self.cursor.execute(u"""
                 select * from TestNumbers
                 where IntCol = :value""",
-                value = 3L)
+                value = 3)
         self.failUnlessEqual(self.cursor.fetchall(), [self.dataByKey[3]])
 
     def testBindLargeLong(self):

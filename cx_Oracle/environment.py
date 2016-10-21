@@ -1,10 +1,10 @@
 from ctypes import byref
 import ctypes
-import oci
-from buffer import cxBuffer
-from error import Error
-from custom_exceptions import IntegrityError, OperationalError, DatabaseError, InterfaceError
-from utils import MAX_STRING_CHARS
+from cx_Oracle import oci
+from cx_Oracle.buffer import cxBuffer
+from cx_Oracle.error import Error
+from cx_Oracle.custom_exceptions import IntegrityError, OperationalError, DatabaseError, InterfaceError
+from cx_Oracle.utils import MAX_STRING_CHARS, python3_or_better
 
 
 class Environment(object):
@@ -60,8 +60,16 @@ class Environment(object):
         env.fixedWidth = c_fixedWidth.value
         
         # determine encodings to use for Unicode values
-        env.encoding = env.get_characterset_name(oci.OCI_ATTR_ENV_CHARSET_ID, encoding)
-        env.nencoding = env.get_characterset_name(oci.OCI_ATTR_ENV_NCHARSET_ID, nencoding)
+        encoding_bytes = env.get_characterset_name(oci.OCI_ATTR_ENV_CHARSET_ID, encoding)
+        nencoding_bytes = env.get_characterset_name(oci.OCI_ATTR_ENV_NCHARSET_ID, nencoding)
+        
+        # cx_Oracle on ctypes only. Needed because all encoding/decoding operations require a str in Py3, not bytes
+        if python3_or_better():
+            env.encoding = encoding_bytes.decode('utf-8')
+            env.nencoding = nencoding_bytes.decode('utf-8')
+        else:
+            env.encoding = encoding_bytes
+            env.nencoding = nencoding_bytes
 
         # fill buffers for number formats
         env.numberToStringFormatBuffer = Environment.set_buffer("TM9", env.encoding)

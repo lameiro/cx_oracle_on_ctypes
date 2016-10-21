@@ -7,30 +7,34 @@ import sys
 import ctypes
 from ctypes import c_int, byref
 
-from custom_exceptions import Warning, Error, InterfaceError, DatabaseError, DataError, OperationalError, IntegrityError, InternalError, ProgrammingError, NotSupportedError
+from cx_Oracle.custom_exceptions import Warning, Error, InterfaceError, DatabaseError, DataError, OperationalError, IntegrityError, InternalError, ProgrammingError, NotSupportedError
 
-from utils import python3_or_better
+from cx_Oracle.utils import python3_or_better
 
 # set up the types that are available
-from utils import cxBinary as Binary
-from connection import Connection
-from cursor import Cursor
+from cx_Oracle.utils import cxBinary as Binary
+from cx_Oracle.connection import Connection
+from cx_Oracle.cursor import Cursor
 from datetime import datetime as Timestamp
 from datetime import date as Date
 # TODO: Sessionpool
-from error import Error as _Error
+from cx_Oracle.error import Error as _Error
 connect = Connection # the name "connect" is required by the DB API
 
 # create the basic data types for setting input sizes
-from numbervar import NUMBER #, NATIVE_FLOAT
-from stringvar import STRING, BINARY, FIXED_CHAR, FIXED_UNICODE, ROWID, UNICODE
-from longvar import LONG_BINARY, LONG_STRING
-from datetimevar import DATETIME
-from lobvar import NCLOB, CLOB, BLOB, BFILE
-from externallobvar import LOB
-from timestampvar import TIMESTAMP
-from intervalvar import INTERVAL
-from cursorvar import CURSOR
+from cx_Oracle.numbervar import NUMBER #, NATIVE_FLOAT
+from cx_Oracle.stringvar import STRING, BINARY, FIXED_CHAR, ROWID
+
+if not python3_or_better():
+    from cx_Oracle.stringvar import UNICODE, FIXED_UNICODE
+
+from cx_Oracle.longvar import LONG_BINARY, LONG_STRING
+from cx_Oracle.datetimevar import DATETIME
+from cx_Oracle.lobvar import NCLOB, CLOB, BLOB, BFILE
+from cx_Oracle.externallobvar import LOB
+from cx_Oracle.timestampvar import TIMESTAMP
+from cx_Oracle.intervalvar import INTERVAL
+from cx_Oracle.cursorvar import CURSOR
 
 def symbol_exists(symbol_name):
     pass
@@ -86,7 +90,7 @@ buildtime = '' # TODO: Find out what cx_oracle puts here
 version = '0.1'
 
 # add constants for registering callbacks
-from oci import \
+from cx_Oracle.oci import \
     OCI_SYSDBA                  as SYSDBA, \
     OCI_SYSOPER                 as SYSOPER,\
     OCI_FNCODE_BINDBYNAME       as FNCODE_BINDBYNAME, \
@@ -103,7 +107,7 @@ from oci import \
     OCI_SPOOL_ATTRVAL_FORCEGET  as SPOOL_ATTRVAL_FORCEGET
 
 if ORACLE_VERSION >= ORACLE_VERSION_10GR2:
-    from oci import \
+    from cx_Oracle.oci import \
         OCI_PRELIM_AUTH                     as PRELIM_AUTH, \
         OCI_DBSHUTDOWN_ABORT                as DBSHUTDOWN_ABORT, \
         OCI_DBSHUTDOWN_FINAL                as DBSHUTDOWN_FINAL, \
@@ -130,12 +134,12 @@ if ORACLE_VERSION >= ORACLE_VERSION_10GR2:
         OCI_SUBSCR_PROTO_HTTP               as SUBSCR_PROTO_HTTP
 
 if ORACLE_VERSION >= ORACLE_VERSION_11G:
-    from oci import \
+    from cx_Oracle.oci import \
         OCI_ATTR_PURITY_DEFAULT as ATTR_PURITY_DEFAULT,\
         OCI_ATTR_PURITY_NEW as ATTR_PURITY_NEW, \
         OCI_ATTR_PURITY_SELF as ATTR_PURITY_SELF
 
 # TODO: add all exceptions, imported classes etc
-__all__ = ['makedsn', 'Time', 'DateFromTicks', 'TimeFromTicks', 'TimestampFromTicks', 'Binary'] # just to hide ancilliary names like "python3_or_better"
+__all__ = ['connect', 'makedsn', 'Time', 'DateFromTicks', 'TimeFromTicks', 'TimestampFromTicks', 'Binary'] # just to hide ancilliary names like "python3_or_better"
 if ORACLE_VERSION >= ORACLE_VERSION_10GR2:
     __all__ += ['clientversion']

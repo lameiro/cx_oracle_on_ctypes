@@ -1,3 +1,3 @@
 #!/bin/bash
-
-docker run -P -p 1521:1521 -v /home/lameiro/projects/cx_oracle_on_ctypes/test:/oracle_scripts wnameless/oracle-xe-11g
+TESTPATH=$( cd $(dirname $0)/../test ; pwd -P )
+docker run -P -p 49160:22 -p 1521:1521 -v $TESTPATH:/oracle_scripts wnameless/oracle-xe-11g

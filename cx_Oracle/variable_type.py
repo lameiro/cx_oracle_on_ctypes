@@ -1,6 +1,6 @@
 import ctypes
 
-import oci
+from cx_Oracle import oci
 
 class VariableType(object):
     def __init__(self):

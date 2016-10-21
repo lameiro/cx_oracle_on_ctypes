@@ -1,4 +1,4 @@
-from utils import python3_or_better
+from cx_Oracle.utils import python3_or_better
 
 if python3_or_better():
     CXORA_BASE_EXCEPTION = Exception

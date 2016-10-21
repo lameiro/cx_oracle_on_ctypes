@@ -2,12 +2,11 @@ from ctypes import byref
 import ctypes
 import sys
 
-from utils import python3_or_better
-from custom_exceptions import NotSupportedError, DatabaseError
-from error import Error
-from buffer import cxBuffer
-
-import oci
+from cx_Oracle.utils import python3_or_better, xrange, INT_MAX
+from cx_Oracle.custom_exceptions import NotSupportedError, DatabaseError
+from cx_Oracle.error import Error
+from cx_Oracle.buffer import cxBuffer
+from cx_Oracle import oci
 
 class Variable(object):
     def __init__(self, cursor, num_elements, type, size):
@@ -92,7 +91,7 @@ class Variable(object):
 
         # allocate the data as long as it is small enough
         data_length = self.numElements * self.bufferSize
-        if data_length > sys.maxint:
+        if data_length > INT_MAX:
             raise ValueError("array size too large")
 
         self.data = ctypes.create_string_buffer(data_length) # TODO: then, would be nicer to use a typed array here.
@@ -102,7 +101,7 @@ class Variable(object):
 
         # ensure we do not exceed the number of allocated elements
         if array_pos >= self.numElements:
-            raise(IndexError, "Variable_GetSingleValue: array size exceeded")
+            raise IndexError("Variable_GetSingleValue: array size exceeded")
 
         # check for a NULL value
         if self.type.is_null_proc:

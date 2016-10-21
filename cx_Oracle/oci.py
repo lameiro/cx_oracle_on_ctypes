@@ -1,12 +1,12 @@
 try:
-    from oci_generated_12 import *
-except ImportError, e:
+    from cx_Oracle.oci_generated_12 import *
+except ImportError as e:
     try:
-        from oci_generated_11 import *
-    except ImportError, e:
+        from cx_Oracle.oci_generated_11 import *
+    except ImportError as e:
         try:
-            from oci_generated_10 import *
-        except ImportError, e:
+            from cx_Oracle.oci_generated_10 import *
+        except ImportError as e:
             raise Exception("Could not import oracle libraries version 12, 11 or 10. Giving up. Don't forget to set your ORACLE_HOME and LD_LIBRARY_PATH.")
 
 ORACLE_10G = hasattr(locals(), 'OCI_ATTR_MODULE')

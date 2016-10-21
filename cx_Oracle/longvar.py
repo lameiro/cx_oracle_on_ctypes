@@ -1,11 +1,11 @@
 import ctypes
 from ctypes import byref
 
-import oci
-from variable_type import VariableType
-from variable import Variable
-from buffer import cxBuffer
-from utils import cxString_from_encoded_string, bytes
+from cx_Oracle import oci
+from cx_Oracle.variable_type import VariableType
+from cx_Oracle.variable import Variable
+from cx_Oracle.buffer import cxBuffer
+from cx_Oracle.utils import cxString_from_encoded_string, bytes
 
 class LONG_STRING(Variable):
     pass

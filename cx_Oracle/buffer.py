@@ -6,9 +6,9 @@
 # -----------------------------------------------------------------------------
 
 import ctypes
-from custom_exceptions import CXORA_TYPE_ERROR
-from utils import bytes, python2
-import oci
+from cx_Oracle.custom_exceptions import CXORA_TYPE_ERROR
+from cx_Oracle.utils import bytes, python2, python3_or_better
+from cx_Oracle import oci
 
 class cxBuffer(object):
     # not using a ctypes.structure here because we don't really use it as a struct.
@@ -38,9 +38,11 @@ class cxBuffer(object):
         """Populate the string buffer from a unicode object."""
         
         if obj is None:
-            return cxBuffer.new_null()
+            return cxBuffer.new_null() # TODO: cx_Oracle will share the buf
 
-        if isinstance(obj, unicode):
+        if python2() and isinstance(obj, unicode): #TODO: take this python2 check out of hotpath
+            as_bytes = obj.encode(encoding)
+        elif python3_or_better() and isinstance(obj, str):
             as_bytes = obj.encode(encoding)
         elif isinstance(obj, bytes):
             as_bytes = obj

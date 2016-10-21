@@ -1,15 +1,15 @@
 import ctypes
 from ctypes import byref
 
-import oci
-from buffer import cxBuffer
-from environment import Environment
-from cursor import Cursor
-from custom_exceptions import Error, InterfaceError
-from variable import Variable
-from stringvar import STRING, vt_String
-from utils import DRIVER_NAME
-from pythonic_oci import OCIHandleAlloc
+from cx_Oracle import oci
+from cx_Oracle.buffer import cxBuffer
+from cx_Oracle.environment import Environment
+from cx_Oracle.cursor import Cursor
+from cx_Oracle.custom_exceptions import Error, InterfaceError
+from cx_Oracle.variable import Variable
+from cx_Oracle.stringvar import STRING, vt_String
+from cx_Oracle.utils import DRIVER_NAME
+from cx_Oracle.pythonic_oci import OCIHandleAlloc
 
 class Connection(object):
     def __init__(self, user=None, password=None, dsn=None, mode=None, handle=None, pool=None, threaded=True,

@@ -1,18 +1,20 @@
 from ctypes import byref
 import ctypes
 
-import oci
-from pythonic_oci import OCIAttrGet, OCIParamGet, OCIHandleAlloc
-from custom_exceptions import InterfaceError, ProgrammingError, DatabaseError, NotSupportedError
-from buffer import cxBuffer
-from utils import is_sequence, cxString_from_encoded_string, python3_or_better
-from variable_factory import VariableFactory
-from objectvar import OBJECTVAR
-from numbervar import NUMBER
-from stringvar import STRING, BINARY, FIXED_CHAR
-from datetimevar import DATETIME
+from cx_Oracle import oci
+from cx_Oracle.pythonic_oci import OCIAttrGet, OCIParamGet, OCIHandleAlloc
+from cx_Oracle.custom_exceptions import InterfaceError, ProgrammingError, DatabaseError, NotSupportedError
+from cx_Oracle.buffer import cxBuffer
+from cx_Oracle.utils import is_sequence, cxString_from_encoded_string, python3_or_better, xrange, dict_iteritems
+from cx_Oracle.variable_factory import VariableFactory
+from cx_Oracle.objectvar import OBJECTVAR
+from cx_Oracle.numbervar import NUMBER
+from cx_Oracle.stringvar import STRING, BINARY, FIXED_CHAR
+from cx_Oracle.datetimevar import DATETIME
+from cx_Oracle.variable import Variable 
+
 if not python3_or_better():
-    from stringvar import UNICODE, FIXED_UNICODE
+    from cx_Oracle.stringvar import UNICODE, FIXED_UNICODE
 
 variable_factory = VariableFactory()
     
@@ -147,7 +149,7 @@ class Cursor(object):
         
         try:
             self.environment.check_for_error(status, "Cursor_InternalExecute()")
-        except Exception, e:
+        except Exception as e:
             new_exception = self.set_error_offset(e)
             try:
                 self.set_row_count()
@@ -199,7 +201,7 @@ class Cursor(object):
 
         # handle named binds
         else:
-            for key, value in parameters.iteritems():
+            for key, value in dict_iteritems(parameters):
                 orig_var = self.bindvars.get(key, None)
                 new_var = self.set_bind_variable_helper(num_elements, array_pos, value, orig_var, defer_type_assignment)
                 
@@ -208,13 +210,10 @@ class Cursor(object):
 
     def set_bind_variable_helper(self, num_elements, array_pos, value, orig_var, defer_type_assignment):
         """Helper for setting a bind variable."""
-        from variable import Variable 
         # initialization
         new_var = None 
-        is_value_var = isinstance(value, Variable) # here it is fine 
+        is_value_var = isinstance(value, Variable)
         
-        del Variable
-
         # handle case where variable is already bound
         if orig_var:
             # if the value is a variable object, rebind it if necessary
@@ -233,7 +232,7 @@ class Cursor(object):
             else:
                 try:
                     orig_var.set_value(array_pos, value)
-                except Exception, e:
+                except Exception as e:
                     # executemany() should simply fail after the first element
                     if array_pos > 0:
                         raise
@@ -377,7 +376,7 @@ of dictionaries."""
         # set values and perform binds for all bind variables
         if self.bindvars:
             if isinstance(self.bindvars, dict):
-                for key, var in self.bindvars.iteritems():
+                for key, var in dict_iteritems(self.bindvars):
                     var.bind(self, key, 0)
             else:
                 for i, var in enumerate(self.bindvars):
@@ -556,7 +555,7 @@ of dictionaries."""
         # next append any keyword arguments
         if keyword_arguments:
             pos = 0
-            for key, value in keyword_arguments.iteritems():
+            for key, value in dict_iteritems(keyword_arguments):
                 bindvars.append(value)
                 format_args.append(key)
                 if (arg_num > 1 and not return_value) or (arg_num > 2 and return_value):
@@ -701,6 +700,8 @@ of dictionaries."""
         
         raise StopIteration()
 
+    __next__ = next
+
     def __del__(self):
         self.free_handle(False)
         
@@ -751,7 +752,7 @@ of dictionaries."""
     
         # process each input
         if kwargs:
-            for key, value in kwargs.iteritems():
+            for key, value in dict_iteritems(kwargs):
                 var = variable_factory.new_by_type(self, value, self.bindarraysize)
                 self.bindvars[key] = var
         else:

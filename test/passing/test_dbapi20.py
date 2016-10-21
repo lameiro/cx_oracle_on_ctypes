@@ -34,6 +34,6 @@ class TestSuite(dbapi20.DatabaseAPI20Test):
 
 
 if __name__ == "__main__":
-    print "Testing cx_Oracle version", cx_Oracle.version
+    print ("Testing cx_Oracle version", cx_Oracle.version)
     unittest.main()
 

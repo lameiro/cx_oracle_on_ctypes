@@ -3,44 +3,49 @@ from ctypes import byref
 from datetime import datetime, date, timedelta
 from decimal import Decimal
 
-import oci
-from pythonic_oci import OCIAttrGet, OCIParamGet
+from cx_Oracle import oci
+from cx_Oracle.pythonic_oci import OCIAttrGet, OCIParamGet
 
-from utils import python3_or_better, cxBinary, cxString, MAX_STRING_CHARS, MAX_BINARY_BYTES
+from cx_Oracle.utils import python3_or_better, cxBinary, cxString, MAX_STRING_CHARS, MAX_BINARY_BYTES
 
-from numbervar import vt_Float, vt_NumberAsString, vt_Boolean, vt_LongInteger
-from stringvar import vt_String, vt_FixedNationalChar, vt_NationalCharString, vt_FixedChar, vt_Rowid, vt_Binary
-from longvar import vt_LongString, vt_LongBinary
-from datetimevar import vt_DateTime, vt_Date
-from lobvar import vt_NCLOB, vt_CLOB, vt_BLOB, vt_BFILE
-from timestampvar import vt_Timestamp
-from intervalvar import vt_Interval
-from cursorvar import vt_Cursor
-
-from variable import Variable
+from cx_Oracle.numbervar import vt_Float, vt_NumberAsString, vt_Boolean, vt_LongInteger
+from cx_Oracle.stringvar import vt_String, vt_FixedChar, vt_Rowid, vt_Binary
 
 if not python3_or_better():
-    from numbervar import vt_Integer
+    from cx_Oracle.stringvar import vt_FixedNationalChar, vt_NationalCharString 
+
+from cx_Oracle.longvar import vt_LongString, vt_LongBinary
+from cx_Oracle.datetimevar import vt_DateTime, vt_Date
+from cx_Oracle.lobvar import vt_NCLOB, vt_CLOB, vt_BLOB, vt_BFILE
+from cx_Oracle.timestampvar import vt_Timestamp
+from cx_Oracle.intervalvar import vt_Interval
+from cx_Oracle.cursorvar import vt_Cursor
+
+from cx_Oracle.variable import Variable
+
+if not python3_or_better():
+    from cx_Oracle.numbervar import vt_Integer
     
-all_variable_types = [vt_Float, vt_NumberAsString, vt_Boolean, vt_LongInteger, vt_String, vt_FixedNationalChar, vt_NationalCharString, vt_FixedChar, vt_Rowid, vt_Binary, vt_LongString, vt_LongBinary, vt_DateTime, vt_Date, vt_NCLOB, vt_CLOB, vt_BLOB, vt_BFILE, vt_Timestamp, vt_Interval, vt_Cursor]
+all_variable_types = [vt_Float, vt_NumberAsString, vt_Boolean, vt_LongInteger, vt_String, vt_FixedChar, vt_Rowid, vt_Binary, vt_LongString, vt_LongBinary, vt_DateTime, vt_Date, vt_NCLOB, vt_CLOB, vt_BLOB, vt_BFILE, vt_Timestamp, vt_Interval, vt_Cursor]
 
 if not python3_or_better():
     all_variable_types.append(vt_Integer)
+    all_variable_types.extend([vt_FixedNationalChar, vt_NationalCharString])
 
-from numbervar import NUMBER, NATIVE_FLOAT
-from stringvar import STRING, FIXED_CHAR, ROWID, BINARY
-from longvar import LONG_STRING, LONG_BINARY
-from datetimevar import DATETIME
-from lobvar import NCLOB, CLOB, BLOB, BFILE
-from timestampvar import TIMESTAMP
-from intervalvar import INTERVAL
-from cursorvar import CURSOR
+from cx_Oracle.numbervar import NUMBER, NATIVE_FLOAT
+from cx_Oracle.stringvar import STRING, FIXED_CHAR, ROWID, BINARY
+from cx_Oracle.longvar import LONG_STRING, LONG_BINARY
+from cx_Oracle.datetimevar import DATETIME
+from cx_Oracle.lobvar import NCLOB, CLOB, BLOB, BFILE
+from cx_Oracle.timestampvar import TIMESTAMP
+from cx_Oracle.intervalvar import INTERVAL
+from cx_Oracle.cursorvar import CURSOR
 
 if not python3_or_better():
-    from stringvar import UNICODE, FIXED_UNICODE
+    from cx_Oracle.stringvar import UNICODE, FIXED_UNICODE
 
-from variable_type import VariableType
-from custom_exceptions import NotSupportedError
+from cx_Oracle.variable_type import VariableType
+from cx_Oracle.custom_exceptions import NotSupportedError
 
 # TODO: Not implemented yet
 vt_Object = VariableType()
@@ -65,8 +70,6 @@ vt_to_name = {
     vt_LongInteger: 'vt_LongInteger',
     
     vt_String: 'vt_String',
-    vt_FixedNationalChar: 'vt_FixedNationalChar',
-    vt_NationalCharString: 'vt_FixedNationalChar',
     vt_FixedChar: 'vt_FixedChar',
     vt_Rowid: 'vt_Rowid',
     vt_Binary: 'vt_Binary',
@@ -74,6 +77,12 @@ vt_to_name = {
     vt_LongString: 'vt_LongString',
     vt_LongBinary: 'vt_LongBinary',
 }
+
+if not python3_or_better():
+    vt_to_name.update({
+        vt_FixedNationalChar: 'vt_FixedNationalChar',
+        vt_NationalCharString: 'vt_FixedNationalChar',
+    })  
 
 mapping_python_type_to_variable_type = {
     STRING: vt_String,
@@ -89,7 +98,6 @@ mapping_python_type_to_variable_type = {
     BLOB: vt_BLOB,
     CLOB: vt_CLOB,
     float: vt_Float,
-    long: vt_LongInteger,
     bool: vt_Boolean,
     DATETIME: vt_DateTime,
     date: vt_Date,
@@ -106,11 +114,14 @@ mapping_python_type_to_variable_type = {
 #endif
 
         
-if not python3_or_better():
+if python3_or_better():
+    mapping_python_type_to_variable_type[int] = vt_LongInteger
+else:
     mapping_python_type_to_variable_type[UNICODE] = vt_NationalCharString
     mapping_python_type_to_variable_type[unicode] = vt_NationalCharString
     mapping_python_type_to_variable_type[FIXED_UNICODE] = vt_FixedNationalChar
     mapping_python_type_to_variable_type[int] = vt_Integer
+    mapping_python_type_to_variable_type[long] = vt_LongInteger
 
 mapping_variable_type_to_python_type = {}
 
@@ -269,10 +280,8 @@ class VariableFactory(object):
             return self.new_array_by_type(cursor, value)
 
         # handle directly bound variables
-        from variable import Variable # here it is fine to use Variable
         if isinstance(value, Variable):
             return value
-        del Variable
 
         # everything else ought to be a Python type
         var_type = self.type_by_python_type(cursor, value)
@@ -357,47 +366,52 @@ variable type."""
         if isinstance(value, cxString):
             size = len(value) # assuming cxString_GetSize = len
             if size > MAX_STRING_CHARS:
-                type = vt_LongString
+                the_type = vt_LongString
             else:
-                type = vt_String
-            return type, size, None
+                the_type = vt_String
+            return the_type, size, None
+
+        if isinstance(value, bool):
+            return vt_Boolean, None, None
 
         if not python3_or_better():
             if isinstance(value, unicode):
                 size = len(value)
                 if size > MAX_STRING_CHARS:
-                    type = vt_LongString
+                    the_type = vt_LongString
                 else:
-                    type = vt_NationalCharString
-                return type, size, None
+                    the_type = vt_NationalCharString
+                return the_type, size, None
 
             if isinstance(value, int):
                 return vt_Integer, None, None
+
+            if isinstance(value, long):
+                return vt_LongInteger, None, None
         else:
             if isinstance(value, bytes):
                 size = len(value)
                 if size > MAX_BINARY_BYTES:
-                    type = vt_LongBinary
+                    the_type = vt_LongBinary
                 else:
-                    type = vt_Binary
+                    the_type = vt_Binary
 
-                return type, None, None
+                return the_type, None, None
 
-        if isinstance(value, long):
-            return vt_LongInteger, None, None
+            if isinstance(value, int):
+                return vt_LongInteger, None, None
+
         if isinstance(value, float):
             return vt_Float, None, None
         if isinstance(value, cxBinary):
             size = len(value)
             if size > MAX_BINARY_BYTES:
-                type = vt_LongBinary
+                the_type = vt_LongBinary
             else:
-                type = vt_Binary
+                the_type = vt_Binary
             
-            return type, size, None
+            return the_type, size, None
 
-        if isinstance(value, bool):
-            return vt_Boolean, None, None
         if isinstance(value, datetime):
             return vt_DateTime, None, None
         if isinstance(value, date):
@@ -405,7 +419,7 @@ variable type."""
         if isinstance(value, timedelta):
             return vt_Interval, None, None
 
-        from cursor import Cursor
+        from cx_Oracle.cursor import Cursor
 
         is_cursor = isinstance(value, Cursor)
         if is_cursor:
@@ -425,7 +439,7 @@ variable type."""
             size = var_type.size
             return var_type, size, num_elements
 
-        raise NotSupportedError("Variable_TypeByValue(): unhandled data type %.*s" % type(value))
+        raise NotSupportedError("Variable_TypeByValue(): unhandled data type %s" % type(value))
     
     def new(self, cursor, num_elements, type, size):
         variable_class = mapping_variable_type_to_python_type.get(type)
