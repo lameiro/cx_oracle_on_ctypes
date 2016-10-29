@@ -35,9 +35,7 @@ from cx_Oracle.externallobvar import LOB
 from cx_Oracle.timestampvar import TIMESTAMP
 from cx_Oracle.intervalvar import INTERVAL
 from cx_Oracle.cursorvar import CURSOR
-
-def symbol_exists(symbol_name):
-    pass
+from cx_Oracle.oci import ORACLE_10G, ORACLE_10GR2, ORACLE_11, ORACLE_12
 
 def makedsn(host, port, sid='', service_name=''):
     if sid == '' and service_name == '':
@@ -52,19 +50,10 @@ def makedsn(host, port, sid='', service_name=''):
 
     return dsn_format % (host, port, connect_data_obj)
 
-ORACLE_VERSION_10G, ORACLE_VERSION_10GR2, ORACLE_VERSION_11G = range(3)
-
-ORACLE_VERSION = ORACLE_VERSION_11G
-
-if symbol_exists('OCI_ATTR_MODULE'):
-    ORACLE_VERSION = ORACLE_VERSION_10G
-if symbol_exists('OCI_MAJOR_VERSION'):
-    ORACLE_VERSION = ORACLE_VERSION_10GR2
-if symbol_exists('OCI_ATTR_CONNECTION_CLASS'):
-    ORACLE_VERSION = ORACLE_VERSION_11G
+ORACLE_VERSION_10G, ORACLE_VERSION_10GR2, ORACLE_VERSION_11G, ORACLE_VERSION_12 = range(4)
+ORACLE_VERSION = int(ORACLE_10GR2) + int(ORACLE_11) + int(ORACLE_12)
 
 # broken end! can we try to run the clientversion method instead? apparently, it does not exist for oracle 10g, but if that is the only case, it is still OK
-
 if ORACLE_VERSION >= ORACLE_VERSION_10GR2:
     def clientversion():
         major_version, minor_version, update_num, patch_num, port_update_num = c_int(), c_int(), c_int(), c_int(), c_int()
@@ -132,6 +121,12 @@ if ORACLE_VERSION >= ORACLE_VERSION_10GR2:
         OCI_SUBSCR_PROTO_MAIL               as SUBSCR_PROTO_MAIL, \
         OCI_SUBSCR_PROTO_SERVER             as SUBSCR_PROTO_SERVER, \
         OCI_SUBSCR_PROTO_HTTP               as SUBSCR_PROTO_HTTP
+        #OCI_SUBSCR_QOS_RELIABLE             as SUBSCR_QOS_RELIABLE, \
+        #OCI_SUBSCR_QOS_PAYLOAD              as SUBSCR_QOS_PAYLOAD, \
+        #OCI_SUBSCR_QOS_REPLICATE            as SUBSCR_QOS_REPLICATE, \
+        #OCI_SUBSCR_QOS_SECURE               as SUBSCR_QOS_SECURE, \
+        #OCI_SUBSCR_QOS_PURGE_ON_NTFN        as SUBSCR_QOS_PURGE_ON_NTFN, \
+        #OCI_SUBSCR_QOS_MULTICB              as SUBSCR_QOS_MULTICBK
 
 if ORACLE_VERSION >= ORACLE_VERSION_11G:
     from cx_Oracle.oci import \
