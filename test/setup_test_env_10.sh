@@ -1,8 +1,13 @@
-export LD_LIBRARY_PATH=/usr/lib/oracle/xe/app/oracle/product/10.2.0/server/lib/
-export PYTHONPATH=/home/lameiro/projects/cx_oracle_on_ctypes/
-export ORACLE_HOME=/usr/lib/oracle/xe/app/oracle/product/10.2.0/server/
+INSTANTCLIENT_PATH=$( cd $(dirname $BASH_SOURCE)/../../instantclient_10_2 ; pwd -P )
+CXORACLE_ON_CTYPES_PATH=$( cd $(dirname $BASH_SOURCE)/../ ; pwd -P )
+
+echo Adding instant client at $INSTANTCLIENT_PATH to LD_LIBRARY_PATH
+echo Adding cx_oracle_on_types at $CXORACLE_ON_CTYPES_PATH to PYTHONPATH
+
+export LD_LIBRARY_PATH=$INSTANTCLIENT_PATH
+export PYTHONPATH=$CXORACLE_ON_CTYPES_PATH
 export NLS_LANG=.UTF8
 export CX_ORACLE_USERNAME=cx_Oracle
 export CX_ORACLE_PASSWORD=dev
-export CX_ORACLE_TNSENTRY=XE
+export CX_ORACLE_TNSENTRY='(DESCRIPTION = (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1521))) (CONNECT_DATA = (SID = XE)))'
 export CX_ORACLE_ARRAY_SIZE=1024
