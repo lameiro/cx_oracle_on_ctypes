@@ -41,8 +41,12 @@ class BaseTestCase(unittest.TestCase):
         self.cursor.arraysize = TestEnv.ARRAY_SIZE
 
     def tearDown(self):
+        self.connection.close()
         del self.cursor
         del self.connection
+        import gc
+        for i in range(5):
+            gc.collect()
 
 
 loader = unittest.TestLoader()

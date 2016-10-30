@@ -7,7 +7,7 @@ from cx_Oracle.environment import Environment
 from cx_Oracle.cursor import Cursor
 from cx_Oracle.custom_exceptions import Error, InterfaceError
 from cx_Oracle.variable import Variable
-from cx_Oracle.stringvar import STRING, vt_String
+from cx_Oracle.stringvar import vt_String
 from cx_Oracle.utils import DRIVER_NAME
 from cx_Oracle.pythonic_oci import OCIHandleAlloc
 
@@ -84,10 +84,10 @@ class Connection(object):
         # set the internal and external names; these are needed for global
         # transactions but are limited in terms of the lengths of the strings
         if twophase:
-            status = oci.OCIAttrSet(self.server_handle, oci.OCI_HTYPE_SERVER, "cx_Oracle", 0, oci.OCI_ATTR_INTERNAL_NAME, self.environment.error_handle)
+            status = oci.OCIAttrSet(self.server_handle, oci.OCI_HTYPE_SERVER, b"cx_Oracle", 0, oci.OCI_ATTR_INTERNAL_NAME, self.environment.error_handle)
             self.environment.check_for_error(status, "Connection_Connect(): set internal name")
 
-            status = oci.OCIAttrSet(self.server_handle, oci.OCI_HTYPE_SERVER, "cx_Oracle", 0, oci.OCI_ATTR_EXTERNAL_NAME, self.environment.error_handle)
+            status = oci.OCIAttrSet(self.server_handle, oci.OCI_HTYPE_SERVER, b"cx_Oracle", 0, oci.OCI_ATTR_EXTERNAL_NAME, self.environment.error_handle)
             self.environment.check_for_error(status, "Connection_Connect(): set external name")
         
         # allocate session handle
@@ -141,12 +141,25 @@ class Connection(object):
         self.rollback() # will check if we are actually connected
 
         # logoff of the server
-        if self.session_handle:
-            status = oci.OCISessionEnd(self.handle, self.environment.error_handle, self.session_handle, oci.OCI_DEFAULT)
-            self.environment.check_for_error(status, "Connection_Close(): end session")
+        if self.release:
+            pass # TODO: Handle self->release = True
+        else:
+            if self.session_handle:
+                status = oci.OCISessionEnd(self.handle, self.environment.error_handle, self.session_handle, oci.OCI_DEFAULT)
+                self.environment.check_for_error(status, "Connection_Close(): end session")
+                oci.OCIHandleFree(self.session_handle, oci.OCI_HTYPE_SESSION)
+                self.session_handle = oci.POINTER(oci.OCISession)()
+                oci.OCIHandleFree(self.handle, oci.OCI_HTYPE_SVCCTX)
 
-        oci.OCIHandleFree(self.handle, oci.OCI_HTYPE_SVCCTX)
-    
+            if self.server_handle:
+                status = oci.OCIServerDetach(self.server_handle, self.environment.error_handle, oci.OCI_DEFAULT)
+                self.environment.check_for_error(status, "Connection_Close(): server detach")
+
+                oci.OCIHandleFree(self.server_handle, oci.OCI_HTYPE_SERVER)
+                self.server_handle = oci.POINTER(oci.OCIServer)()
+
+        # it is a bit strange that cx_oracle will only free the handle if self.session_handle, but always reset
+        # self.handle - sounds like a leak...
         self.handle = oci.POINTER(oci.OCISvcCtx)()
 
     def rollback(self):

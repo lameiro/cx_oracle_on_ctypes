@@ -8,13 +8,7 @@ from cx_Oracle.buffer import cxBuffer
 from cx_Oracle.utils import is_sequence, cxString_from_encoded_string, python3_or_better, xrange, dict_iteritems
 from cx_Oracle.variable_factory import VariableFactory
 from cx_Oracle.objectvar import OBJECTVAR
-from cx_Oracle.numbervar import NUMBER
-from cx_Oracle.stringvar import STRING, BINARY, FIXED_CHAR
-from cx_Oracle.datetimevar import DATETIME
 from cx_Oracle.variable import Variable 
-
-if not python3_or_better():
-    from cx_Oracle.stringvar import UNICODE, FIXED_UNICODE
 
 variable_factory = VariableFactory()
     
@@ -60,6 +54,7 @@ class Cursor(object):
                 except:
                     if raise_exception:
                         raise
+                    return
 
                 status = oci.OCIStmtRelease(self.handle, self.environment.error_handle, buffer.cast_ptr, buffer.size, oci.OCI_DEFAULT)
 
