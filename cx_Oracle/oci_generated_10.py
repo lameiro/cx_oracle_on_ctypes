@@ -587,9 +587,11 @@ add_library_search_dirs([])
 
 # Begin libraries
 
-# MANUALLY changed: fix for windows, which has a different library name
+# MANUALLY changed: fix for mac and windows, which have different library name
 if sys.platform == 'win32':
     _libs["libclntsh.so.10.1"] = load_library("oci.dll")
+elif sys.platform == 'darwin':
+    _libs["libclntsh.so.10.1"] = load_library("libclntsh.dylib.10.1")
 else:
     _libs["libclntsh.so.10.1"] = load_library("libclntsh.so.10.1")
 
