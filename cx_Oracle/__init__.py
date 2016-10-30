@@ -2,9 +2,6 @@ from decimal import Decimal
 
 from datetime import datetime, date
 
-import sys
-
-import ctypes
 from ctypes import c_int, byref
 
 from cx_Oracle.custom_exceptions import Warning, Error, InterfaceError, DatabaseError, DataError, OperationalError, IntegrityError, InternalError, ProgrammingError, NotSupportedError
@@ -57,7 +54,7 @@ ORACLE_VERSION = int(ORACLE_10GR2) + int(ORACLE_11) + int(ORACLE_12)
 if ORACLE_VERSION >= ORACLE_VERSION_10GR2:
     def clientversion():
         major_version, minor_version, update_num, patch_num, port_update_num = c_int(), c_int(), c_int(), c_int(), c_int()
-        the_so.OCIClientVersion(byref(major_version), byref(minor_version), byref(update_num), byref(patch_num), byref(port_update_num))
+        oci.OCIClientVersion(byref(major_version), byref(minor_version), byref(update_num), byref(patch_num), byref(port_update_num))
 
         return (major_version.value, minor_version.value, update_num.value, patch_num.value, port_update_num.value)
 
