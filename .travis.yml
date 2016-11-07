@@ -9,5 +9,5 @@ services:
 before_install: 
   - ./scripts/start_docker.sh
   - ./scripts/wait_until_oracle_ready.sh
-
+  - ./scripts/download_dependencies.sh
 script: true
