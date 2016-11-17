@@ -13,4 +13,4 @@ pypy_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'pypy%
 
 for instant_client_version in ('10_2', '11_2', '12_1'):
     for python_path in (sys.executable, pypy_path):
-        subprocess.check_call(['python', 'run_tests.py', instant_client_version, str(sys.version_info.major), python_path])
+        subprocess.check_call(['python', 'test/run_tests.py', instant_client_version, str(sys.version_info.major), python_path])
