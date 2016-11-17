@@ -12,4 +12,4 @@ before_install:
   - ./scripts/wait_until_oracle_ready.sh
   - ./scripts/download_dependencies.sh
 
-script: ./test/run_all_tests.py
+script: python ./test/run_all_tests.py
