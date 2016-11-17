@@ -2,6 +2,7 @@ sudo: required
 language: python
 python: 
 - "2.7"
+- "3.5"
 
 services:
   - docker
@@ -10,4 +11,5 @@ before_install:
   - ./scripts/start_docker.sh
   - ./scripts/wait_until_oracle_ready.sh
   - ./scripts/download_dependencies.sh
-script: true
+
+script: ./test/run_all_tests.py
