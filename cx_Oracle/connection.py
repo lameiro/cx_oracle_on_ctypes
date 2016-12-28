@@ -9,7 +9,7 @@ from cx_Oracle.custom_exceptions import Error, InterfaceError
 from cx_Oracle.variable import Variable
 from cx_Oracle.stringvar import vt_String
 from cx_Oracle.utils import DRIVER_NAME
-from cx_Oracle.pythonic_oci import OCIHandleAlloc
+from cx_Oracle.pythonic_oci import OCIHandleAlloc, OCIAttrGet, OCIAttrSet, OCIAttrGet_nounwrap
 
 class Connection(object):
     def __init__(self, user=None, password=None, dsn=None, mode=None, handle=None, pool=None, threaded=True,
@@ -228,6 +228,30 @@ class Connection(object):
         status = oci.OCITransCommit(self.handle, self.environment.error_handle, self.commit_mode)
         self.environment.check_for_error(status, "Connection_Commit()")
         self.commit_mode = oci.OCI_DEFAULT
+
+    def begin(self):
+        # TODO: Implement begin([formatId, transactionId, branchId]) used for distributed transactions
+        # make sure we are actually connected
+        self.raise_if_not_connected()
+
+        # determine if a transaction handle was previously allocated
+        transaction_handle = OCIAttrGet_nounwrap(self.handle, oci.OCI_HTYPE_SVCCTX, oci.POINTER(oci.OCITrans),
+                                        oci.OCI_ATTR_TRANS, self.environment,
+                                        "Connection_Begin(): find existing transaction handle")
+
+        # create a new transaction handle, if necessary
+        if not transaction_handle:
+            OCIHandleAlloc(self.environment, transaction_handle, oci.OCI_HTYPE_TRANS,
+                           "Connection_Begin(): allocate transaction handle")
+
+        # TODO: set the XID for the transaction, if applicable
+        # associate the transaction with the connection
+        OCIAttrSet(self.handle, oci.OCI_HTYPE_SVCCTX, transaction_handle, 0, oci.OCI_ATTR_TRANS,
+                   self.environment, "Connection_Begin(): associate transaction")
+
+        # start the transaction
+        status = oci.OCITransStart(self.handle, self.environment.error_handle, 0, oci.OCI_TRANS_NEW)
+        self.environment.check_for_error(status, "Connection_Begin(): start transaction")
     
     @property
     def maxBytesPerCharacter(self):
